@@ -3,6 +3,9 @@
 <head>
   <meta charset="utf-8"/>
 
+  <!-- Favicon（404回避：埋め込みSVG） -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='14' fill='%23c86b12'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-size='34' fill='white' font-family='system-ui'%3E%E3%81%8B%3C/text%3E%3C/svg%3E">
+
   <!-- Google tag (gtag.js)  -->
   <!-- TODO: 業務かるがも用の GA4 ID に差し替え -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -94,15 +97,6 @@
       padding:4px 10px;
       border:1px solid rgba(0,0,0,.10);
     }
-    .pill-mini{
-      border-radius:999px;
-      background:#ffffff;
-      padding:2px 8px;
-      border:1px solid rgba(0,0,0,.10);
-      font-size:12px;
-      color:var(--muted);
-    }
-
     .btn{
       border-radius:999px;
       border:1px solid rgba(0,0,0,.14);
@@ -158,7 +152,7 @@
       padding:10px 12px;
       font-size:14px;
       cursor:pointer;
-      letter-spacing:.06em;
+      letter-spacing:.08em;
       color:var(--ink);
       white-space:nowrap;
     }
@@ -196,6 +190,7 @@
       font-size:13px;
       margin-top:8px;
     }
+
     .cta-row{
       display:flex;
       flex-wrap:wrap;
@@ -203,7 +198,8 @@
       margin-top:10px;
       align-items:center;
     }
-    .hidden{ display:none; }
+
+    .hidden{ display:none !important; }
 
     a{ color:var(--brand-link); text-decoration:none; }
     a:hover{ text-decoration:underline; }
@@ -220,11 +216,29 @@
       cursor:pointer;
     }
 
-    .grid-2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
+    .pill-mini{
+      border-radius:999px;
+      background:#ffffff;
+      padding:2px 8px;
+      border:1px solid rgba(0,0,0,.10);
+      font-size:12px;
+      color:var(--muted);
     }
+
+    .rule-card{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:16px;
+      padding:12px 14px;
+    }
+
+    footer{
+      margin-top:18px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+    }
+
     @media (max-width: 768px){
       .topbar{ flex-direction:column; align-items:flex-start; gap:8px; }
       .brand img{ max-width:180px; }
@@ -240,59 +254,12 @@
       .tab-btn{
         flex:0 0 auto;
         font-size:12px;
-        letter-spacing:.04em;
+        letter-spacing:.06em;
         padding:8px 10px;
       }
 
       .main-page{ padding-top:230px; }
       main{ margin-top:40px; }
-
-      .grid-2{ grid-template-columns: 1fr; }
-    }
-
-    /* ルールカード */
-    .rule-card{
-      background:#fff;
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:16px;
-      padding:12px 14px;
-    }
-    .rule-actions{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-      align-items:center;
-    }
-    .modal-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.35);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      z-index:999;
-      padding:18px;
-    }
-    .modal{
-      width:100%;
-      max-width:720px;
-      background:#fff;
-      border-radius:18px;
-      border:1px solid rgba(0,0,0,.12);
-      box-shadow: 0 20px 60px rgba(0,0,0,.25);
-      padding:16px;
-    }
-    .modal h3{ margin:0 0 10px; }
-    .modal .row{ display:flex; gap:8px; flex-wrap:wrap; }
-    .modal .row > *{ flex:1; min-width:220px; }
-    .modal textarea{
-      width:100%;
-      min-height:90px;
-      border-radius:14px;
-      border:1px solid rgba(0,0,0,.14);
-      padding:10px;
-      font-size:13px;
-      resize:vertical;
     }
   </style>
 
@@ -311,15 +278,17 @@
         </div>
 
         <div class="user-box">
-          <span>ワークスペース：</span>
-          <select id="wsHeaderSelect" class="input" style="min-width:260px;"></select>
-          <span class="pill-mini" id="wsRolePill">-</span>
           <span>ログイン中：</span>
           <span id="userEmail" class="pill">-</span>
+
+          <span>ワークスペース：</span>
+          <select id="headerWsSelect" class="input" style="min-width:220px;"></select>
+
           <button id="logout" class="btn btn-outline">ログアウト</button>
         </div>
       </div>
 
+      <!-- タブ（日本語） -->
       <nav class="tabs">
         <button class="tab-btn active" data-tab="home">ホーム</button>
         <button class="tab-btn" data-tab="rules">業務ルール</button>
@@ -339,12 +308,6 @@
         <a href="./" style="font-size:14px;">ログイン画面に戻る</a>
       </div>
 
-      <!-- 招待自動参加の状態表示（必要時のみ） -->
-      <div id="inviteAutoBox" class="card hidden" style="background:#fff;border:1px solid rgba(0,0,0,.10);">
-        <h2>招待を処理中です…</h2>
-        <p class="muted" id="inviteAutoMsg">ワークスペースに参加しています。</p>
-      </div>
-
       <!-- HOME -->
       <section id="tab-home" class="tab-pane active">
         <div class="card">
@@ -354,26 +317,31 @@
 
           <h2>ようこそ、業務かるがもへ</h2>
           <p class="muted">
-            このサイトでは、ワークスペース内で業務ルールを共有し、必要に応じてツールを実行します。<br>
-            右上の「ワークスペース」から切り替えできます。
+            ワークスペース内で業務ルールを作成・共有できます。<br>
+            右上のワークスペースから切り替えてください。
           </p>
 
           <div class="status-box">
             <div>
-              現在のプラン（ワークスペース）：<strong id="planLabelText">Free</strong>
+              現在のワークスペース：<strong id="homeWsName">-</strong>
+              <span id="homeWsRole" class="pill-mini">-</span>
             </div>
-            <p id="statusText" class="muted" style="margin-top:6px;">状態を確認しています…</p>
+            <p id="homeStatusText" class="muted" style="margin-top:6px;">状態を確認しています…</p>
+          </div>
+
+          <div id="inviteAutoBox" class="status-box hidden" style="margin-top:12px;">
+            <strong>招待を処理しています…</strong>
+            <p id="inviteAutoMsg" class="muted" style="font-size:12px;margin-top:6px;">少しお待ちください。</p>
           </div>
         </div>
       </section>
 
-      <!-- 業務ルール -->
+      <!-- 業務ルール（作成/編集/履歴） -->
       <section id="tab-rules" class="tab-pane">
         <div class="card">
           <h2>業務ルール</h2>
           <p class="muted">
-            ワークスペース内で共有されます（メンバーは編集できます）。<br>
-            ※ 権限により編集可否は制限できます（RLS設定次第）
+            現在のワークスペース内で共有されます（権限に応じて操作できます）。
           </p>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">
@@ -384,14 +352,19 @@
 
           <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
 
-          <h3>新規ルール</h3>
+          <h3 id="ruleFormTitle">新規ルール</h3>
           <div style="display:grid;gap:8px;max-width:720px;">
             <input id="jobTitle" class="input" placeholder="業務名（例：月次請求処理）" />
             <input id="ifText" class="input" placeholder="if（条件）例：合計が10万円以上" />
             <input id="thenText" class="input" placeholder="then（対応）例：上長に確認" />
             <input id="tagsText" class="input" placeholder="タグ（カンマ区切り）例：請求,確認,税" />
             <input id="memoText" class="input" placeholder="メモ（任意）" />
-            <button id="btnAddRule" class="btn btn-primary" style="width:220px;">追加</button>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <button id="btnSaveRule" class="btn btn-primary" style="width:220px;">追加</button>
+              <button id="btnCancelEdit" class="btn btn-outline hidden">編集をキャンセル</button>
+            </div>
+
             <p class="muted" style="font-size:12px;margin:0;">※ 必須：業務名 / if / then</p>
           </div>
 
@@ -402,35 +375,50 @@
         </div>
       </section>
 
-      <!-- ワークスペース（Ownerのみ表示） -->
+      <!-- ワークスペース（オーナーのみ表示） -->
       <section id="tab-workspace" class="tab-pane">
         <div class="card">
-          <h2>ワークスペース設定（Ownerのみ）</h2>
-          <p class="muted">ワークスペース名、メンバー、招待などを管理します。</p>
+          <h2>ワークスペース（Ownerのみ）</h2>
+          <p class="muted">
+            ワークスペースの作成・編集・削除、メンバー管理、招待ができます。<br>
+            ※ 課金（Standard / Pro）はこの画面で行います。
+          </p>
 
-          <div class="status-box">
-            <div>現在のワークスペース：<strong id="wsNameText">-</strong></div>
-            <div style="margin-top:6px;">プラン：<strong id="wsPlanText">Free</strong></div>
-            <p class="muted" style="font-size:12px;margin-top:6px;" id="wsPlanNote">-</p>
+          <div id="workspaceOwnerOnlyNote" class="status-box hidden" style="background:#fff7e0;border:1px solid #f3d38a;">
+            <strong>このワークスペースでは Owner ではありません。</strong>
+            <p class="muted" style="font-size:12px;margin-top:6px;">Owner のみ操作できます。</p>
           </div>
 
-          <div class="cta-row" id="wsBillingRow">
-            <button id="btnWsSubscribe" class="btn btn-primary hidden">Standardプランに登録する（Owner）</button>
-            <button id="btnWsPortal" class="btn btn-danger hidden">サブスクを管理する（Owner）</button>
+          <!-- プラン（Ownerのみ操作） -->
+          <div class="status-box" style="margin-top:12px;">
+            <div>
+              プラン：<strong id="wsPlanLabel">-</strong>
+              <span class="pill-mini" id="wsPlanHint">（ワークスペースのOwnerのプランに準拠）</span>
+            </div>
+            <p id="wsPlanMsg" class="muted" style="margin-top:6px;">状態を確認しています…</p>
+
+            <div class="cta-row" style="margin-top:10px;">
+              <button id="btnSubscribeWs" class="btn btn-primary hidden">Standardプランに登録する</button>
+              <button id="btnCancelWs" class="btn btn-danger hidden">サブスクを解約する</button>
+            </div>
           </div>
 
           <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
 
-          <h3>メンバー</h3>
-          <div id="membersMsg" class="muted" style="font-size:12px;margin:6px 0;"></div>
-          <div id="membersList" style="display:grid;gap:8px;"></div>
+          <!-- ワークスペース作成（Standard: 2個まで / Pro: 無制限） -->
+          <h3>ワークスペースの作成</h3>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input id="newWsName" class="input" placeholder="新しいワークスペース名（例：営業チーム）" />
+            <button id="btnCreateWs" class="btn btn-outline">作成</button>
+          </div>
+          <p id="wsCreateMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
 
           <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
 
-          <h3>招待（A-2：メールで送信）</h3>
-          <p class="muted" style="font-size:12px;">
-            メンバー追加メールを送信します。相手はメールのリンクから登録→自動参加します。<br>
-            ※ 受信者は「招待したメールアドレス」でログインする必要があります（email mismatch防止）。
+          <!-- メンバー管理（Standard: 各5人まで / Pro: 無制限） -->
+          <h3>メンバー管理</h3>
+          <p class="muted" style="font-size:12px;margin-top:0;">
+            メンバー追加するとメールで招待リンクを送ります（相手は未登録でもOK）。
           </p>
 
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px;">
@@ -439,9 +427,12 @@
               <option value="member">member</option>
               <option value="owner">owner</option>
             </select>
-            <button id="btnCreateInvite" class="btn btn-outline">招待メールを送る</button>
+            <button id="btnCreateInvite" class="btn btn-outline">招待メール送信</button>
           </div>
           <p id="inviteMsg" class="muted" style="font-size:12px;margin-top:8px;"></p>
+
+          <div id="membersBox" style="margin-top:14px;display:grid;gap:8px;"></div>
+          <p id="membersMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
         </div>
       </section>
 
@@ -455,12 +446,13 @@
 
           <div class="status-box">
             <div>
-              現在のワークスペース：<strong id="accountWsName">-</strong>（<span id="accountRole">-</span>）
+              現在のワークスペース：<strong id="accountWsName">-</strong>
+              <span id="accountWsRole" class="pill-mini">-</span>
             </div>
             <div style="margin-top:6px;">
-              プラン：<strong id="planLabelText2">Free</strong>
+              プラン：<strong id="accountPlanLabel">-</strong>
             </div>
-            <p id="statusText2" class="muted" style="margin-top:6px;">状態を確認しています…</p>
+            <p id="accountStatusText" class="muted" style="margin-top:6px;">状態を確認しています…</p>
           </div>
 
           <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
@@ -514,7 +506,7 @@
                 <input type="checkbox" id="pwShowChange" />
                 <label for="pwShowChange" style="font-size:13px;">パスワードを表示する</label>
               </div>
-              <button id="pwChangeSubmit" type="submit" class="btn btn-outline">パスワードを変更する</button>
+              <button id="pwChangeSubmit" type="submit" class="btn btn-outline">パスワワードを変更する</button>
             </form>
 
             <p id="pwChangeMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
@@ -531,67 +523,47 @@
     </footer>
   </div>
 
-  <!-- ルール編集モーダル -->
-  <div id="editModalBackdrop" class="modal-backdrop">
-    <div class="modal">
-      <h3>ルール編集</h3>
-      <div class="row">
-        <input id="editJobTitle" class="input" placeholder="業務名" />
-        <input id="editTags" class="input" placeholder="タグ（カンマ区切り）" />
-      </div>
-      <div style="margin-top:10px;">
-        <textarea id="editIf" placeholder="if（条件）"></textarea>
-      </div>
-      <div style="margin-top:10px;">
-        <textarea id="editThen" placeholder="then（対応）"></textarea>
-      </div>
-      <div style="margin-top:10px;">
-        <textarea id="editMemo" placeholder="メモ（任意）"></textarea>
-      </div>
-
-      <div class="rule-actions">
-        <button id="btnEditSave" class="btn btn-primary">保存</button>
-        <button id="btnEditArchive" class="btn btn-danger">アーカイブ</button>
-        <button id="btnEditCancel" class="btn btn-outline">閉じる</button>
-        <span class="muted" id="editMsg" style="font-size:12px;"></span>
-      </div>
-
-      <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
-
-      <h3 style="margin-top:0;">履歴</h3>
-      <div id="historyList" style="display:grid;gap:8px;"></div>
-    </div>
-  </div>
-
 <script>
   // =========================
-  // Supabase 設定
+  // Supabase 設定（差し替え）
   // =========================
   const SUPABASE_URL = "https://rhynpigqhnbwjyudvvfw.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeW5waWdxaG5id2p5dWR2dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODcyNTMsImV4cCI6MjA4MzM2MzI1M30.S9h-SH0JB0cEhMukUUaOuYEetx2I8qecZapIeCpk57M";
+
   const SITE_TOP_URL = "https://app.gyomu-karugamo.com/app.html";
 
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
-  });
+  const sb = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+      },
+    }
+  );
 
-  // 課金リンク（Ownerのみ使用）
+  // billing / plans（外出し）
   const BILLING_JSON_URL = "https://app.gyomu-karugamo.com/data/billing.json";
+  const PLANS_JSON_URL   = "https://app.gyomu-karugamo.com/data/plans.json";
+
   let BILLING_CONFIG = { stripe: { standard: { payment_link_url: null } } };
+  let PLANS_CONFIG = {
+    plans: {
+      standard: { workspace_limit: 2, members_per_workspace_limit: 5 },
+      pro: { workspace_limit: null, members_per_workspace_limit: null }
+    }
+  };
 
-  const PORTAL_FUNCTION_URL =
-    "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/create-portal-session";
-
-  // 招待受諾（Edge Function）
-  const ACCEPT_INVITE_FUNCTION_URL =
-    "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/accept-invite";
+  // Functions（CORS回避のため invoke を優先）
+  // ※ sb.functions.invoke は /functions/v1/NAME を叩きます
+  const PORTAL_FUNCTION_NAME = "create-portal-session";
+  const ACCEPT_INVITE_FUNCTION_NAME = "accept-invite";
 
   const $ = (s)=>document.querySelector(s);
-  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
-  // =========================
-  // タブ切替
-  // =========================
   function switchToTab(tab){
     document.querySelectorAll(".tab-btn").forEach(btn=>{
       btn.classList.toggle("active", btn.dataset.tab === tab);
@@ -604,28 +576,30 @@
     btn.addEventListener("click", ()=>switchToTab(btn.dataset.tab));
   });
 
-  // =========================
-  // 認証（magiclink/PKCE 両対応）
-  // =========================
-  function urlHasAuthParams(){
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function urlHasAuthCode(){
     const u = new URL(location.href);
-    return u.searchParams.has("code") || u.searchParams.has("token")
-      || u.hash.includes("access_token") || u.hash.includes("refresh_token");
+    return u.searchParams.has("code") || u.searchParams.has("token") || u.hash.includes("access_token");
   }
 
   async function getUserRobust({tries=40, interval=150}={}){
-    if (urlHasAuthParams()){
-      try{
-        await sb.auth.getSessionFromUrl({ storeSession:true });
-        if (location.hash) history.replaceState(null, "", location.pathname + location.search);
-      }catch(e){}
-    }
-
     try{
       const { data } = await sb.auth.getSession();
       const s = data?.session;
       if (s?.user) return s.user;
     }catch(e){}
+
+    if (urlHasAuthCode()){
+      try{ await sb.auth.exchangeCodeForSession(window.location.href); }catch(e){}
+    }
 
     for(let i=0;i<tries;i++){
       try{
@@ -637,37 +611,6 @@
     return null;
   }
 
-  // =========================
-  // 共通表示
-  // =========================
-  function setStatus(text){
-    const a = $("#statusText"); if (a) a.textContent = text;
-    const b = $("#statusText2"); if (b) b.textContent = text;
-  }
-  function setPlanLabelText(v){
-    const a = $("#planLabelText"); if (a) a.textContent = v;
-    const b = $("#planLabelText2"); if (b) b.textContent = v;
-    const c = $("#wsPlanText"); if (c) c.textContent = v;
-  }
-  function planLabel(tier, isActive){
-    if (!isActive) return "Free";
-    const t = String(tier||"free").toLowerCase();
-    if (t === "standard") return "Standard";
-    if (t === "pro") return "Pro";
-    return "Free";
-  }
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
-  }
-
-  // =========================
-  // 課金
-  // =========================
   async function loadBillingConfig(){
     try{
       const res = await fetch(BILLING_JSON_URL, { cache:"no-store" });
@@ -679,25 +622,188 @@
     }
   }
 
-  async function createCheckoutForWorkspace(workspaceId, ownerEmail){
+  async function loadPlansConfig(){
+    try{
+      const res = await fetch(PLANS_JSON_URL, { cache:"no-store" });
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      PLANS_CONFIG = (await res.json()) || PLANS_CONFIG;
+    }catch(e){
+      console.error("plans json load error", e);
+    }
+  }
+
+  async function loadProfileOrCreate(userId){
+    let { data:prof, error } = await sb
+      .from("profiles")
+      .select("id,tier,is_active,has_password,display_name")
+      .eq("id", userId)
+      .single();
+
+    const notFound = error && (error.code==="PGRST116" || String(error.details||"").includes("0 rows"));
+    if (notFound){
+      const up = await sb.from("profiles").upsert(
+        { id:userId, tier:"free", is_active:false, has_password:false },
+        { onConflict:"id" }
+      );
+      if (up.error) return { data:null, error:up.error };
+
+      ({ data:prof, error } = await sb
+        .from("profiles")
+        .select("id,tier,is_active,has_password,display_name")
+        .eq("id", userId)
+        .single());
+    }
+    return { data:prof, error };
+  }
+
+  function planLabel(tier, isActive){
+    if (!isActive) return "Free";
+    const t = String(tier||"free").toLowerCase();
+    if (t === "standard") return "Standard";
+    if (t === "pro") return "Pro";
+    return "Free";
+  }
+
+  // localStorage: active workspace
+  const ACTIVE_WS_KEY = "gk_active_workspace_id";
+
+  function setActiveWorkspaceId(id){
+    if (!id) return;
+    localStorage.setItem(ACTIVE_WS_KEY, String(id));
+  }
+  function getActiveWorkspaceId(){
+    return localStorage.getItem(ACTIVE_WS_KEY) || "";
+  }
+
+  // =========================
+  // Workspace / Membership
+  // =========================
+  // 重要：workspaces を直で全件selectするとRLSで落ちる可能性が高いので
+  // workspace_members 経由で取得します（workspaces へのFKがある前提）。
+  async function loadMyWorkspaces(userId){
+    const { data, error } = await sb
+      .from("workspace_members")
+      .select("workspace_id, role, workspaces:workspace_id(id,name,created_at,owner_id)")
+      .eq("user_id", userId)
+      .order("created_at", { foreignTable: "workspaces", ascending: true });
+
+    if (error) throw error;
+
+    const rows = (data || [])
+      .map(r => ({
+        workspace_id: r.workspace_id,
+        role: r.role,
+        workspace: r.workspaces
+      }))
+      .filter(r => r.workspace && r.workspace.id);
+
+    return rows;
+  }
+
+  function fillWorkspaceSelectors(memberships){
+    const headerSel = $("#headerWsSelect");
+    if (!headerSel) return;
+
+    const activeId = getActiveWorkspaceId();
+    headerSel.innerHTML = memberships
+      .map(m => `<option value="${m.workspace.id}">${escapeHtml(m.workspace.name)}</option>`)
+      .join("");
+
+    // active が未設定 or 不正なら先頭に
+    const exists = memberships.some(m => String(m.workspace.id) === String(activeId));
+    const nextId = exists ? activeId : (memberships[0]?.workspace?.id || "");
+    if (nextId) {
+      headerSel.value = String(nextId);
+      setActiveWorkspaceId(nextId);
+    }
+
+    headerSel.onchange = ()=>{
+      setActiveWorkspaceId(headerSel.value);
+      refreshAllViews().catch(()=>{});
+    };
+  }
+
+  function getMembershipForActive(memberships){
+    const activeId = getActiveWorkspaceId();
+    return memberships.find(m => String(m.workspace.id) === String(activeId)) || memberships[0] || null;
+  }
+
+  function setHeaderWorkspaceInfo(active){
+    const wsName = active?.workspace?.name || "-";
+    $("#homeWsName").textContent = wsName;
+    $("#accountWsName").textContent = wsName;
+  }
+
+  // =========================
+  // Invite auto-accept
+  // =========================
+  async function autoAcceptInviteIfNeeded(){
+    const inviteToken = new URL(location.href).searchParams.get("invite");
+    if (!inviteToken) return { done:false };
+
+    const box = $("#inviteAutoBox");
+    const msg = $("#inviteAutoMsg");
+    if (box) box.classList.remove("hidden");
+    if (msg) msg.textContent = "招待を受け付けています…";
+
+    try{
+      // invoke（AuthorizationやCORS周りは supabase-js に寄せる）
+      const { data, error } = await sb.functions.invoke(ACCEPT_INVITE_FUNCTION_NAME, {
+        body: { token: inviteToken }
+      });
+
+      if (error){
+        console.error("accept-invite error", error);
+        if (msg) msg.textContent = "招待の処理に失敗しました。時間をおいて再度お試しください。";
+        return { done:false, error };
+      }
+
+      // 期待：Edge Function が workspace_id を返す想定
+      // 例: { ok:true, workspace_id:"uuid", role:"member" }
+      const wsId = data?.workspace_id;
+      if (wsId){
+        setActiveWorkspaceId(wsId);
+      }
+
+      if (msg) msg.textContent = "参加しました。画面を更新します…";
+
+      // invite param を消す
+      const u = new URL(location.href);
+      u.searchParams.delete("invite");
+      history.replaceState(null, "", u.toString());
+
+      await sleep(250);
+      return { done:true, workspace_id: wsHighlight(wsId) };
+
+    }catch(e){
+      console.error(e);
+      if (msg) msg.textContent = "招待の処理に失敗しました。時間をおいて再度お試しください。";
+      return { done:false, error:e };
+    }
+  }
+  function wsHighlight(v){ return v; }
+
+  // =========================
+  // Billing (Owner only)
+  // =========================
+  async function createCheckout(userId, userEmail){
     const baseUrl = BILLING_CONFIG?.stripe?.standard?.payment_link_url;
     if (!baseUrl){
       alert("課金設定の読み込みに失敗しました（billing.json の payment_link_url を確認してください）");
       return;
     }
-    // workspaceId を client_reference_id として紐付け（Stripe側で使える）
     const params = new URLSearchParams();
-    if (ownerEmail) params.set("prefilled_email", String(ownerEmail));
-    params.set("client_reference_id", String(workspaceId));
+    if (userEmail) params.set("prefilled_email", String(userEmail));
+    if (userId) params.set("client_reference_id", String(userId));
 
     const sep = baseUrl.includes("?") ? "&" : "?";
-    const url = baseUrl + sep + params.toString();
+    const url = params.toString() ? (baseUrl + sep + params.toString()) : baseUrl;
 
-    try{ gtag('event', 'begin_checkout', { plan:'standard', method:'stripe_payment_link', scope:'workspace' }); }catch(e){}
+    try{ gtag('event', 'begin_checkout', { plan:'standard', method:'stripe_payment_link' }); }catch(e){}
     location.href = url;
   }
 
-  async function openPortalForOwner(){
+  async function openPortal(userId){
     try{
       const { data:sess } = await sb.auth.getSession();
       const token = sess?.session?.access_token;
@@ -705,584 +811,25 @@
         alert("セッションが取得できませんでした。再ログイン後にお試しください。");
         return;
       }
-      const res = await fetch(PORTAL_FUNCTION_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json", "Authorization":`Bearer ${token}` },
-        body:JSON.stringify({ return_url:SITE_TOP_URL })
+
+      const { data, error } = await sb.functions.invoke(PORTAL_FUNCTION_NAME, {
+        body: { user_id:userId, return_url:SITE_TOP_URL }
       });
-      if (!res.ok){
-        const bodyText = await res.text().catch(()=> "");
-        console.error("openPortal failed:", res.status, bodyText);
-        alert("サブスク管理ページを開けませんでした。");
-        return;
-      }
-      const data = await res.json().catch(()=> ({}));
-      if (!data?.url){
-        console.error("openPortal: url missing", data);
-        alert("サブスク管理ページを開けませんでした。");
+
+      if (error || !data?.url){
+        console.error("openPortal failed:", error, data);
+        alert("サブスクリプション管理ページを開けませんでした。時間をおいて再度お試しください。");
         return;
       }
       location.href = data.url;
     }catch(e){
       console.error("openPortal error", e);
-      alert("サブスク管理ページを開けませんでした。");
+      alert("サブスクリプション管理ページを開けませんでした。時間をおいて再度お試しください。");
     }
   }
 
   // =========================
-  // ワークスペース：取得・切替・メンバー
-  // =========================
-  const LS_WS_KEY = "gk_current_workspace_id";
-  let CURRENT = {
-    user: null,
-    workspaceId: null,
-    workspace: null,     // {id,name,plan_tier,is_active}
-    role: null,          // "owner"|"member"
-  };
-
-  async function fetchMyWorkspaces(userId){
-    // まず自分の所属一覧
-    const { data: mem, error: memErr } = await sb
-      .from("workspace_members")
-      .select("workspace_id,role,created_at")
-      .eq("user_id", userId)
-      .order("created_at", { ascending:true });
-
-    if (memErr) throw memErr;
-    const wsIds = (mem||[]).map(x=>x.workspace_id);
-    if (!wsIds.length) return { list:[], rolesById:{} };
-
-    const rolesById = {};
-    (mem||[]).forEach(x=>rolesById[x.workspace_id] = String(x.role||"member").toLowerCase());
-
-    const { data: ws, error: wsErr } = await sb
-      .from("workspaces")
-      .select("id,name,plan_tier,is_active,created_at")
-      .in("id", wsIds)
-      .order("created_at", { ascending:true });
-
-    if (wsErr) throw wsErr;
-    return { list: ws||[], rolesById };
-  }
-
-  function pickWorkspaceId(defaultId, available){
-    const saved = localStorage.getItem(LS_WS_KEY);
-    if (saved && available.some(w=>w.id===saved)) return saved;
-    if (defaultId && available.some(w=>w.id===defaultId)) return defaultId;
-    return available[0]?.id || null;
-  }
-
-  function applyWorkspaceToHeader(wsList, selectedId){
-    const sel = $("#wsHeaderSelect");
-    if (!sel) return;
-
-    sel.innerHTML = wsList.map(w => `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join("");
-    sel.value = selectedId || "";
-
-    sel.onchange = ()=>{
-      const id = sel.value;
-      if (!id) return;
-      localStorage.setItem(LS_WS_KEY, id);
-      location.reload();
-    };
-  }
-
-  function setWorkspacePills(ws, role){
-    const wsNameText = $("#wsNameText"); if (wsNameText) wsNameText.textContent = ws?.name || "-";
-    const accountWsName = $("#accountWsName"); if (accountWsName) accountWsName.textContent = ws?.name || "-";
-    const accountRole = $("#accountRole"); if (accountRole) accountRole.textContent = role || "-";
-    const rolePill = $("#wsRolePill"); if (rolePill) rolePill.textContent = role ? role.toUpperCase() : "-";
-  }
-
-  function toggleOwnerUI(isOwner){
-    const tabBtn = $("#tabBtnWorkspace");
-    if (tabBtn) tabBtn.classList.toggle("hidden", !isOwner);
-
-    // Ownerでないのに workspace tab が active になってたら homeへ
-    if (!isOwner){
-      const activeBtn = document.querySelector(".tab-btn.active");
-      if (activeBtn && activeBtn.dataset.tab === "workspace") switchToTab("home");
-    }
-  }
-
-  // =========================
-  // 招待：自動参加（invite=TOKEN）
-  // =========================
-  async function autoAcceptInviteIfNeeded(){
-    const token = new URL(location.href).searchParams.get("invite");
-    if (!token) return { accepted:false, workspaceId:null };
-
-    const box = $("#inviteAutoBox");
-    const msg = $("#inviteAutoMsg");
-    if (box) box.classList.remove("hidden");
-    if (msg) msg.textContent = "ワークスペースに参加しています…";
-
-    const { data:sess } = await sb.auth.getSession();
-    const jwt = sess?.session?.access_token;
-    if (!jwt) throw new Error("no session");
-
-    const res = await fetch(ACCEPT_INVITE_FUNCTION_URL, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "Authorization":`Bearer ${jwt}` },
-      body:JSON.stringify({ token })
-    });
-
-    const j = await res.json().catch(()=> ({}));
-    if (!res.ok){
-      console.error("accept-invite failed", res.status, j);
-      if (msg) msg.textContent = "参加に失敗しました。CORS/RLS/メール一致を確認してください。";
-      throw new Error(j?.error || "accept-invite failed");
-    }
-
-    if (msg) msg.textContent = "参加しました。画面を更新します…";
-
-    // invite パラメータを消してリロード（再実行防止）
-    const u = new URL(location.href);
-    u.searchParams.delete("invite");
-    history.replaceState(null, "", u.toString());
-    await sleep(300);
-    location.reload();
-
-    return { accepted:true, workspaceId: j?.workspace_id || null };
-  }
-
-  // =========================
-  // ルール：一覧/追加/編集/履歴
-  // =========================
-  async function loadRules(workspaceId){
-    const { data, error } = await sb
-      .from("rules")
-      .select("id,workspace_id,job_title,if_text,then_text,memo,tags,created_at,updated_at,created_by,updated_by,archived_at")
-      .eq("workspace_id", workspaceId)
-      .is("archived_at", null)
-      .order("updated_at", { ascending:false });
-
-    if (error) throw error;
-    return data || [];
-  }
-
-  function renderRules(list){
-    const box = $("#rulesList");
-    if (!box) return;
-    box.innerHTML = "";
-
-    if (!list.length){
-      box.innerHTML = `<p class="muted">ルールがまだありません。</p>`;
-      return;
-    }
-
-    for (const r of list){
-      const tags = (r.tags||[]).map(t=>`<span class="pill-mini">${escapeHtml(t)}</span>`).join(" ");
-      const updated = r.updated_at ? new Date(r.updated_at).toLocaleString() : "-";
-
-      const el = document.createElement("div");
-      el.className = "rule-card";
-      el.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <strong>${escapeHtml(r.job_title)}</strong>
-          <span class="muted" style="font-size:12px;">更新: ${escapeHtml(updated)}</span>
-        </div>
-        <p style="margin-top:6px;"><strong>if：</strong>${escapeHtml(r.if_text)}</p>
-        <p><strong>then：</strong>${escapeHtml(r.then_text)}</p>
-        ${r.memo ? `<p class="muted" style="font-size:12px;">メモ：${escapeHtml(r.memo)}</p>` : ""}
-        ${(r.tags && r.tags.length) ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${tags}</div>` : ""}
-        <div class="rule-actions">
-          <button class="btn btn-outline" data-action="edit" data-id="${r.id}">編集</button>
-        </div>
-      `;
-      box.appendChild(el);
-    }
-  }
-
-  function setRulesMsg(t, isError=false){
-    const el = $("#rulesMsg");
-    if (!el) return;
-    el.style.color = isError ? "#b00020" : "#6f6a60";
-    el.textContent = t || "";
-  }
-
-  async function addRule(){
-    const wsId = CURRENT.workspaceId;
-    const job = ($("#jobTitle")?.value || "").trim();
-    const ifText = ($("#ifText")?.value || "").trim();
-    const thenText = ($("#thenText")?.value || "").trim();
-    const memo = ($("#memoText")?.value || "").trim() || null;
-    const tagsRaw = ($("#tagsText")?.value || "");
-    const tags = tagsRaw.split(",").map(s=>s.trim()).filter(Boolean);
-
-    if (!job || !ifText || !thenText){
-      setRulesMsg("業務名 / if / then は必須です。", true);
-      return;
-    }
-
-    const btn = $("#btnAddRule");
-    if (btn) btn.disabled = true;
-
-    try{
-      const payload = {
-        workspace_id: wsId,
-        job_title: job,
-        if_text: ifText,
-        then_text: thenText,
-        memo,
-        tags: tags.length ? tags : null,
-        created_by: CURRENT.user.id,
-        updated_by: CURRENT.user.id
-      };
-
-      const { data: inserted, error } = await sb.from("rules").insert(payload).select("*").single();
-      if (error) throw error;
-
-      // 履歴
-      await sb.from("rules_history").insert({
-        rule_id: inserted.id,
-        workspace_id: wsId,
-        action: "create",
-        before: null,
-        after: inserted,
-        created_by: CURRENT.user.id
-      }).catch(()=>{});
-
-      ["jobTitle","ifText","thenText","memoText","tagsText"].forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.value = "";
-      });
-
-      setRulesMsg("追加しました。");
-      await refreshRules();
-    }catch(e){
-      console.error(e);
-      setRulesMsg("追加に失敗しました。RLS/テーブル/メンバー権限を確認してください。", true);
-    }finally{
-      if (btn) btn.disabled = false;
-    }
-  }
-
-  // 編集モーダル
-  let EDIT = { rule:null };
-
-  function openEditModal(rule){
-    EDIT.rule = rule;
-
-    $("#editJobTitle").value = rule.job_title || "";
-    $("#editIf").value = rule.if_text || "";
-    $("#editThen").value = rule.then_text || "";
-    $("#editMemo").value = rule.memo || "";
-    $("#editTags").value = (rule.tags||[]).join(", ");
-
-    $("#editMsg").textContent = "";
-    $("#historyList").innerHTML = `<p class="muted">読み込み中…</p>`;
-
-    const bd = $("#editModalBackdrop");
-    bd.style.display = "flex";
-
-    loadRuleHistory(rule.id).catch(()=> {
-      $("#historyList").innerHTML = `<p class="muted">履歴を取得できませんでした。</p>`;
-    });
-  }
-
-  function closeEditModal(){
-    const bd = $("#editModalBackdrop");
-    bd.style.display = "none";
-    EDIT.rule = null;
-  }
-
-  async function loadRuleHistory(ruleId){
-    const { data, error } = await sb
-      .from("rules_history")
-      .select("id,action,created_at,created_by,before,after")
-      .eq("rule_id", ruleId)
-      .order("created_at", { ascending:false })
-      .limit(30);
-
-    if (error) throw error;
-
-    const box = $("#historyList");
-    if (!box) return;
-    const list = data || [];
-    if (!list.length){
-      box.innerHTML = `<p class="muted">履歴がありません。</p>`;
-      return;
-    }
-
-    box.innerHTML = "";
-    for (const h of list){
-      const when = h.created_at ? new Date(h.created_at).toLocaleString() : "-";
-      const el = document.createElement("div");
-      el.className = "status-box";
-      el.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <strong>${escapeHtml(String(h.action||""))}</strong>
-          <span class="muted" style="font-size:12px;">${escapeHtml(when)}</span>
-        </div>
-        <p class="muted" style="font-size:12px;margin-top:6px;">
-          by: ${escapeHtml(String(h.created_by||""))}
-        </p>
-      `;
-      box.appendChild(el);
-    }
-  }
-
-  async function saveEdit(){
-    if (!EDIT.rule) return;
-
-    const msg = $("#editMsg");
-    const btn = $("#btnEditSave");
-    if (btn) btn.disabled = true;
-    if (msg) msg.textContent = "";
-
-    const before = EDIT.rule;
-
-    const job = ($("#editJobTitle").value || "").trim();
-    const ifText = ($("#editIf").value || "").trim();
-    const thenText = ($("#editThen").value || "").trim();
-    const memo = ($("#editMemo").value || "").trim() || null;
-    const tags = ($("#editTags").value || "").split(",").map(s=>s.trim()).filter(Boolean);
-
-    if (!job || !ifText || !thenText){
-      if (msg) msg.textContent = "業務名 / if / then は必須です。";
-      if (btn) btn.disabled = false;
-      return;
-    }
-
-    try{
-      const { data: after, error } = await sb
-        .from("rules")
-        .update({
-          job_title: job,
-          if_text: ifText,
-          then_text: thenText,
-          memo,
-          tags: tags.length ? tags : null,
-          updated_by: CURRENT.user.id,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", before.id)
-        .select("*")
-        .single();
-
-      if (error) throw error;
-
-      await sb.from("rules_history").insert({
-        rule_id: before.id,
-        workspace_id: CURRENT.workspaceId,
-        action: "update",
-        before,
-        after,
-        created_by: CURRENT.user.id
-      }).catch(()=>{});
-
-      if (msg) msg.textContent = "保存しました。";
-      EDIT.rule = after;
-      await refreshRules();
-      await loadRuleHistory(before.id).catch(()=>{});
-    }catch(e){
-      console.error(e);
-      if (msg) msg.textContent = "保存に失敗しました。RLS/権限を確認してください。";
-    }finally{
-      if (btn) btn.disabled = false;
-    }
-  }
-
-  async function archiveRule(){
-    if (!EDIT.rule) return;
-
-    const msg = $("#editMsg");
-    const btn = $("#btnEditArchive");
-    if (btn) btn.disabled = true;
-    if (msg) msg.textContent = "";
-
-    const before = EDIT.rule;
-
-    try{
-      const { data: after, error } = await sb
-        .from("rules")
-        .update({ archived_at: new Date().toISOString(), updated_by: CURRENT.user.id })
-        .eq("id", before.id)
-        .select("*")
-        .single();
-
-      if (error) throw error;
-
-      await sb.from("rules_history").insert({
-        rule_id: before.id,
-        workspace_id: CURRENT.workspaceId,
-        action: "archive",
-        before,
-        after,
-        created_by: CURRENT.user.id
-      }).catch(()=>{});
-
-      if (msg) msg.textContent = "アーカイブしました。";
-      await refreshRules();
-      await sleep(200);
-      closeEditModal();
-    }catch(e){
-      console.error(e);
-      if (msg) msg.textContent = "アーカイブに失敗しました。";
-    }finally{
-      if (btn) btn.disabled = false;
-    }
-  }
-
-  async function refreshRules(){
-    const wsId = CURRENT.workspaceId;
-    if (!wsId) { renderRules([]); return; }
-
-    let list = [];
-    try{
-      list = await loadRules(wsId);
-    }catch(e){
-      console.error(e);
-      setRulesMsg("ルールの取得に失敗しました。RLS/メンバー登録を確認してください。", true);
-      renderRules([]);
-      return;
-    }
-
-    const q = ($("#ruleSearch")?.value || "").trim().toLowerCase();
-    const filtered = q
-      ? list.filter(r =>
-          (r.job_title || "").toLowerCase().includes(q) ||
-          (r.if_text || "").toLowerCase().includes(q) ||
-          (r.then_text || "").toLowerCase().includes(q) ||
-          (r.memo || "").toLowerCase().includes(q) ||
-          (r.tags || []).some(t => String(t).toLowerCase().includes(q))
-        )
-      : list;
-
-    setRulesMsg("");
-    renderRules(filtered);
-
-    // 編集ボタンバインド
-    document.querySelectorAll('[data-action="edit"]').forEach(btn=>{
-      btn.onclick = ()=>{
-        const id = btn.getAttribute("data-id");
-        const rule = filtered.find(x=>x.id===id) || list.find(x=>x.id===id);
-        if (rule) openEditModal(rule);
-      };
-    });
-  }
-
-  // =========================
-  // ワークスペースタブ：メンバー表示 + 招待メール送信
-  // =========================
-  function setInviteMsg(t, isError=false){
-    const el = $("#inviteMsg");
-    if (!el) return;
-    el.style.color = isError ? "#b00020" : "#6f6a60";
-    el.textContent = t || "";
-  }
-
-  async function loadMembers(workspaceId){
-    const { data, error } = await sb
-      .from("workspace_members")
-      .select("user_id,role,created_at")
-      .eq("workspace_id", workspaceId)
-      .order("created_at", { ascending:true });
-    if (error) throw error;
-    return data || [];
-  }
-
-  function renderMembers(list){
-    const box = $("#membersList");
-    if (!box) return;
-    box.innerHTML = "";
-
-    if (!list.length){
-      box.innerHTML = `<p class="muted">メンバーがいません。</p>`;
-      return;
-    }
-
-    for (const m of list){
-      const el = document.createElement("div");
-      el.className = "status-box";
-      el.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <strong>${escapeHtml(String(m.user_id))}</strong>
-          <span class="pill-mini">${escapeHtml(String(m.role||"member").toUpperCase())}</span>
-        </div>
-        <p class="muted" style="font-size:12px;margin-top:6px;">参加: ${escapeHtml(new Date(m.created_at).toLocaleString())}</p>
-      `;
-      box.appendChild(el);
-    }
-  }
-
-  async function refreshWorkspaceTab(){
-    if (String(CURRENT.role||"") !== "owner") return;
-
-    const ws = CURRENT.workspace;
-    $("#wsNameText").textContent = ws?.name || "-";
-
-    try{
-      const members = await loadMembers(CURRENT.workspaceId);
-      $("#membersMsg").textContent = "";
-      renderMembers(members);
-    }catch(e){
-      console.error(e);
-      $("#membersMsg").textContent = "メンバー取得に失敗しました。RLS を確認してください。";
-      renderMembers([]);
-    }
-  }
-
-  async function sendInviteEmail(){
-    const wsId = CURRENT.workspaceId;
-    const email = ($("#inviteEmail")?.value || "").trim();
-    const role = ($("#inviteRole")?.value || "member").trim();
-
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(email)){
-      setInviteMsg("招待メールアドレスを正しく入力してください。", true);
-      return;
-    }
-
-    const btn = $("#btnCreateInvite");
-    if (btn) btn.disabled = true;
-    setInviteMsg("");
-
-    try{
-      // 1) token生成（SQL関数 new_invite_token がある前提）
-      const { data: tokRes, error: tokErr } = await sb.rpc("new_invite_token");
-      if (tokErr) throw tokErr;
-      const token = String(tokRes || "");
-      if (!token) throw new Error("token empty");
-
-      // 2) invites に保存（7日）
-      const expires = new Date(Date.now() + 1000*60*60*24*7).toISOString();
-      const { error: insErr } = await sb.from("invites").insert({
-        workspace_id: wsId,
-        email,
-        role,
-        token,
-        expires_at: expires,
-        created_by: CURRENT.user.id
-      });
-      if (insErr) throw insErr;
-
-      // 3) 相手が踏むURL（app.html に invite）
-      const inviteUrl = `https://app.gyomu-karugamo.com/app.html?invite=${encodeURIComponent(token)}`;
-
-      // 4) Supabase OTPメール送信（shouldCreateUser:true）
-      const { error: otpErr } = await sb.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: inviteUrl
-        }
-      });
-      if (otpErr) throw otpErr;
-
-      setInviteMsg("招待メールを送信しました。相手はメールのリンクから登録→自動参加します。");
-      if ($("#inviteEmail")) $("#inviteEmail").value = "";
-    }catch(e){
-      console.error(e);
-      setInviteMsg("招待の作成/送信に失敗しました。invites/RLS/EdgeFunction/CORS を確認してください。", true);
-    }finally{
-      if (btn) btn.disabled = false;
-    }
-  }
-
-  // =========================
-  // Account：メール/パスワード
+  // Account: email / password
   // =========================
   async function handleChangeEmail(currentUser){
     const msgEl = $("#emailChangeMsg");
@@ -1317,7 +864,7 @@
       if (error){
         console.error(error);
         msgEl.style.color = "#b00020";
-        msgEl.textContent = "メールアドレスの変更中にエラーが発生しました。";
+        msgEl.textContent = "メールアドレスの変更中にエラーが発生しました。時間をおいて再度お試しください。";
         return;
       }
       msgEl.textContent = "新しいメールアドレス宛に確認メールを送信しました。メール内のリンクから変更を完了してください。";
@@ -1339,7 +886,7 @@
     });
   }
 
-  async function setPasswordFlow(isChange){
+  async function setPasswordFlow(userId, isChange){
     const msgEl = document.getElementById(isChange ? "pwChangeMsg" : "pwMsg");
     const btnId = isChange ? "pwChangeSubmit" : "pwSubmit";
     const p1id = isChange ? "pwChangeNew" : "pwNew";
@@ -1361,12 +908,11 @@
       const { error:updateErr } = await sb.auth.updateUser({ password:p1 });
       if (updateErr){
         console.error(updateErr);
-        if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="パスワード設定中にエラーが発生しました。"; }
+        if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="パスワード設定中にエラーが発生しました。時間をおいて再度お試しください。"; }
         return;
       }
 
-      // profiles.has_password を維持したいならここで更新（テーブルが無ければ削除OK）
-      try{ await sb.from("profiles").update({ has_password:true }).eq("id", CURRENT.user.id); }catch(e){}
+      try{ await sb.from("profiles").update({ has_password:true }).eq("id", userId); }catch(e){}
 
       const sec = document.getElementById("pwSection");
       const sec2 = document.getElementById("pwChangeSection");
@@ -1411,151 +957,704 @@
   }
 
   // =========================
+  // Rules (create/edit/delete) + History view
+  // =========================
+  let CURRENT_USER = null;
+  let MEMBERSHIPS = [];
+  let ACTIVE_MEMBERSHIP = null;
+  let ACTIVE_RULES = [];
+  let EDITING_RULE_ID = null;
+
+  function setRulesMsg(t, isError=false){
+    const msg = $("#rulesMsg");
+    if (!msg) return;
+    msg.style.color = isError ? "#b00020" : "#6f6a60";
+    msg.textContent = t || "";
+  }
+
+  async function loadRules(workspaceId) {
+    const { data, error } = await sb
+      .from("rules")
+      .select("id,job_title,if_text,then_text,memo,tags,created_at,updated_at,archived_at")
+      .eq("workspace_id", workspaceId)
+      .is("archived_at", null)
+      .order("updated_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function loadRuleHistory(workspaceId, ruleId){
+    const { data, error } = await sb
+      .from("rules_history")
+      .select("id,action,changed_at,changed_by,old_row,new_row")
+      .eq("workspace_id", workspaceId)
+      .eq("rule_id", ruleId)
+      .order("changed_at", { ascending:false })
+      .limit(50);
+
+    // rules_history が未作成の場合はここで落ちるので、そのままメッセージに
+    if (error) throw error;
+    return data || [];
+  }
+
+  function renderRules(list){
+    const box = $("#rulesList");
+    if (!box) return;
+    box.innerHTML = "";
+
+    if (!list.length){
+      box.innerHTML = `<p class="muted">ルールがまだありません。</p>`;
+      return;
+    }
+
+    for (const r of list){
+      const tags = (r.tags || []).map(t => `<span class="pill-mini">${escapeHtml(t)}</span>`).join(" ");
+      const updated = r.updated_at ? new Date(r.updated_at).toLocaleString() : "-";
+
+      const el = document.createElement("div");
+      el.className = "rule-card";
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <strong>${escapeHtml(r.job_title)}</strong>
+          <span class="muted" style="font-size:12px;">更新: ${escapeHtml(updated)}</span>
+        </div>
+        <p style="margin-top:6px;"><strong>if：</strong>${escapeHtml(r.if_text)}</p>
+        <p><strong>then：</strong>${escapeHtml(r.then_text)}</p>
+        ${r.memo ? `<p class="muted" style="font-size:12px;">メモ：${escapeHtml(r.memo)}</p>` : ""}
+        ${(r.tags && r.tags.length) ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${tags}</div>` : ""}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;">
+          <button class="btn btn-outline" data-action="edit" data-id="${r.id}">編集</button>
+          <button class="btn btn-danger" data-action="delete" data-id="${r.id}">削除</button>
+          <button class="btn btn-outline" data-action="history" data-id="${r.id}">履歴</button>
+          <span class="muted" style="font-size:12px;" id="histMsg-${r.id}"></span>
+        </div>
+        <div class="status-box hidden" id="histBox-${r.id}" style="margin-top:10px;"></div>
+      `;
+      box.appendChild(el);
+    }
+
+    // bind actions
+    box.querySelectorAll("button[data-action]").forEach(btn=>{
+      btn.addEventListener("click", async ()=>{
+        const id = btn.getAttribute("data-id");
+        const act = btn.getAttribute("data-action");
+        if (!id) return;
+
+        if (act === "edit"){
+          startEditRule(id);
+        }else if (act === "delete"){
+          await deleteRule(id);
+        }else if (act === "history"){
+          await toggleHistory(id);
+        }
+      });
+    });
+  }
+
+  function startEditRule(ruleId){
+    const r = ACTIVE_RULES.find(x => String(x.id) === String(ruleId));
+    if (!r) return;
+
+    EDITING_RULE_ID = r.id;
+    $("#ruleFormTitle").textContent = "ルール編集";
+    $("#btnSaveRule").textContent = "更新";
+    $("#btnCancelEdit").classList.remove("hidden");
+
+    $("#jobTitle").value = r.job_title || "";
+    $("#ifText").value = r.if_text || "";
+    $("#thenText").value = r.then_text || "";
+    $("#memoText").value = r.memo || "";
+    $("#tagsText").value = (r.tags || []).join(", ");
+
+    window.scrollTo({ top: 0, behavior:"smooth" });
+  }
+
+  function clearRuleForm(){
+    EDITING_RULE_ID = null;
+    $("#ruleFormTitle").textContent = "新規ルール";
+    $("#btnSaveRule").textContent = "追加";
+    $("#btnCancelEdit").classList.add("hidden");
+
+    ["jobTitle","ifText","thenText","memoText","tagsText"].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+  }
+
+  async function saveRule(){
+    const wsId = ACTIVE_MEMBERSHIP?.workspace?.id;
+    if (!wsId) { setRulesMsg("ワークスペースが選択されていません。", true); return; }
+
+    const job = $("#jobTitle")?.value.trim();
+    const ifText = $("#ifText")?.value.trim();
+    const thenText = $("#thenText")?.value.trim();
+    const memo = $("#memoText")?.value.trim() || null;
+
+    const tagsRaw = $("#tagsText")?.value || "";
+    const tags = tagsRaw.split(",").map(s=>s.trim()).filter(Boolean);
+
+    if (!job || !ifText || !thenText){
+      setRulesMsg("業務名 / if / then は必須です。", true);
+      return;
+    }
+
+    const btn = $("#btnSaveRule");
+    btn.disabled = true;
+
+    try{
+      if (!EDITING_RULE_ID){
+        const { error } = await sb.from("rules").insert({
+          workspace_id: wsId,
+          job_title: job,
+          if_text: ifText,
+          then_text: thenText,
+          memo,
+          tags: tags.length ? tags : null,
+          created_by: CURRENT_USER.id,
+          updated_by: CURRENT_USER.id,
+        });
+        if (error) throw error;
+        setRulesMsg("追加しました。");
+        clearRuleForm();
+      }else{
+        const { error } = await sb.from("rules")
+          .update({
+            job_title: job,
+            if_text: ifText,
+            then_text: thenText,
+            memo,
+            tags: tags.length ? tags : null,
+            updated_by: CURRENT_USER.id,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", EDITING_RULE_ID)
+          .eq("workspace_id", wsId);
+        if (error) throw error;
+        setRulesMsg("更新しました。");
+        clearRuleForm();
+      }
+
+      await refreshRules();
+    }catch(e){
+      console.error(e);
+      setRulesMsg("保存に失敗しました。RLS/権限/テーブルを確認してください。", true);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  async function deleteRule(ruleId){
+    const wsId = ACTIVE_MEMBERSHIP?.workspace?.id;
+    if (!wsId) return;
+
+    if (!confirm("このルールを削除します。よろしいですか？")) return;
+
+    try{
+      const { error } = await sb.from("rules")
+        .delete()
+        .eq("id", ruleId)
+        .eq("workspace_id", wsId);
+      if (error) throw error;
+
+      setRulesMsg("削除しました。");
+      if (EDITING_RULE_ID && String(EDITING_RULE_ID) === String(ruleId)) clearRuleForm();
+      await refreshRules();
+    }catch(e){
+      console.error(e);
+      setRulesMsg("削除に失敗しました。RLS/権限を確認してください。", true);
+    }
+  }
+
+  async function toggleHistory(ruleId){
+    const wsId = ACTIVE_MEMBERSHIP?.workspace?.id;
+    const box = document.getElementById(`histBox-${ruleId}`);
+    const msg = document.getElementById(`histMsg-${ruleId}`);
+    if (!box || !wsId) return;
+
+    const isOpen = !box.classList.contains("hidden");
+    if (isOpen){
+      box.classList.add("hidden");
+      box.innerHTML = "";
+      if (msg) msg.textContent = "";
+      return;
+    }
+
+    box.classList.remove("hidden");
+    box.innerHTML = `<p class="muted" style="margin:0;">読み込み中…</p>`;
+    if (msg) msg.textContent = "";
+
+    try{
+      const hist = await loadRuleHistory(wsId, ruleId);
+      if (!hist.length){
+        box.innerHTML = `<p class="muted" style="margin:0;">履歴がありません。</p>`;
+        return;
+      }
+
+      const items = hist.map(h=>{
+        const when = h.changed_at ? new Date(h.changed_at).toLocaleString() : "-";
+        const action = escapeHtml(h.action || "-");
+        return `
+          <div style="padding:8px 0;border-top:1px solid rgba(0,0,0,.08);">
+            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+              <strong>${action}</strong>
+              <span class="muted" style="font-size:12px;">${escapeHtml(when)}</span>
+            </div>
+            <div class="muted" style="font-size:12px;margin-top:4px;">
+              old/new はDBに保存されています（必要ならJSONを展開表示に拡張できます）。
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      box.innerHTML = `
+        <div style="border-top:1px solid rgba(0,0,0,.08); margin-top:2px;"></div>
+        ${items}
+        <p class="muted" style="font-size:12px;margin-top:10px;margin-bottom:0;">直近50件を表示</p>
+      `;
+    }catch(e){
+      console.error(e);
+      box.innerHTML = `<p class="muted" style="margin:0;color:#b00020;">履歴の取得に失敗しました。rules_history テーブル作成/RLS を確認してください。</p>`;
+    }
+  }
+
+  async function refreshRules(){
+    const wsId = ACTIVE_MEMBERSHIP?.workspace?.id;
+    if (!wsId){
+      ACTIVE_RULES = [];
+      renderRules([]);
+      return;
+    }
+    try{
+      const all = await loadRules(wsId);
+      const q = ($("#ruleSearch")?.value || "").trim().toLowerCase();
+      const filtered = q
+        ? all.filter(r =>
+            (r.job_title || "").toLowerCase().includes(q) ||
+            (r.if_text || "").toLowerCase().includes(q) ||
+            (r.then_text || "").toLowerCase().includes(q) ||
+            (r.memo || "").toLowerCase().includes(q) ||
+            (r.tags || []).some(t => String(t).toLowerCase().includes(q))
+          )
+        : all;
+
+      ACTIVE_RULES = all;
+      setRulesMsg("");
+      renderRules(filtered);
+    }catch(e){
+      console.error(e);
+      setRulesMsg("ルールの取得に失敗しました。RLS/メンバー登録を確認してください。", true);
+      renderRules([]);
+    }
+  }
+
+  // =========================
+  // Workspace admin (Owner only)
+  // =========================
+  function setWsCreateMsg(t, isError=false){
+    const el = $("#wsCreateMsg");
+    if (!el) return;
+    el.style.color = isError ? "#b00020" : "#6f6a60";
+    el.textContent = t || "";
+  }
+  function setInviteMsg(t, isError=false){
+    const el = $("#inviteMsg");
+    if (!el) return;
+    el.style.color = isError ? "#b00020" : "#6f6a60";
+    el.textContent = t || "";
+  }
+  function setMembersMsg(t, isError=false){
+    const el = $("#membersMsg");
+    if (!el) return;
+    el.style.color = isError ? "#b00020" : "#6f6a60";
+    el.textContent = t || "";
+  }
+
+  async function loadMembers(workspaceId){
+    const { data, error } = await sb
+      .from("workspace_members")
+      .select("user_id, role, created_at, profiles:user_id(id, display_name)")
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending:true });
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  function renderMembers(rows){
+    const box = $("#membersBox");
+    if (!box) return;
+    box.innerHTML = "";
+
+    if (!rows.length){
+      box.innerHTML = `<p class="muted">メンバーがいません。</p>`;
+      return;
+    }
+
+    for (const m of rows){
+      const name = m.profiles?.display_name ? `${m.profiles.display_name}` : "";
+      const uid = String(m.user_id || "");
+      const role = String(m.role || "-");
+      const created = m.created_at ? new Date(m.created_at).toLocaleString() : "-";
+
+      const el = document.createElement("div");
+      el.className = "rule-card";
+      el.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div>
+            <strong>${escapeHtml(name || uid)}</strong>
+            <span class="pill-mini" style="margin-left:6px;">${escapeHtml(role)}</span>
+          </div>
+          <span class="muted" style="font-size:12px;">追加: ${escapeHtml(created)}</span>
+        </div>
+      `;
+      box.appendChild(el);
+    }
+  }
+
+  // （推測です）workspaces.owner_id がある前提で、Ownerのプロフィールをプラン判定に使います。
+  // もし owner_id カラムが無い場合は、別途追加するか、ワークスペースに stripe_customer_id 等を持たせる設計にしてください。
+  async function getOwnerPlanForWorkspace(activeMembership){
+    const ws = activeMembership?.workspace;
+    if (!ws) return { tier:"free", is_active:false, owner_id:null, label:"Free" };
+
+    const ownerId = ws.owner_id || null;
+    if (!ownerId){
+      return { tier:"free", is_active:false, owner_id:null, label:"Free" };
+    }
+
+    const { data, error } = await sb
+      .from("profiles")
+      .select("id,tier,is_active")
+      .eq("id", ownerId)
+      .single();
+
+    if (error || !data){
+      return { tier:"free", is_active:false, owner_id:ownerId, label:"Free" };
+    }
+
+    const label = planLabel(data.tier, data.is_active);
+    return { tier:data.tier, is_active:!!data.is_active, owner_id:ownerId, label };
+  }
+
+  function isOwner(activeMembership){
+    return String(activeMembership?.role || "").toLowerCase() === "owner";
+  }
+
+  function applyWorkspaceTabVisibility(){
+    const btn = $("#tabBtnWorkspace");
+    const pane = $("#tab-workspace");
+    const owner = isOwner(ACTIVE_MEMBERSHIP);
+
+    // タブ自体は表示するが、Owner以外は中身を注意表示に（要望に合わせて「Ownerのみ表示」にするなら hidden にしてください）
+    // ここではタブは表示しつつ、中身をロックします。
+    if (btn) btn.classList.toggle("hidden", false);
+    if (pane){
+      $("#workspaceOwnerOnlyNote")?.classList.toggle("hidden", owner);
+    }
+  }
+
+  async function refreshWorkspaceAdmin(){
+    const wsId = ACTIVE_MEMBERSHIP?.workspace?.id;
+    if (!wsId) return;
+
+    const owner = isOwner(ACTIVE_MEMBERSHIP);
+    const locked = !owner;
+
+    // lock UI
+    ["btnSubscribeWs","btnCancelWs","btnCreateWs","btnCreateInvite"].forEach(id=>{
+      const b = document.getElementById(id);
+      if (b) b.disabled = locked;
+    });
+    ["newWsName","inviteEmail","inviteRole"].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) el.disabled = locked;
+    });
+
+    // plan label
+    const plan = await getOwnerPlanForWorkspace(ACTIVE_MEMBERSHIP);
+    $("#wsPlanLabel").textContent = plan.label;
+    $("#accountPlanLabel").textContent = plan.label;
+
+    // Owner自身の課金ボタン（Ownerのみ）
+    const btnSub = $("#btnSubscribeWs");
+    const btnCancel = $("#btnCancelWs");
+    const planMsg = $("#wsPlanMsg");
+
+    if (!owner){
+      if (btnSub) btnSub.classList.add("hidden");
+      if (btnCancel) btnCancel.classList.add("hidden");
+      if (planMsg) planMsg.textContent = "このワークスペースのOwnerのプランに準拠します。";
+    }else{
+      if (planMsg) planMsg.textContent = plan.is_active ? "有効です。" : "Free（未課金）です。";
+
+      // Ownerの自分のprofileを使って checkout / portal を開く
+      if (!plan.is_active || String(plan.tier||"").toLowerCase() === "free"){
+        if (btnSub){
+          btnSub.classList.remove("hidden");
+          btnSub.onclick = ()=>createCheckout(CURRENT_USER.id, CURRENT_USER.email || "");
+        }
+        if (btnCancel){
+          btnCancel.classList.add("hidden");
+          btnCancel.onclick = null;
+        }
+      }else{
+        if (btnSub){
+          btnSub.classList.add("hidden");
+          btnSub.onclick = null;
+        }
+        if (btnCancel){
+          btnCancel.classList.remove("hidden");
+          btnCancel.onclick = ()=>openPortal(CURRENT_USER.id);
+        }
+      }
+    }
+
+    // members
+    try{
+      const members = await loadMembers(wsId);
+      renderMembers(members);
+      setMembersMsg("");
+    }catch(e){
+      console.error(e);
+      renderMembers([]);
+      setMembersMsg("メンバー取得に失敗しました。RLS/権限を確認してください。", true);
+    }
+  }
+
+  // Standard: 2WS / 5 members, Pro: unlimited
+  function getPlanLimits(planLabelText){
+    const key = String(planLabelText || "").toLowerCase(); // "standard" / "pro" / "free"
+    const plans = PLANS_CONFIG?.plans || {};
+    if (key === "pro") return plans.pro || { workspace_limit:null, members_per_workspace_limit:null };
+    if (key === "standard") return plans.standard || { workspace_limit:2, members_per_workspace_limit:5 };
+    return plans.free || { workspace_limit:1, members_per_workspace_limit:1 };
+  }
+
+  async function createWorkspace(){
+    const owner = isOwner(ACTIVE_MEMBERSHIP);
+    if (!owner){ setWsCreateMsg("Ownerのみ作成できます。", true); return; }
+
+    const name = ($("#newWsName")?.value || "").trim();
+    if (!name){ setWsCreateMsg("ワークスペース名を入力してください。", true); return; }
+
+    // 制限チェック（UI側）※強制はサーバ側でも実装推奨
+    const plan = await getOwnerPlanForWorkspace(ACTIVE_MEMBERSHIP);
+    const limits = getPlanLimits(plan.label);
+    if (limits.workspace_limit != null){
+      const myOwned = MEMBERSHIPS.filter(m => String(m.role||"").toLowerCase()==="owner").length;
+      if (myOwned >= limits.workspace_limit){
+        setWsCreateMsg(`作成上限に達しています（上限：${limits.workspace_limit}）。プラン変更をご検討ください。`, true);
+        return;
+      }
+    }
+
+    const btn = $("#btnCreateWs");
+    btn.disabled = true;
+    setWsCreateMsg("");
+
+    try{
+      // （推測です）workspaces(owner_id,name) を insert し、workspace_members に owner 行が作られる設計が一般的です。
+      // あなたのDBが違う場合はここを調整してください。
+      const { data: ws, error: e1 } = await sb.from("workspaces").insert({
+        name,
+        owner_id: CURRENT_USER.id
+      }).select("id,name,created_at,owner_id").single();
+      if (e1) throw e1;
+
+      // owner membership
+      const { error: e2 } = await sb.from("workspace_members").insert({
+        workspace_id: ws.id,
+        user_id: CURRENT_USER.id,
+        role: "owner"
+      });
+      if (e2) throw e2;
+
+      $("#newWsName").value = "";
+      setWsCreateMsg("作成しました。");
+      await refreshMembershipsAndActive();
+    }catch(e){
+      console.error(e);
+      setWsCreateMsg("作成に失敗しました。RLS/テーブル/権限を確認してください。", true);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  async function sendInviteEmail(){
+    const owner = isOwner(ACTIVE_MEMBERSHIP);
+    if (!owner){ setInviteMsg("Ownerのみ招待できます。", true); return; }
+
+    const wsId = ACTIVE_MEMBERSHIP?.workspace?.id;
+    if (!wsId){ setInviteMsg("ワークスペースが選択されていません。", true); return; }
+
+    const email = ($("#inviteEmail")?.value || "").trim();
+    const role  = ($("#inviteRole")?.value || "member").trim();
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(email)){
+      setInviteMsg("招待メールアドレスを正しく入力してください。", true);
+      return;
+    }
+
+    // UI側制限（members 5人）※強制はサーバ側推奨
+    const plan = await getOwnerPlanForWorkspace(ACTIVE_MEMBERSHIP);
+    const limits = getPlanLimits(plan.label);
+    if (limits.members_per_workspace_limit != null){
+      try{
+        const members = await loadMembers(wsId);
+        if (members.length >= limits.members_per_workspace_limit){
+          setInviteMsg(`メンバー上限に達しています（上限：${limits.members_per_workspace_limit}）。`, true);
+          return;
+        }
+      }catch(e){ /* ignore */ }
+    }
+
+    const btn = $("#btnCreateInvite");
+    btn.disabled = true;
+    setInviteMsg("");
+
+    try{
+      // token生成（SQL関数 new_invite_token がある前提）
+      const { data: tokRes, error: tokErr } = await sb.rpc("new_invite_token");
+      if (tokErr) throw tokErr;
+      const token = String(tokRes || "");
+      if (!token) throw new Error("token empty");
+
+      // invites に保存（7日で期限）
+      const expires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
+
+      const { error: insErr } = await sb.from("invites").insert({
+        workspace_id: wsId,
+        email,
+        role,
+        token,
+        expires_at: expires.toISOString(),
+        created_by: CURRENT_USER.id,
+      });
+      if (insErr) throw insErr;
+
+      // 招待URL（この app.html に invite 付き）
+      const inviteUrl = `https://app.gyomu-karugamo.com/app.html?invite=${encodeURIComponent(token)}`;
+
+      // OTPメール送信（未登録でもOK）
+      const { error: otpErr } = await sb.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: inviteUrl
+        }
+      });
+      if (otpErr){
+        console.error("OTP send error:", otpErr);
+        setInviteMsg("招待メールの送信に失敗しました（OTP送信）。" + (otpErr.message || ""), true);
+        return;
+      }
+
+      setInviteMsg("招待メールを送信しました。相手はメールのリンクから登録→参加できます。");
+      $("#inviteEmail").value = "";
+
+      await refreshWorkspaceAdmin();
+    }catch(e){
+      console.error(e);
+      setInviteMsg("招待の作成/送信に失敗しました。RLS/テーブル作成/権限を確認してください。", true);
+    }finally{
+      btn.disabled = false;
+    }
+  }
+
+  // =========================
+  // Global refresh
+  // =========================
+  async function refreshMembershipsAndActive(){
+    MEMBERSHIPS = await loadMyWorkspaces(CURRENT_USER.id);
+
+    if (!MEMBERSHIPS.length){
+      // no memberships
+      $("#homeStatusText").textContent = "ワークスペースがありません。Ownerに招待してもらってください。";
+      $("#accountStatusText").textContent = "ワークスペースがありません。";
+      $("#homeWsRole").textContent = "-";
+      $("#accountWsRole").textContent = "-";
+      $("#headerWsSelect").innerHTML = "";
+      ACTIVE_MEMBERSHIP = null;
+
+      // workspace tab lock
+      applyWorkspaceTabVisibility();
+      return;
+    }
+
+    fillWorkspaceSelectors(MEMBERSHIPS);
+    ACTIVE_MEMBERSHIP = getMembershipForActive(MEMBERSHIPS);
+
+    // UI reflect
+    setHeaderWorkspaceInfo(ACTIVE_MEMBERSHIP);
+    $("#homeWsRole").textContent = String(ACTIVE_MEMBERSHIP.role || "-");
+    $("#accountWsRole").textContent = String(ACTIVE_MEMBERSHIP.role || "-");
+
+    // account/home status
+    $("#homeStatusText").textContent = "準備ができました。";
+    $("#accountStatusText").textContent = "準備ができました。";
+
+    applyWorkspaceTabVisibility();
+
+    // workspace admin and rules refresh
+    await refreshWorkspaceAdmin();
+    await refreshRules();
+  }
+
+  async function refreshAllViews(){
+    // active workspace changed
+    ACTIVE_MEMBERSHIP = getMembershipForActive(MEMBERSHIPS);
+    setHeaderWorkspaceInfo(ACTIVE_MEMBERSHIP);
+
+    $("#homeWsRole").textContent = String(ACTIVE_MEMBERSHIP?.role || "-");
+    $("#accountWsRole").textContent = String(ACTIVE_MEMBERSHIP?.role || "-");
+
+    applyWorkspaceTabVisibility();
+    await refreshWorkspaceAdmin();
+    await refreshRules();
+  }
+
+  // =========================
   // MAIN
   // =========================
   async function main(){
     await loadBillingConfig();
+    await loadPlansConfig();
 
     const user = await getUserRobust();
     if (!user){
       $("#userEmail").textContent = "-";
       const alertBox = $("#notLoggedAlert");
       if (alertBox) alertBox.classList.remove("hidden");
-      setStatus("未ログインです。");
-      setPlanLabelText("Free");
+      $("#homeStatusText").textContent = "未ログインです。";
+      $("#accountStatusText").textContent = "未ログインです。";
       return;
     }
 
-    CURRENT.user = user;
+    CURRENT_USER = user;
+
     $("#userEmail").textContent = user.email || "";
     $("#currentEmailText").textContent = user.email || "";
 
-    // 招待が付いていたら「自動参加」（CORS対応が必須）
     try{
-      await autoAcceptInviteIfNeeded();
-      return; // reload される
-    }catch(e){
-      // 失敗時も画面は継続
-      console.error("autoAcceptInviteIfNeeded error", e);
-    }
-
-    // ワークスペース取得
-    let wsPack;
-    try{
-      wsPack = await fetchMyWorkspaces(user.id);
-    }catch(e){
-      console.error(e);
-      setStatus("ワークスペースの取得に失敗しました。RLS を確認してください。");
-      setPlanLabelText("Free");
-      // Ownerタブ非表示
-      toggleOwnerUI(false);
-      return;
-    }
-
-    const wsList = wsPack.list || [];
-    const rolesById = wsPack.rolesById || {};
-
-    if (!wsList.length){
-      setStatus("ワークスペースがありません。招待メールから参加してください。");
-      setPlanLabelText("Free");
-      applyWorkspaceToHeader([], "");
-      toggleOwnerUI(false);
-      return;
-    }
-
-    // 現在WS決定
-    const selectedId = pickWorkspaceId(null, wsList);
-    const ws = wsList.find(w=>w.id===selectedId);
-    const role = rolesById[selectedId] || "member";
-
-    CURRENT.workspaceId = selectedId;
-    CURRENT.workspace = ws;
-    CURRENT.role = role;
-
-    localStorage.setItem(LS_WS_KEY, selectedId);
-    applyWorkspaceToHeader(wsList, selectedId);
-    setWorkspacePills(ws, role);
-
-    // Ownerのみワークスペースタブ表示
-    const isOwner = (String(role).toLowerCase() === "owner");
-    toggleOwnerUI(isOwner);
-
-    // ワークスペースプランを表示
-    const planText = planLabel(ws?.plan_tier, !!ws?.is_active);
-    setPlanLabelText(planText);
-    setStatus(ws?.is_active ? "準備ができました。" : "Freeプランです（ワークスペース）。");
-
-    // Accountタブにも表示
-    $("#accountWsName").textContent = ws?.name || "-";
-
-    // Ownerの課金ボタン（ワークスペース単位）
-    const btnWsSubscribe = $("#btnWsSubscribe");
-    const btnWsPortal = $("#btnWsPortal");
-    const wsPlanNote = $("#wsPlanNote");
-
-    if (isOwner){
-      if (!ws?.is_active || String(ws?.plan_tier||"free").toLowerCase()==="free"){
-        if (btnWsSubscribe){
-          btnWsSubscribe.classList.remove("hidden");
-          btnWsSubscribe.onclick = ()=>createCheckoutForWorkspace(ws.id, user.email || "");
-        }
-        if (btnWsPortal){
-          btnWsPortal.classList.add("hidden");
-          btnWsPortal.onclick = null;
-        }
-        if (wsPlanNote) wsPlanNote.textContent = "未課金の場合、Standard登録でメンバー全員が利用できます。";
-      }else{
-        if (btnWsSubscribe){
-          btnWsSubscribe.classList.add("hidden");
-          btnWsSubscribe.onclick = null;
-        }
-        if (btnWsPortal){
-          btnWsPortal.classList.remove("hidden");
-          btnWsPortal.onclick = ()=>openPortalForOwner();
-        }
-        if (wsPlanNote) wsPlanNote.textContent = "課金状態の確認・解約は「サブスクを管理する」から行います。";
+      const k = "ga_login_success_sent";
+      if (!sessionStorage.getItem(k)){
+        gtag('event', 'login_success', { method:'session_restored', funnel_step:'login_complete' });
+        sessionStorage.setItem(k, "1");
       }
-    }else{
-      // 非Ownerは課金UIは全て隠す
-      if (btnWsSubscribe) btnWsSubscribe.classList.add("hidden");
-      if (btnWsPortal) btnWsPortal.classList.add("hidden");
-      if (wsPlanNote) wsPlanNote.textContent = "課金はOwnerが管理します。必要な場合はOwnerに依頼してください。";
-    }
-
-    // ルールUI
-    $("#btnReloadRules").onclick = refreshRules;
-    $("#ruleSearch").oninput = refreshRules;
-    $("#btnAddRule").onclick = addRule;
-
-    // モーダル
-    $("#btnEditCancel").onclick = closeEditModal;
-    $("#editModalBackdrop").addEventListener("click", (e)=>{
-      if (e.target.id === "editModalBackdrop") closeEditModal();
-    });
-    $("#btnEditSave").onclick = saveEdit;
-    $("#btnEditArchive").onclick = archiveRule;
-
-    // ワークスペースタブ（Owner）
-    if (isOwner){
-      $("#btnCreateInvite").onclick = sendInviteEmail;
-      await refreshWorkspaceTab();
-    }
-
-    await refreshRules();
-
-    // パスワード周り（profiles.has_password を使う場合）
-    // ※ profiles が無い/列が違う場合は、以下のブロックは丸ごと削除OK
-    let hasPassword = false;
-    try{
-      const { data:prof } = await sb.from("profiles").select("has_password").eq("id", user.id).maybeSingle();
-      hasPassword = !!prof?.has_password;
     }catch(e){}
 
-    const pwSec = document.getElementById("pwSection");
-    const pwChg = document.getElementById("pwChangeSection");
-    if (pwSec) pwSec.classList.toggle("hidden", hasPassword);
-    if (pwChg) pwChg.classList.toggle("hidden", !hasPassword);
-    setupPwBanner(hasPassword);
+    // profiles（自分のパスワードバナー用）
+    const profRes = await loadProfileOrCreate(user.id);
+    if (!profRes.error && profRes.data){
+      const hasPassword = !!profRes.data.has_password;
+      const pwSec = document.getElementById("pwSection");
+      const pwChg = document.getElementById("pwChangeSection");
+      if (pwSec) pwSec.classList.toggle("hidden", hasPassword);
+      if (pwChg) pwChg.classList.toggle("hidden", !hasPassword);
+      setupPwBanner(hasPassword);
+    }
 
     bindPasswordToggle("pwShowSetup", ["pwNew","pwNew2"]);
     bindPasswordToggle("pwShowChange", ["pwChangeNew","pwChangeNew2"]);
@@ -1564,10 +1663,45 @@
     if (btnChangeEmail) btnChangeEmail.onclick = ()=>handleChangeEmail(user);
 
     const pwForm = document.getElementById("pwForm");
-    if (pwForm) pwForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(false); };
+    if (pwForm) pwForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(user.id, false); };
 
     const pwChangeForm = document.getElementById("pwChangeForm");
-    if (pwChangeForm) pwChangeForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(true); };
+    if (pwChangeForm) pwChangeForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(user.id, true); };
+
+    // 招待は「ログイン後に自動参加」
+    await autoAcceptInviteIfNeeded();
+
+    // memberships / active
+    try{
+      await refreshMembershipsAndActive();
+    }catch(e){
+      console.error(e);
+      $("#homeStatusText").textContent = "ワークスペースの取得に失敗しました。RLS/テーブルを確認してください。";
+      $("#accountStatusText").textContent = "ワークスペースの取得に失敗しました。";
+    }
+
+    // rules UI bindings
+    const btnReloadRules = $("#btnReloadRules");
+    if (btnReloadRules) btnReloadRules.onclick = refreshRules;
+
+    const ruleSearch = $("#ruleSearch");
+    if (ruleSearch) ruleSearch.oninput = refreshRules;
+
+    const btnSaveRule = $("#btnSaveRule");
+    if (btnSaveRule) btnSaveRule.onclick = saveRule;
+
+    const btnCancelEdit = $("#btnCancelEdit");
+    if (btnCancelEdit) btnCancelEdit.onclick = ()=>{
+      clearRuleForm();
+      setRulesMsg("");
+    };
+
+    // workspace admin bindings
+    const btnCreateWs = $("#btnCreateWs");
+    if (btnCreateWs) btnCreateWs.onclick = createWorkspace;
+
+    const btnInvite = $("#btnCreateInvite");
+    if (btnInvite) btnInvite.onclick = sendInviteEmail;
 
     // logout
     const logoutBtn = $("#logout");
