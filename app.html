@@ -1132,7 +1132,7 @@
           if (insErr) throw insErr;
     
           // 3) 招待URL（index.html に invite 付き）
-          const inviteUrl = `https://app.gyomu-karugamo.com/?invite=${encodeURIComponent(token)}`;
+          const inviteUrl = `https://app.gyomu-karugamo.com/app.html?invite=${encodeURIComponent(token)}`;
     
           // 4) ここで相手に「SupabaseのOTPメール」を送る（未登録でもOK）
           // ⚠️ A-2: ここをクライアントで叩くと、環境によってはOwner側のセッションが切り替わる可能性があります
