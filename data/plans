@@ -1,0 +1,16 @@
+{
+  "plans": {
+    "free": {
+      "workspace_limit": 1,
+      "members_per_workspace_limit": 1
+    },
+    "standard": {
+      "workspace_limit": 2,
+      "members_per_workspace_limit": 5
+    },
+    "pro": {
+      "workspace_limit": null,
+      "members_per_workspace_limit": null
+    }
+  }
+}
