@@ -22,13 +22,11 @@
 
   <style>
     :root{
-      /* ===== Base (背景はベージュで固定) ===== */
       --bg:#faf8f4;
       --panel:#ffffff;
       --ink:#2a241a;
       --muted:#6f6a60;
 
-      /* ===== Brand (ロゴの茶〜オレンジ寄り) ===== */
       --brand:#c86b12;
       --brand-deep:#7a3f07;
       --brand-soft:#fff1dd;
@@ -59,7 +57,6 @@
     }
     .page{ max-width:1120px; margin:0 auto; padding:0 18px 32px; }
 
-    /* ヘッダー */
     .site-header{
       position:fixed;
       top:0; left:0; right:0;
@@ -152,7 +149,7 @@
       padding:10px 12px;
       font-size:13px;
       width:100%;
-      min-height:90px;
+      min-height:110px;
       resize:vertical;
       line-height:1.6;
     }
@@ -319,6 +316,84 @@
       color: var(--muted);
     }
 
+    /* ===== Search ===== */
+    .search-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+    .search-row .input{ min-width: 280px; }
+
+    /* ===== Modal ===== */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.35);
+      display:none;
+      z-index:200;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .modal-backdrop.show{ display:flex; }
+    .modal{
+      width:min(520px, 96vw);
+      background:#fff;
+      border-radius:18px;
+      border:1px solid var(--edge);
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
+      padding:16px 16px 14px;
+    }
+    .modal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .modal-title{
+      font-weight:900;
+      letter-spacing:.06em;
+      font-size:14px;
+    }
+    .modal-close{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-size:18px;
+      line-height:1;
+      padding:6px 10px;
+      border-radius:10px;
+    }
+    .modal-close:hover{ background: rgba(0,0,0,.06); }
+
+    .field{
+      margin-top:10px;
+    }
+    .field label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+      letter-spacing:.04em;
+    }
+    .select{
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.14);
+      background:#fff;
+      padding:7px 10px;
+      font-size:13px;
+      min-width:260px;
+      height:34px;
+    }
+    .divider{
+      margin:14px 0;
+      border:none;
+      border-top:1px solid rgba(0,0,0,.08);
+    }
+
     footer{
       margin-top:18px;
       text-align:center;
@@ -350,6 +425,8 @@
       main{ margin-top:40px; }
 
       .rules-wrap{ grid-template-columns: 1fr; }
+      .search-row .input{ min-width: 100%; }
+      .select{ min-width: 100%; }
     }
   </style>
 
@@ -426,7 +503,14 @@
 
           <div class="cta-row" style="margin-top:12px;">
             <button id="btnSubscribeRules" class="btn btn-primary hidden">Standardプランに登録する（無制限）</button>
+            <button id="btnNewRule" class="btn btn-primary">新しいルール</button>
             <button id="btnReloadRules" class="btn btn-outline">再読み込み</button>
+          </div>
+
+          <div class="search-row">
+            <input id="searchText" class="input" placeholder="カテゴリ名 / ルールタイトルで検索" />
+            <button id="btnClearSearch" class="btn btn-ghost">クリア</button>
+            <span class="muted" style="font-size:12px;">表示件数：<strong id="resultCount">0</strong></span>
           </div>
 
           <div class="rules-wrap">
@@ -437,14 +521,8 @@
                 例：メール、提出、月末、相手別、生活
               </p>
 
-              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
-                <input id="catName" class="input" placeholder="カテゴリ名（例：メール）" />
-                <button id="btnAddCat" class="btn btn-outline">追加</button>
-              </div>
-              <div id="catMsg" class="err hidden"></div>
-
               <div id="catList" class="list"></div>
-              <p id="catEmpty" class="muted" style="margin-top:10px;">カテゴリがありません。まずは追加してください。</p>
+              <p id="catEmpty" class="muted" style="margin-top:10px;">カテゴリがありません。まずはルール作成時に追加してください。</p>
             </div>
 
             <!-- Rules -->
@@ -459,26 +537,6 @@
                 <div class="muted" style="font-size:12px;">
                   選択中：<strong id="activeCatLabel">-</strong>
                 </div>
-              </div>
-
-              <div id="ruleAddBox" class="hidden" style="margin-top:10px;">
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                  <select id="ruleTemplate" class="input" style="min-width:260px;">
-                    <option value="send">送る前に確認すること</option>
-                    <option value="submit">提出・手続き前に確認すること</option>
-                    <option value="person">この相手の注意点</option>
-                    <option value="forget">毎回忘れがちなこと</option>
-                  </select>
-                  <button id="btnAddRule" class="btn btn-outline">追加</button>
-                </div>
-
-                <p class="muted" style="font-size:12px;margin-top:10px;">
-                  ルール本文（短くてOK / 箇条書きOK）
-                </p>
-                <textarea id="ruleBody" class="textarea" placeholder="例：&#10;・件名に日付を入れる&#10;・添付ファイル名を確認する&#10;・宛先が合っているか見る"></textarea>
-
-                <div id="ruleMsg" class="err hidden"></div>
-                <div id="ruleOk" class="ok hidden"></div>
               </div>
 
               <div id="ruleNeedCat" class="notice" style="margin-top:12px;">
@@ -578,6 +636,49 @@
     </footer>
   </div>
 
+  <!-- ===== Modal: New Rule ===== -->
+  <div id="ruleModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="新しいルール">
+      <div class="modal-head">
+        <div class="modal-title">新しいルール</div>
+        <button id="btnCloseModal" class="modal-close" aria-label="閉じる">×</button>
+      </div>
+
+      <div class="field">
+        <label for="modalRuleTitle">ルールタイトル（自由入力）</label>
+        <input id="modalRuleTitle" class="input" placeholder="例：送る前に確認すること / この相手の注意点 など" style="width:100%;min-width:0;" />
+      </div>
+
+      <div class="field">
+        <label for="modalRuleBody">ルール本文（短くてOK / 箇条書きOK）</label>
+        <textarea id="modalRuleBody" class="textarea" placeholder="例：&#10;・件名に日付を入れる&#10;・添付ファイル名を確認する&#10;・宛先が合っているか見る"></textarea>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="field">
+        <label>カテゴリ（選択 or 新規作成）</label>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <select id="modalCatSelect" class="select" style="flex:1; min-width:260px;">
+            <option value="">カテゴリを選択</option>
+          </select>
+          <span class="muted" style="font-size:12px;">または</span>
+          <input id="modalNewCatName" class="input" placeholder="新しいカテゴリ名" style="flex:1; min-width:220px;" />
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:6px;">
+          ※ 新しいカテゴリ名を入れた場合は「新規作成」が優先されます。
+        </div>
+      </div>
+
+      <div id="modalMsg" class="err hidden"></div>
+
+      <div class="cta-row" style="justify-content:flex-end; margin-top:14px;">
+        <button id="btnCreateRule" class="btn btn-primary">作成</button>
+        <button id="btnCancelModal" class="btn btn-outline">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   // =========================
   // Supabase 設定（差し替え）
@@ -604,13 +705,8 @@
 
   const PORTAL_FUNCTION_URL = "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/create-portal-session";
 
-  // ===== Free制限（要件）=====
-  // Freeの場合：カテゴリ・ルールに制限
-  // Standardの場合：無制限
-  const FREE_LIMITS = {
-    categories: 3,
-    rules: 5, // 全カテゴリ合計
-  };
+  // Freeの場合：カテゴリ・ルールに制限 / Standard：無制限
+  const FREE_LIMITS = { categories: 3, rules: 5 };
 
   const $ = (s)=>document.querySelector(s);
 
@@ -745,10 +841,7 @@
           "Content-Type":"application/json",
           "Authorization":`Bearer ${token}`
         },
-        body:JSON.stringify({
-          user_id:userId,
-          return_url:SITE_TOP_URL
-        })
+        body:JSON.stringify({ user_id:userId, return_url:SITE_TOP_URL })
       });
 
       if (!res.ok){
@@ -897,7 +990,7 @@
   }
 
   // =========================
-  // MY RULES 実装
+  // MY RULES
   // =========================
   let APP_CTX = {
     user: null,
@@ -907,20 +1000,63 @@
     categories: [],
     rules: [],
     activeCategoryId: null,
+    searchText: ""
   };
 
-  function showEl(id, show){
-    const el = document.getElementById(id);
+  function showElByEl(el, show){
     if (!el) return;
     el.classList.toggle("hidden", !show);
   }
+  function showEl(id, show){ showElByEl(document.getElementById(id), show); }
   function setText(id, text){
     const el = document.getElementById(id);
     if (el) el.textContent = text;
   }
-  function setHtml(id, html){
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function normalize(s){
+    return String(s ?? "").trim().toLowerCase();
+  }
+
+  function applySearchFilter(){
+    const q = normalize(APP_CTX.searchText);
+    if (!q) return { cats: APP_CTX.categories, rules: APP_CTX.rules };
+
+    const catsHit = new Set(
+      APP_CTX.categories
+        .filter(c => normalize(c.name).includes(q))
+        .map(c => c.id)
+    );
+
+    const rulesHit = APP_CTX.rules.filter(r => normalize(r.title).includes(q));
+    for (const r of rulesHit) catsHit.add(r.category_id);
+
+    const cats = APP_CTX.categories.filter(c => catsHit.has(c.id));
+    const rules = APP_CTX.rules.filter(r => catsHit.has(r.category_id) && normalize(r.title).includes(q) || catsHit.has(r.category_id) && q && normalize(r.title).includes(q));
+
+    // ↑ rules は「カテゴリ名ヒット」でもそのカテゴリ内を見せたいので、ここではカテゴリ一致がある場合は全件表示に寄せる
+    // ただし、ユーザー要件は「カテゴリ、ルール名で検索して絞れる」なので、
+    // ルール名でヒットがある場合はルール名ヒットのみに絞り、カテゴリ名のみヒットならカテゴリ内全件表示にする。
+    const ruleTitleHits = APP_CTX.rules.filter(r => normalize(r.title).includes(q));
+    if (ruleTitleHits.length){
+      const allowedCats = new Set(ruleTitleHits.map(r=>r.category_id));
+      return {
+        cats: APP_CTX.categories.filter(c => allowedCats.has(c.id)),
+        rules: ruleTitleHits
+      };
+    }
+    return {
+      cats,
+      rules: APP_CTX.rules.filter(r => catsHit.has(r.category_id))
+    };
   }
 
   function renderPlanNotice(){
@@ -950,20 +1086,32 @@
     const empty = document.getElementById("catEmpty");
     if (!list || !empty) return;
 
+    const { cats, rules } = applySearchFilter();
+
+    // activeCategoryIdがフィルタ外なら、フィルタ後の先頭に寄せる
+    if (APP_CTX.activeCategoryId && !cats.find(c=>c.id===APP_CTX.activeCategoryId)){
+      APP_CTX.activeCategoryId = cats.length ? cats[0].id : null;
+    }
+    if (!APP_CTX.activeCategoryId && cats.length){
+      APP_CTX.activeCategoryId = cats[0].id;
+    }
+
     list.innerHTML = "";
-    if (!APP_CTX.categories.length){
+    if (!cats.length){
       empty.classList.remove("hidden");
+      setText("activeCatLabel", "-");
       return;
     }
     empty.classList.add("hidden");
 
-    for (const c of APP_CTX.categories){
+    for (const c of cats){
+      const count = rules.filter(r=>r.category_id === c.id).length;
       const div = document.createElement("div");
       div.className = "item" + (APP_CTX.activeCategoryId === c.id ? " active" : "");
       div.innerHTML = `
         <div class="item-left" style="min-width:0;">
           <div class="title">${escapeHtml(c.name)}</div>
-          <div class="sub">並び順：${c.sort_order ?? 0}</div>
+          <div class="sub">ルール：${count}件</div>
         </div>
         <div class="item-right">
           <button class="icon-btn danger" data-act="del-cat" data-id="${c.id}" title="削除">削除</button>
@@ -971,7 +1119,7 @@
       `;
       div.addEventListener("click", (e)=>{
         const act = e.target?.dataset?.act;
-        if (act === "del-cat") return; // 削除ボタンは別
+        if (act === "del-cat") return;
         APP_CTX.activeCategoryId = c.id;
         renderCategories();
         renderRules();
@@ -988,46 +1136,42 @@
         await deleteCategory(id);
       });
     });
-
-    // 初回：アクティブカテゴリが未設定なら先頭を選ぶ
-    if (!APP_CTX.activeCategoryId && APP_CTX.categories.length){
-      APP_CTX.activeCategoryId = APP_CTX.categories[0].id;
-    }
   }
 
   function renderRules(){
-    const active = APP_CTX.categories.find(c=>c.id === APP_CTX.activeCategoryId);
-    setText("activeCatLabel", active ? active.name : "-");
-
     const need = document.getElementById("ruleNeedCat");
-    const addBox = document.getElementById("ruleAddBox");
     const list = document.getElementById("ruleList");
     const empty = document.getElementById("ruleEmpty");
-    if (!need || !addBox || !list || !empty) return;
+    if (!need || !list || !empty) return;
+
+    const { cats, rules } = applySearchFilter();
+    const active = cats.find(c=>c.id === APP_CTX.activeCategoryId);
+
+    setText("activeCatLabel", active ? active.name : "-");
 
     if (!active){
       need.classList.remove("hidden");
-      addBox.classList.add("hidden");
       list.innerHTML = "";
       empty.classList.add("hidden");
+      setText("resultCount", String(rules.length));
       return;
     }
 
     need.classList.add("hidden");
-    addBox.classList.remove("hidden");
 
-    const rules = APP_CTX.rules
+    const shown = rules
       .filter(r=>r.category_id === active.id)
       .sort((a,b)=>(a.sort_order??0)-(b.sort_order??0));
 
     list.innerHTML = "";
-    if (!rules.length){
+    if (!shown.length){
       empty.classList.remove("hidden");
+      setText("resultCount", "0");
       return;
     }
     empty.classList.add("hidden");
 
-    for (const r of rules){
+    for (const r of shown){
       const div = document.createElement("div");
       div.className = "item";
       div.style.cursor = "default";
@@ -1037,11 +1181,28 @@
           <div class="sub" style="white-space:pre-wrap;margin-top:6px;">${escapeHtml(r.body || "")}</div>
         </div>
         <div class="item-right">
+          <button class="icon-btn" data-act="edit-rule" data-id="${r.id}" title="編集">編集</button>
           <button class="icon-btn danger" data-act="del-rule" data-id="${r.id}" title="削除">削除</button>
         </div>
       `;
       list.appendChild(div);
     }
+
+    // 編集：今回は要件にないので「既存の本文/タイトルをモーダルに入れて更新」まで実装
+    list.querySelectorAll('button[data-act="edit-rule"]').forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const id = btn.dataset.id;
+        const r = APP_CTX.rules.find(x=>x.id===id);
+        if (!r) return;
+        openRuleModal({
+          mode: "edit",
+          ruleId: r.id,
+          title: r.title,
+          body: r.body || "",
+          categoryId: r.category_id
+        });
+      });
+    });
 
     list.querySelectorAll('button[data-act="del-rule"]').forEach(btn=>{
       btn.addEventListener("click", async ()=>{
@@ -1051,15 +1212,8 @@
         await deleteRule(id);
       });
     });
-  }
 
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+    setText("resultCount", String(shown.length));
   }
 
   async function fetchCategories(){
@@ -1086,152 +1240,231 @@
 
   async function refreshRulesUI(){
     await Promise.all([fetchCategories(), fetchRules()]);
-    // activeCategoryIdが消えたら先頭へ
-    if (APP_CTX.activeCategoryId && !APP_CTX.categories.find(c=>c.id===APP_CTX.activeCategoryId)){
-      APP_CTX.activeCategoryId = null;
-    }
     renderCategories();
     renderRules();
     renderPlanNotice();
+    rebuildModalCategoryOptions();
   }
 
-  function isFreeOverCategoryLimit(){
+  function isFreeOverCategoryLimit(nextAdded=0){
     if (APP_CTX.isStandard) return false;
-    return APP_CTX.categories.length >= APP_CTX.limits.categories;
+    return (APP_CTX.categories.length + nextAdded) > APP_CTX.limits.categories;
   }
-  function isFreeOverRuleLimit(){
+  function isFreeOverRuleLimit(nextAdded=0){
     if (APP_CTX.isStandard) return false;
-    return APP_CTX.rules.length >= APP_CTX.limits.rules;
+    return (APP_CTX.rules.length + nextAdded) > APP_CTX.limits.rules;
+  }
+
+  function nextCategorySort(){
+    return (APP_CTX.categories.reduce((m,c)=>Math.max(m, c.sort_order ?? 0), 0) || 0) + 10;
+  }
+  function nextRuleSort(categoryId){
+    return (APP_CTX.rules
+      .filter(r=>r.category_id===categoryId)
+      .reduce((m,r)=>Math.max(m, r.sort_order ?? 0), 0) || 0) + 10;
   }
 
   async function addCategory(name){
-    const msg = document.getElementById("catMsg");
-    if (msg){ msg.classList.add("hidden"); msg.textContent=""; }
-
     const n = (name || "").trim();
-    if (!n){
-      if (msg){ msg.classList.remove("hidden"); msg.textContent="カテゴリ名を入力してください。"; }
-      return;
-    }
-    if (n.length > 40){
-      if (msg){ msg.classList.remove("hidden"); msg.textContent="カテゴリ名は40文字以内にしてください。"; }
-      return;
-    }
-    if (isFreeOverCategoryLimit()){
-      if (msg){
-        msg.classList.remove("hidden");
-        msg.textContent = `Freeプランではカテゴリは最大${APP_CTX.limits.categories}個までです。Standardに登録すると無制限になります。`;
-      }
-      return;
+    if (!n) throw new Error("カテゴリ名を入力してください。");
+    if (n.length > 40) throw new Error("カテゴリ名は40文字以内にしてください。");
+    if (isFreeOverCategoryLimit(1)){
+      throw new Error(`Freeプランではカテゴリは最大${APP_CTX.limits.categories}個までです。Standardに登録すると無制限になります。`);
     }
 
-    // sort_orderは末尾に
-    const nextSort = (APP_CTX.categories.reduce((m,c)=>Math.max(m, c.sort_order ?? 0), 0) || 0) + 10;
+    // 同名（大文字小文字無視）を避ける
+    const exists = APP_CTX.categories.some(c => normalize(c.name) === normalize(n));
+    if (exists) throw new Error("同じ名前のカテゴリが既にあります。");
 
-    const { error } = await sb
+    const { data, error } = await sb
       .from("rule_categories")
-      .insert({ name:n, sort_order: nextSort });
+      .insert({ name:n, sort_order: nextCategorySort() })
+      .select("id,name,sort_order,created_at")
+      .single();
 
-    if (error){
-      // DB側の制限（トリガー）に当たった場合もここに来る
-      if (msg){
-        msg.classList.remove("hidden");
-        msg.textContent = error.message || "カテゴリの追加に失敗しました。";
-      }
-      return;
-    }
-
-    document.getElementById("catName").value = "";
-    await refreshRulesUI();
+    if (error) throw error;
+    return data;
   }
 
-  function templateToTitle(t){
-    if (t === "send") return "送る前に確認すること";
-    if (t === "submit") return "提出・手続き前に確認すること";
-    if (t === "person") return "この相手の注意点";
-    if (t === "forget") return "毎回忘れがちなこと";
-    return "メモ";
-  }
+  async function addRule({ categoryId, title, body }){
+    const catId = categoryId;
+    if (!catId) throw new Error("カテゴリを選択するか、新しいカテゴリ名を入力してください。");
 
-  async function addRule(templateKey, body){
-    const err = document.getElementById("ruleMsg");
-    const ok = document.getElementById("ruleOk");
-    if (err){ err.classList.add("hidden"); err.textContent=""; }
-    if (ok){ ok.classList.add("hidden"); ok.textContent=""; }
-
-    const active = APP_CTX.categories.find(c=>c.id === APP_CTX.activeCategoryId);
-    if (!active){
-      if (err){ err.classList.remove("hidden"); err.textContent="カテゴリを選んでください。"; }
-      return;
-    }
+    const t = (title || "").trim();
+    if (!t) throw new Error("ルールタイトルを入力してください。");
+    if (t.length > 60) throw new Error("ルールタイトルは60文字以内にしてください。");
 
     const b = (body || "").trim();
-    if (!b){
-      if (err){ err.classList.remove("hidden"); err.textContent="ルール本文を入力してください。"; }
-      return;
-    }
-    if (b.length > 600){
-      if (err){ err.classList.remove("hidden"); err.textContent="ルール本文は600文字以内にしてください。"; }
-      return;
-    }
-    if (isFreeOverRuleLimit()){
-      if (err){
-        err.classList.remove("hidden");
-        err.textContent = `Freeプランではルールは合計最大${APP_CTX.limits.rules}個までです。Standardに登録すると無制限になります。`;
-      }
-      return;
-    }
+    if (!b) throw new Error("ルール本文を入力してください。");
+    if (b.length > 600) throw new Error("ルール本文は600文字以内にしてください。");
 
-    const title = templateToTitle(templateKey);
-    const nextSort = (APP_CTX.rules
-      .filter(r=>r.category_id===active.id)
-      .reduce((m,r)=>Math.max(m, r.sort_order ?? 0), 0) || 0) + 10;
+    if (isFreeOverRuleLimit(1)){
+      throw new Error(`Freeプランではルールは合計最大${APP_CTX.limits.rules}個までです。Standardに登録すると無制限になります。`);
+    }
 
     const { error } = await sb
       .from("rules")
       .insert({
-        category_id: active.id,
-        title,
+        category_id: catId,
+        title: t,
         body: b,
-        sort_order: nextSort
+        sort_order: nextRuleSort(catId)
       });
 
-    if (error){
-      if (err){ err.classList.remove("hidden"); err.textContent = error.message || "ルールの追加に失敗しました。"; }
-      return;
-    }
+    if (error) throw error;
+  }
 
-    document.getElementById("ruleBody").value = "";
-    if (ok){
-      ok.classList.remove("hidden");
-      ok.textContent = "追加しました。";
-      setTimeout(()=>{ ok.classList.add("hidden"); }, 1200);
-    }
-    await refreshRulesUI();
+  async function updateRule({ ruleId, categoryId, title, body }){
+    const rid = ruleId;
+    if (!rid) throw new Error("更新対象が見つかりません。");
+
+    const catId = categoryId;
+    if (!catId) throw new Error("カテゴリを選択するか、新しいカテゴリ名を入力してください。");
+
+    const t = (title || "").trim();
+    if (!t) throw new Error("ルールタイトルを入力してください。");
+    if (t.length > 60) throw new Error("ルールタイトルは60文字以内にしてください。");
+
+    const b = (body || "").trim();
+    if (!b) throw new Error("ルール本文を入力してください。");
+    if (b.length > 600) throw new Error("ルール本文は600文字以内にしてください。");
+
+    const { error } = await sb
+      .from("rules")
+      .update({ category_id: catId, title: t, body: b })
+      .eq("id", rid);
+
+    if (error) throw error;
   }
 
   async function deleteCategory(catId){
-    const msg = document.getElementById("catMsg");
-    if (msg){ msg.classList.add("hidden"); msg.textContent=""; }
-
     const { error } = await sb.from("rule_categories").delete().eq("id", catId);
-    if (error){
-      if (msg){ msg.classList.remove("hidden"); msg.textContent = error.message || "削除に失敗しました。"; }
-      return;
-    }
+    if (error) alert(error.message || "削除に失敗しました。");
     await refreshRulesUI();
   }
 
   async function deleteRule(ruleId){
-    const err = document.getElementById("ruleMsg");
-    if (err){ err.classList.add("hidden"); err.textContent=""; }
-
     const { error } = await sb.from("rules").delete().eq("id", ruleId);
-    if (error){
-      if (err){ err.classList.remove("hidden"); err.textContent = error.message || "削除に失敗しました。"; }
-      return;
-    }
+    if (error) alert(error.message || "削除に失敗しました。");
     await refreshRulesUI();
+  }
+
+  // ===== Modal =====
+  const MODAL_STATE = { mode:"create", ruleId:null };
+
+  function openRuleModal(preset){
+    MODAL_STATE.mode = preset?.mode || "create";
+    MODAL_STATE.ruleId = preset?.ruleId || null;
+
+    const backdrop = document.getElementById("ruleModal");
+    const msg = document.getElementById("modalMsg");
+    if (msg){ msg.classList.add("hidden"); msg.textContent=""; }
+
+    document.getElementById("modalRuleTitle").value = preset?.title || "";
+    document.getElementById("modalRuleBody").value = preset?.body || "";
+    document.getElementById("modalNewCatName").value = "";
+    rebuildModalCategoryOptions(preset?.categoryId || "");
+
+    // ルール新規作成時は「今選択中カテゴリ」を初期選択
+    const sel = document.getElementById("modalCatSelect");
+    if (MODAL_STATE.mode === "create" && sel && !preset?.categoryId && APP_CTX.activeCategoryId){
+      sel.value = APP_CTX.activeCategoryId;
+    }
+
+    backdrop.classList.add("show");
+    backdrop.setAttribute("aria-hidden","false");
+
+    // ボタン文言
+    document.getElementById("btnCreateRule").textContent = (MODAL_STATE.mode === "edit") ? "更新" : "作成";
+
+    // 少し遅らせてフォーカス
+    setTimeout(()=>document.getElementById("modalRuleTitle")?.focus(), 20);
+  }
+
+  function closeRuleModal(){
+    const backdrop = document.getElementById("ruleModal");
+    backdrop.classList.remove("show");
+    backdrop.setAttribute("aria-hidden","true");
+  }
+
+  function rebuildModalCategoryOptions(selectedId){
+    const sel = document.getElementById("modalCatSelect");
+    if (!sel) return;
+    const current = selectedId ?? sel.value ?? "";
+    sel.innerHTML = `<option value="">カテゴリを選択</option>`;
+    for (const c of APP_CTX.categories){
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.name;
+      sel.appendChild(opt);
+    }
+    if (current) sel.value = current;
+  }
+
+  async function submitModal(){
+    const msg = document.getElementById("modalMsg");
+    if (msg){ msg.classList.add("hidden"); msg.textContent=""; }
+
+    const title = document.getElementById("modalRuleTitle").value;
+    const body = document.getElementById("modalRuleBody").value;
+    const selectedCatId = document.getElementById("modalCatSelect").value;
+    const newCatName = document.getElementById("modalNewCatName").value;
+
+    try{
+      let categoryId = selectedCatId;
+
+      // 新カテゴリ優先
+      const newName = (newCatName || "").trim();
+      if (newName){
+        const created = await addCategory(newName);
+        categoryId = created.id;
+      }
+
+      if (MODAL_STATE.mode === "edit"){
+        await updateRule({ ruleId: MODAL_STATE.ruleId, categoryId, title, body });
+      }else{
+        await addRule({ categoryId, title, body });
+      }
+
+      // 反映
+      await refreshRulesUI();
+
+      // アクティブカテゴリを作成先へ
+      if (categoryId){
+        APP_CTX.activeCategoryId = categoryId;
+        renderCategories();
+        renderRules();
+      }
+
+      closeRuleModal();
+    }catch(e){
+      console.error(e);
+      const text = e?.message || "保存に失敗しました。";
+      if (msg){ msg.classList.remove("hidden"); msg.textContent = text; }
+    }
+  }
+
+  function bindModal(){
+    const backdrop = document.getElementById("ruleModal");
+    const btnClose = document.getElementById("btnCloseModal");
+    const btnCancel = document.getElementById("btnCancelModal");
+    const btnCreate = document.getElementById("btnCreateRule");
+
+    const close = ()=>closeRuleModal();
+
+    btnClose.onclick = close;
+    btnCancel.onclick = close;
+    backdrop.addEventListener("click", (e)=>{
+      if (e.target === backdrop) close();
+    });
+    window.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape" && backdrop.classList.contains("show")) close();
+    });
+
+    btnCreate.onclick = async ()=>{
+      btnCreate.disabled = true;
+      try{ await submitModal(); }finally{ btnCreate.disabled = false; }
+    };
   }
 
   function bindMyRulesUI(){
@@ -1243,37 +1476,31 @@
       };
     }
 
-    const btnAddCat = document.getElementById("btnAddCat");
-    if (btnAddCat){
-      btnAddCat.onclick = async ()=>{
-        btnAddCat.disabled = true;
-        try{ await addCategory(document.getElementById("catName").value); }
-        finally{ btnAddCat.disabled = false; }
-      };
+    const btnNewRule = document.getElementById("btnNewRule");
+    if (btnNewRule){
+      btnNewRule.onclick = ()=>openRuleModal({ mode:"create" });
     }
-    const catInput = document.getElementById("catName");
-    if (catInput){
-      catInput.addEventListener("keydown", (e)=>{
-        if (e.key === "Enter"){
-          e.preventDefault();
-          document.getElementById("btnAddCat")?.click();
-        }
+
+    const search = document.getElementById("searchText");
+    if (search){
+      search.addEventListener("input", ()=>{
+        APP_CTX.searchText = search.value || "";
+        renderCategories();
+        renderRules();
       });
     }
 
-    const btnAddRule = document.getElementById("btnAddRule");
-    if (btnAddRule){
-      btnAddRule.onclick = async ()=>{
-        btnAddRule.disabled = true;
-        try{
-          const t = document.getElementById("ruleTemplate").value;
-          const b = document.getElementById("ruleBody").value;
-          await addRule(t, b);
-        }finally{
-          btnAddRule.disabled = false;
-        }
+    const btnClear = document.getElementById("btnClearSearch");
+    if (btnClear){
+      btnClear.onclick = ()=>{
+        APP_CTX.searchText = "";
+        if (search) search.value = "";
+        renderCategories();
+        renderRules();
       };
     }
+
+    bindModal();
   }
 
   // =========================
@@ -1324,7 +1551,6 @@
     setPlanLabelText(planText);
     setStatus(APP_CTX.isStandard ? "準備ができました。" : "Freeプランです。");
 
-    // Password UI
     const hasPassword = !!prof.has_password;
     const pwSec = document.getElementById("pwSection");
     const pwChg = document.getElementById("pwChangeSection");
@@ -1384,7 +1610,6 @@
     bindMyRulesUI();
     try{
       await refreshRulesUI();
-      renderPlanNotice();
     }catch(e){
       console.error("MY RULES load error", e);
       const el = document.getElementById("planLimitNotice");
