@@ -121,6 +121,7 @@
       color:#fff;
       font-weight:800;
     }
+
     /* Standard登録ボタンを少し暗く */
     .btn-subscribe{
       background: var(--brand-deep);
@@ -223,6 +224,7 @@
       font-size:13px;
       margin-top:8px;
     }
+
     .cta-row{
       display:flex;
       flex-wrap:wrap;
@@ -321,6 +323,18 @@
       font-size:13px;
       color:var(--ink);
     }
+
+    /* Free制限ボックス内 右下CTA（Standard登録ボタン） */
+    .notice.plan-notice{
+      position: relative;
+      padding-bottom: 56px; /* ボタンが本文に被らないように下余白 */
+    }
+    .notice .notice-cta{
+      position: absolute;
+      right: 14px;
+      bottom: 12px;
+    }
+
     .err{
       margin-top:8px;
       font-size:12px;
@@ -443,6 +457,13 @@
       .rules-wrap{ grid-template-columns: 1fr; }
       .search-row .input{ min-width: 100%; }
       .select{ min-width: 100%; }
+
+      /* スマホではボタンを右下固定にせず自然配置に（はみ出し防止） */
+      .notice.plan-notice{ padding-bottom: 12px; }
+      .notice .notice-cta{
+        position: static;
+        margin-top: 10px;
+      }
     }
   </style>
 
@@ -515,12 +536,13 @@
             自分用の「注意点」「手順」「忘れがちなこと」をここに置いて、必要なときに見るだけ。
           </p>
 
+          <!-- ここに「Free制限 + 右下に登録ボタン」をJSで描画 -->
           <div id="planLimitNotice" class="notice hidden"></div>
 
-          <!-- ボタン配置：登録ボタンの下の行に「新しいルール」「再読み込み」 -->
+          <!-- 「新しいルール」「再読み込み」は登録ボタンの下の行（枠外） -->
           <div class="cta-col" style="margin-top:12px;">
             <div class="cta-row">
-              <button id="btnSubscribeRules" class="btn btn-subscribe hidden">Standardプランに登録する（無制限）</button>
+              <!-- Standard登録ボタンは黄色枠内に移動したのでここには置かない -->
             </div>
             <div class="cta-row">
               <button id="btnNewRule" class="btn btn-primary">新しいルールを作成</button>
@@ -1024,11 +1046,6 @@
     searchText: ""
   };
 
-  function showElByEl(el, show){
-    if (!el) return;
-    el.classList.toggle("hidden", !show);
-  }
-  function showEl(id, show){ showElByEl(document.getElementById(id), show); }
   function setText(id, text){
     const el = document.getElementById(id);
     if (el) el.textContent = text;
@@ -1076,12 +1093,14 @@
     };
   }
 
+  // Free制限表示（黄色枠）＋右下に Standard 登録ボタンを配置
   function renderPlanNotice(){
     const el = document.getElementById("planLimitNotice");
     if (!el) return;
 
     if (APP_CTX.isStandard){
       el.classList.add("hidden");
+      el.classList.remove("plan-notice");
       el.textContent = "";
       return;
     }
@@ -1090,12 +1109,23 @@
     const r = APP_CTX.rules.length;
 
     el.classList.remove("hidden");
+    el.classList.add("plan-notice");
+
     el.innerHTML = `
       <div style="font-weight:900;letter-spacing:.04em;margin-bottom:4px;">Freeプランの制限</div>
       <div>カテゴリ：<strong>${c}</strong> / ${APP_CTX.limits.categories}</div>
       <div>ルール（合計）：<strong>${r}</strong> / ${APP_CTX.limits.rules}</div>
       <div class="muted" style="margin-top:6px;font-size:12px;">Standardはカテゴリ・ルールが無制限になります。</div>
+
+      <div class="notice-cta">
+        <button id="btnSubscribeRulesInner" class="btn btn-subscribe">Standardプランに登録する（無制限）</button>
+      </div>
     `;
+
+    const btn = document.getElementById("btnSubscribeRulesInner");
+    if (btn && APP_CTX.user){
+      btn.onclick = ()=>createCheckout(APP_CTX.user.id, APP_CTX.user.email || "");
+    }
   }
 
   function renderCategories(){
@@ -1105,7 +1135,6 @@
 
     const { cats, rules } = applySearchFilter();
 
-    // activeCategoryIdがフィルタ外なら、フィルタ後の先頭に寄せる
     if (APP_CTX.activeCategoryId && !cats.find(c=>c.id===APP_CTX.activeCategoryId)){
       APP_CTX.activeCategoryId = cats.length ? cats[0].id : null;
     }
@@ -1155,7 +1184,6 @@
       });
     });
 
-    // カテゴリ編集（名前変更）
     list.querySelectorAll('button[data-act="edit-cat"]').forEach(btn=>{
       btn.addEventListener("click", async (e)=>{
         e.stopPropagation();
@@ -1165,12 +1193,12 @@
         if (!cat) return;
 
         const next = prompt("カテゴリ名を変更します。新しい名前を入力してください。", cat.name || "");
-        if (next === null) return; // キャンセル
+        if (next === null) return;
         const newName = String(next).trim();
+
         try{
           await updateCategoryName(id, newName);
           await refreshRulesUI();
-          // 同じカテゴリIDを保持しているので、ルール側も自動で表示名が変わる
           renderCategories();
           renderRules();
         }catch(err){
@@ -1313,7 +1341,6 @@
       throw new Error(`Freeプランではカテゴリは最大${APP_CTX.limits.categories}個までです。Standardに登録すると無制限になります。`);
     }
 
-    // 同名（大文字小文字無視）を避ける
     const exists = APP_CTX.categories.some(c => normalize(c.name) === normalize(n));
     if (exists) throw new Error("同じ名前のカテゴリが既にあります。");
 
@@ -1332,7 +1359,6 @@
     if (!n) throw new Error("カテゴリ名を入力してください。");
     if (n.length > 40) throw new Error("カテゴリ名は40文字以内にしてください。");
 
-    // 同名（大文字小文字無視）を避ける（自分以外）
     const exists = APP_CTX.categories.some(c => c.id !== catId && normalize(c.name) === normalize(n));
     if (exists) throw new Error("同じ名前のカテゴリが既にあります。");
 
@@ -1423,7 +1449,6 @@
     document.getElementById("modalNewCatName").value = "";
     rebuildModalCategoryOptions(preset?.categoryId || "");
 
-    // ルール新規作成時は「今選択中カテゴリ」を初期選択
     const sel = document.getElementById("modalCatSelect");
     if (MODAL_STATE.mode === "create" && sel && !preset?.categoryId && APP_CTX.activeCategoryId){
       sel.value = APP_CTX.activeCategoryId;
@@ -1432,10 +1457,8 @@
     backdrop.classList.add("show");
     backdrop.setAttribute("aria-hidden","false");
 
-    // ボタン文言
     document.getElementById("btnCreateRule").textContent = (MODAL_STATE.mode === "edit") ? "更新" : "作成";
 
-    // 少し遅らせてフォーカス
     setTimeout(()=>document.getElementById("modalRuleTitle")?.focus(), 20);
   }
 
@@ -1471,7 +1494,6 @@
     try{
       let categoryId = selectedCatId;
 
-      // 新カテゴリ優先
       const newName = (newCatName || "").trim();
       if (newName){
         const created = await addCategory(newName);
@@ -1484,10 +1506,8 @@
         await addRule({ categoryId, title, body });
       }
 
-      // 反映
       await refreshRulesUI();
 
-      // アクティブカテゴリを作成先へ
       if (categoryId){
         APP_CTX.activeCategoryId = categoryId;
         renderCategories();
@@ -1628,27 +1648,24 @@
     const pwChangeForm = document.getElementById("pwChangeForm");
     if (pwChangeForm) pwChangeForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(user.id, true); };
 
-    // Billing buttons
+    // ACCOUNT側のBilling buttonsのみ制御（MY RULES側は黄色枠内で動的に生成）
     const btnSubMain  = document.getElementById("btnSubscribe");
     const btnCancel   = document.getElementById("btnCancel");
-    const btnSubRules = document.getElementById("btnSubscribeRules");
 
     if (!APP_CTX.isStandard){
-      [btnSubMain, btnSubRules].forEach(b=>{
-        if (!b) return;
-        b.classList.remove("hidden");
-        b.onclick = ()=>createCheckout(user.id, user.email || "");
-      });
+      if (btnSubMain){
+        btnSubMain.classList.remove("hidden");
+        btnSubMain.onclick = ()=>createCheckout(user.id, user.email || "");
+      }
       if (btnCancel){
         btnCancel.classList.add("hidden");
         btnCancel.onclick = null;
       }
     }else{
-      [btnSubMain, btnSubRules].forEach(b=>{
-        if (!b) return;
-        b.classList.add("hidden");
-        b.onclick = null;
-      });
+      if (btnSubMain){
+        btnSubMain.classList.add("hidden");
+        btnSubMain.onclick = null;
+      }
       if (btnCancel){
         btnCancel.classList.remove("hidden");
         btnCancel.onclick = ()=>openPortal(user.id);
@@ -1673,6 +1690,7 @@
       const el = document.getElementById("planLimitNotice");
       if (el){
         el.classList.remove("hidden");
+        el.classList.remove("plan-notice");
         el.innerHTML = `<div style="font-weight:900;margin-bottom:4px;">MY RULESの読み込みに失敗しました</div>
                         <div class="muted" style="font-size:12px;">Supabaseに rule_categories / rules テーブルを作成済みか確認してください。</div>`;
       }
