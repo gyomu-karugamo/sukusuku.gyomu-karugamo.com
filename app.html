@@ -324,15 +324,15 @@
       color:var(--ink);
     }
 
-    /* Free制限ボックス内 右下CTA（Standard登録ボタン） */
+    /* Free制限ボックス内 右上CTA（Standard登録ボタン） */
     .notice.plan-notice{
       position: relative;
-      padding-bottom: 56px; /* ボタンが本文に被らないように下余白 */
+      padding-right: 240px; /* 右上ボタン分の余白（被り防止） */
     }
     .notice .notice-cta{
       position: absolute;
       right: 14px;
-      bottom: 12px;
+      top: 12px;
     }
 
     .err{
@@ -458,8 +458,8 @@
       .search-row .input{ min-width: 100%; }
       .select{ min-width: 100%; }
 
-      /* スマホではボタンを右下固定にせず自然配置に（はみ出し防止） */
-      .notice.plan-notice{ padding-bottom: 12px; }
+      /* スマホでは右上固定をやめて自然配置 */
+      .notice.plan-notice{ padding-right: 12px; }
       .notice .notice-cta{
         position: static;
         margin-top: 10px;
@@ -536,7 +536,7 @@
             自分用の「注意点」「手順」「忘れがちなこと」をここに置いて、必要なときに見るだけ。
           </p>
 
-          <!-- ここに「Free制限 + 右下に登録ボタン」をJSで描画 -->
+          <!-- ここに「Free制限 + 右上に登録ボタン」をJSで描画 -->
           <div id="planLimitNotice" class="notice hidden"></div>
 
           <!-- 「新しいルール」「再読み込み」は登録ボタンの下の行（枠外） -->
@@ -1076,7 +1076,6 @@
 
     const ruleTitleHits = APP_CTX.rules.filter(r => normalize(r.title).includes(q));
 
-    // ルールタイトルがヒットするなら「そのルールだけ」見せる
     if (ruleTitleHits.length){
       const allowedCats = new Set(ruleTitleHits.map(r=>r.category_id));
       return {
@@ -1085,7 +1084,6 @@
       };
     }
 
-    // カテゴリ名だけヒットするなら、そのカテゴリのルールを全件表示
     const cats = APP_CTX.categories.filter(c => catsHit.has(c.id));
     return {
       cats,
@@ -1093,7 +1091,7 @@
     };
   }
 
-  // Free制限表示（黄色枠）＋右下に Standard 登録ボタンを配置
+  // Free制限表示（黄色枠）＋右上に Standard 登録ボタンを配置
   function renderPlanNotice(){
     const el = document.getElementById("planLimitNotice");
     if (!el) return;
@@ -1602,14 +1600,6 @@
     $("#userEmail").textContent = user.email || "";
     $("#currentEmailText").textContent = user.email || "";
 
-    try{
-      const k = "ga_login_success_sent";
-      if (!sessionStorage.getItem(k)){
-        gtag('event', 'login_success', { method:'session_restored', funnel_step:'login_complete' });
-        sessionStorage.setItem(k, "1");
-      }
-    }catch(e){}
-
     const profRes = await loadProfileOrCreate(user.id);
     if (profRes.error || !profRes.data){
       console.error("profile load error", profRes.error);
@@ -1648,7 +1638,7 @@
     const pwChangeForm = document.getElementById("pwChangeForm");
     if (pwChangeForm) pwChangeForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(user.id, true); };
 
-    // ACCOUNT側のBilling buttonsのみ制御（MY RULES側は黄色枠内で動的に生成）
+    // ACCOUNT側のみ制御（MY RULES側は黄色枠内で動的生成）
     const btnSubMain  = document.getElementById("btnSubscribe");
     const btnCancel   = document.getElementById("btnCancel");
 
