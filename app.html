@@ -121,6 +121,14 @@
       color:#fff;
       font-weight:800;
     }
+    /* Standard登録ボタンを少し暗く */
+    .btn-subscribe{
+      background: var(--brand-deep);
+      border-color: transparent;
+      color:#fff;
+      font-weight:900;
+    }
+
     .btn-outline{ background:#fff; color:var(--ink); }
     .btn-danger{
       background:#ffe7e3;
@@ -222,6 +230,13 @@
       margin-top:10px;
       align-items:center;
     }
+    .cta-col{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+    .cta-col .cta-row{ margin-top:0; }
 
     .pw-banner{
       background:#ffe7e3;
@@ -292,6 +307,7 @@
       border-radius:10px;
       color:var(--brand-deep);
       font-weight:900;
+      white-space:nowrap;
     }
     .icon-btn:hover{ background: rgba(0,0,0,.04); }
     .danger{ color: var(--danger); }
@@ -501,10 +517,15 @@
 
           <div id="planLimitNotice" class="notice hidden"></div>
 
-          <div class="cta-row" style="margin-top:12px;">
-            <button id="btnSubscribeRules" class="btn btn-primary hidden">Standardプランに登録する（無制限）</button>
-            <button id="btnNewRule" class="btn btn-primary">新しいルール</button>
-            <button id="btnReloadRules" class="btn btn-outline">再読み込み</button>
+          <!-- ボタン配置：登録ボタンの下の行に「新しいルール」「再読み込み」 -->
+          <div class="cta-col" style="margin-top:12px;">
+            <div class="cta-row">
+              <button id="btnSubscribeRules" class="btn btn-subscribe hidden">Standardプランに登録する（無制限）</button>
+            </div>
+            <div class="cta-row">
+              <button id="btnNewRule" class="btn btn-primary">新しいルールを作成</button>
+              <button id="btnReloadRules" class="btn btn-outline">再読み込み</button>
+            </div>
           </div>
 
           <div class="search-row">
@@ -564,7 +585,7 @@
           </div>
 
           <div class="cta-row">
-            <button id="btnSubscribe" class="btn btn-primary hidden">Standardプランに登録する</button>
+            <button id="btnSubscribe" class="btn btn-subscribe hidden">Standardプランに登録する</button>
             <button id="btnCancel" class="btn btn-danger hidden">サブスクを解約する</button>
           </div>
 
@@ -1036,16 +1057,9 @@
         .map(c => c.id)
     );
 
-    const rulesHit = APP_CTX.rules.filter(r => normalize(r.title).includes(q));
-    for (const r of rulesHit) catsHit.add(r.category_id);
-
-    const cats = APP_CTX.categories.filter(c => catsHit.has(c.id));
-    const rules = APP_CTX.rules.filter(r => catsHit.has(r.category_id) && normalize(r.title).includes(q) || catsHit.has(r.category_id) && q && normalize(r.title).includes(q));
-
-    // ↑ rules は「カテゴリ名ヒット」でもそのカテゴリ内を見せたいので、ここではカテゴリ一致がある場合は全件表示に寄せる
-    // ただし、ユーザー要件は「カテゴリ、ルール名で検索して絞れる」なので、
-    // ルール名でヒットがある場合はルール名ヒットのみに絞り、カテゴリ名のみヒットならカテゴリ内全件表示にする。
     const ruleTitleHits = APP_CTX.rules.filter(r => normalize(r.title).includes(q));
+
+    // ルールタイトルがヒットするなら「そのルールだけ」見せる
     if (ruleTitleHits.length){
       const allowedCats = new Set(ruleTitleHits.map(r=>r.category_id));
       return {
@@ -1053,6 +1067,9 @@
         rules: ruleTitleHits
       };
     }
+
+    // カテゴリ名だけヒットするなら、そのカテゴリのルールを全件表示
+    const cats = APP_CTX.categories.filter(c => catsHit.has(c.id));
     return {
       cats,
       rules: APP_CTX.rules.filter(r => catsHit.has(r.category_id))
@@ -1114,12 +1131,13 @@
           <div class="sub">ルール：${count}件</div>
         </div>
         <div class="item-right">
+          <button class="icon-btn" data-act="edit-cat" data-id="${c.id}" title="カテゴリ名を編集">編集</button>
           <button class="icon-btn danger" data-act="del-cat" data-id="${c.id}" title="削除">削除</button>
         </div>
       `;
       div.addEventListener("click", (e)=>{
         const act = e.target?.dataset?.act;
-        if (act === "del-cat") return;
+        if (act === "del-cat" || act === "edit-cat") return;
         APP_CTX.activeCategoryId = c.id;
         renderCategories();
         renderRules();
@@ -1134,6 +1152,30 @@
         if (!id) return;
         if (!confirm("このカテゴリを削除しますか？（カテゴリ内のルールも削除されます）")) return;
         await deleteCategory(id);
+      });
+    });
+
+    // カテゴリ編集（名前変更）
+    list.querySelectorAll('button[data-act="edit-cat"]').forEach(btn=>{
+      btn.addEventListener("click", async (e)=>{
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        if (!id) return;
+        const cat = APP_CTX.categories.find(x=>x.id===id);
+        if (!cat) return;
+
+        const next = prompt("カテゴリ名を変更します。新しい名前を入力してください。", cat.name || "");
+        if (next === null) return; // キャンセル
+        const newName = String(next).trim();
+        try{
+          await updateCategoryName(id, newName);
+          await refreshRulesUI();
+          // 同じカテゴリIDを保持しているので、ルール側も自動で表示名が変わる
+          renderCategories();
+          renderRules();
+        }catch(err){
+          alert(err?.message || "カテゴリ名の更新に失敗しました。");
+        }
       });
     });
   }
@@ -1188,7 +1230,6 @@
       list.appendChild(div);
     }
 
-    // 編集：今回は要件にないので「既存の本文/タイトルをモーダルに入れて更新」まで実装
     list.querySelectorAll('button[data-act="edit-rule"]').forEach(btn=>{
       btn.addEventListener("click", ()=>{
         const id = btn.dataset.id;
@@ -1284,6 +1325,23 @@
 
     if (error) throw error;
     return data;
+  }
+
+  async function updateCategoryName(catId, newName){
+    const n = (newName || "").trim();
+    if (!n) throw new Error("カテゴリ名を入力してください。");
+    if (n.length > 40) throw new Error("カテゴリ名は40文字以内にしてください。");
+
+    // 同名（大文字小文字無視）を避ける（自分以外）
+    const exists = APP_CTX.categories.some(c => c.id !== catId && normalize(c.name) === normalize(n));
+    if (exists) throw new Error("同じ名前のカテゴリが既にあります。");
+
+    const { error } = await sb
+      .from("rule_categories")
+      .update({ name: n })
+      .eq("id", catId);
+
+    if (error) throw error;
   }
 
   async function addRule({ categoryId, title, body }){
