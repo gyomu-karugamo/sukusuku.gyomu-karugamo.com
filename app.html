@@ -1,1694 +1,1071 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務かるがも</title>
+<link rel="icon" type="image/png" href="/assets/icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX', { linker: { domains: ['gyomu-karugamo.com','app.gyomu-karugamo.com'] } });
+</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1714;--cream:#f5f0e8;--warm:#e8dfd0;
+  --duck:#4a7c6f;--duck-pale:#d4e8e2;
+  --mist:#8a9a96;--rust:#c4622d;--error:#b3261e;
+  --hh:60px;--nh:48px;
+}
+html,body{min-height:100vh}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);padding-top:calc(var(--hh) + var(--nh))}
 
-  <!-- Google tag (gtag.js)  -->
-  <!-- TODO: 業務かるがも用の GA4 ID に差し替え -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-    const isDebug = new URLSearchParams(location.search).get('debug') === '1';
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-XXXXXXXXXX', {
-      debug_mode: isDebug,
-      linker: { domains: ['gyomu-karugamo.com', 'app.gyomu-karugamo.com'] }
-    });
-  </script>
+/* HEADER */
+.site-header{position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:100;background:rgba(245,240,232,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(26,23,20,.08);display:flex;align-items:center;padding:0 20px;justify-content:space-between}
+.hlogo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.hlogo img{width:30px;height:30px;object-fit:contain}
+.hlogo-name{font-family:'Shippori Mincho',serif;font-size:15px;font-weight:600;color:var(--ink)}
+.hright{display:flex;align-items:center;gap:10px}
+.uemail{font-size:12px;color:var(--mist);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pbadge{font-size:10px;padding:3px 9px;background:var(--duck-pale);color:var(--duck);letter-spacing:.06em}
+.pbadge.std{background:var(--duck);color:white}
+.btn-out{font-size:12px;color:var(--mist);background:none;border:1px solid rgba(26,23,20,.12);padding:5px 11px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.btn-out:hover{color:var(--ink);border-color:var(--ink)}
 
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>業務かるがも | アプリ</title>
+/* TAB NAV */
+.tab-nav{position:fixed;top:var(--hh);left:0;right:0;height:var(--nh);z-index:99;background:white;border-bottom:1px solid rgba(26,23,20,.08);display:flex;align-items:stretch}
+.tab-btn{flex:1;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mist);cursor:pointer;position:relative;transition:color .2s}
+.tab-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--duck);transform:scaleX(0);transition:transform .2s}
+.tab-btn.active{color:var(--duck)}
+.tab-btn.active::after{transform:scaleX(1)}
 
-  <style>
-    :root{
-      --bg:#faf8f4;
-      --panel:#ffffff;
-      --ink:#2a241a;
-      --muted:#6f6a60;
+/* PAGE */
+.page{max-width:680px;margin:0 auto;padding:24px 16px 80px}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
 
-      --brand:#c86b12;
-      --brand-deep:#7a3f07;
-      --brand-soft:#fff1dd;
-      --brand-line:#f0d2ad;
-      --brand-link:#7a3f07;
+/* SEARCH */
+.search-bar{display:flex;gap:8px;margin-bottom:14px}
+.s-input{flex:1;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:300;color:var(--ink);background:white;border:1px solid rgba(26,23,20,.12);outline:none;transition:border-color .2s,box-shadow .2s}
+.s-input:focus{border-color:var(--duck);box-shadow:0 0 0 3px rgba(74,124,111,.1)}
+.s-input::placeholder{color:#b0a898}
+.s-clear{font-size:12px;color:var(--mist);background:none;border:none;cursor:pointer;padding:8px 10px;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.s-clear:hover{color:var(--duck)}
 
-      --tab-active-bg:#B0967E;
-      --tab-active-text: #66452D;
+/* TYPE FILTER (HOME) */
+.type-filter{display:flex;border:1px solid rgba(26,23,20,.10);background:white;margin-bottom:14px}
+.type-btn{flex:1;padding:9px;font-size:12px;letter-spacing:.06em;text-align:center;cursor:pointer;border:none;background:none;color:var(--mist);font-family:'DM Sans',sans-serif;transition:all .2s;border-right:1px solid rgba(26,23,20,.08)}
+.type-btn:last-child{border-right:none}
+.type-btn.active{background:var(--ink);color:white}
 
-      --plan-bg:#FFFAED;
-      --plan-border:#66452D;
+/* CAT FILTER */
+.cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.cat-chip{font-size:11px;padding:5px 12px;border:1px solid rgba(26,23,20,.12);background:white;color:var(--mist);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;letter-spacing:.04em}
+.cat-chip.active{background:var(--duck);color:white;border-color:var(--duck)}
+.cat-chip:hover:not(.active){border-color:var(--duck);color:var(--duck)}
 
-      --radius:20px;
+/* CARD LIST */
+.card-list{display:flex;flex-direction:column;gap:2px}
+.post-card{background:white;padding:18px 20px;border:1px solid rgba(26,23,20,.06);cursor:pointer;transition:all .2s}
+.post-card:hover{border-color:rgba(74,124,111,.4);transform:translateX(2px)}
+.card-meta{display:flex;align-items:flex-start;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;flex-shrink:0;margin-top:1px}
+.av-info{min-width:0}
+.uname{font-size:12px;color:var(--ink)}
+.attr-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
+.attr-tag{font-size:10px;padding:2px 6px;background:var(--warm);color:var(--mist)}
+.tbadge-post{font-size:10px;padding:2px 8px;background:#fef3e8;color:var(--rust);letter-spacing:.04em;align-self:flex-start}
+.tbadge-q{font-size:10px;padding:2px 8px;background:var(--duck-pale);color:var(--duck);letter-spacing:.04em;align-self:flex-start}
+.cat-tag{font-size:10px;padding:2px 8px;background:var(--warm);color:var(--mist);letter-spacing:.04em;margin-left:auto;align-self:flex-start}
+.card-title{font-family:'Shippori Mincho',serif;font-size:15px;font-weight:600;line-height:1.5;margin-bottom:6px}
+.card-preview{font-size:13px;color:var(--mist);line-height:1.7;font-weight:300;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.post-card.is-post .card-preview{-webkit-line-clamp:4;color:#4a4440;font-size:14px}
+.card-footer{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:11px;color:var(--mist);flex-wrap:wrap}
+.solved{color:var(--duck)}
 
-      --shadow-soft: 0 12px 30px rgba(43, 36, 27, .10);
-      --shadow-mini: 0 10px 22px rgba(43, 36, 27, .10);
+/* REACTION (card) */
+.react-row-sm{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(26,23,20,.05)}
+.rbtn-sm{display:inline-flex;align-items:center;gap:3px;font-size:12px;padding:4px 8px;background:var(--cream);border:1px solid rgba(26,23,20,.08);cursor:pointer;transition:all .15s;color:var(--mist);font-family:'DM Sans',sans-serif;line-height:1}
+.rbtn-sm:hover{border-color:var(--duck);color:var(--duck);background:var(--duck-pale)}
+.rbtn-sm.on{background:var(--duck-pale);border-color:var(--duck);color:var(--duck)}
+.rcount{font-size:11px}
 
-      --edge: rgba(90, 58, 34, .10);
-      --danger:#b00020;
-    }
-    *{box-sizing:border-box;}
-    html,body{ margin:0; height:100%; }
-    body{
-      min-height:100vh;
-      background:var(--bg);
-      color:var(--ink);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto;
-    }
-    .page{ max-width:1120px; margin:0 auto; padding:0 18px 32px; }
+/* DETAIL */
+.detail-view{display:none}
+.detail-view.show{display:block}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0;margin-bottom:20px;font-family:'DM Sans',sans-serif;transition:color .2s}
+.back-btn:hover{color:var(--duck)}
+.dcard{background:white;border:1px solid rgba(26,23,20,.06);padding:24px;margin-bottom:2px}
+.dtitle{font-family:'Shippori Mincho',serif;font-size:20px;font-weight:600;line-height:1.55;margin-bottom:14px}
+.dbody{font-size:14px;line-height:1.9;color:#4a4440;font-weight:300;white-space:pre-wrap}
+.dfooter{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;font-size:11px;color:var(--mist)}
 
-    .site-header{
-      position:fixed;
-      top:0; left:0; right:0;
-      z-index:100;
-      background:rgba(250,248,244,1);
-      border-bottom:none;
-      box-shadow: 0 6px 14px rgba(43,36,27,.06);
-    }
+/* REACTION (detail) */
+.react-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(26,23,20,.06)}
+.rbtn{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:5px 10px;background:var(--cream);border:1px solid rgba(26,23,20,.10);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;color:var(--ink)}
+.rbtn:hover{border-color:var(--duck);background:var(--duck-pale)}
+.rbtn.on{background:var(--duck-pale);border-color:var(--duck);color:var(--duck)}
+.rcount2{font-size:11px;color:var(--mist)}
 
-    .header-wrap{ padding:14px 0 10px; position:relative; }
+/* REPLY CARDS */
+.replies-wrap{margin-top:2px}
+.rcard{background:white;border:1px solid rgba(26,23,20,.06);padding:18px 20px;margin-bottom:2px;position:relative}
+.rcard.best{border-color:var(--duck);background:#f8fdfb}
+.rcard.best::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--duck)}
+.best-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;letter-spacing:.06em;background:var(--duck-pale);color:var(--duck);padding:3px 8px;margin-bottom:8px}
+.rbody{font-size:14px;line-height:1.8;color:#4a4440;font-weight:300;white-space:pre-wrap;margin-top:10px}
+.report-btn{font-size:11px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0 0 0 6px;font-family:'DM Sans',sans-serif;flex-shrink:0;transition:color .2s}
+.report-btn:hover{color:var(--rust)}
+.btn-best{font-size:11px;color:var(--mist);background:none;border:1px solid rgba(26,23,20,.12);padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.btn-best:hover{border-color:var(--duck);color:var(--duck)}
+.btn-best.on{background:var(--duck);color:white;border-color:var(--duck)}
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:14px;
-    }
-    .brand{ display:flex; align-items:center; gap:14px; }
-    .brand img{
-      max-width:120px;
-      height:auto;
-      display:block;
-    }
-    .brand-title span{
-      font-size:18px;
-      letter-spacing:.10em;
-      color:var(--muted);
-      font-weight:700;
-      white-space:nowrap;
-    }
+/* REPLY FORM */
+.reply-form-box{background:white;border:1px solid rgba(26,23,20,.06);padding:20px;margin-top:2px}
+.reply-form-lbl{font-size:12px;color:var(--mist);letter-spacing:.06em;margin-bottom:10px}
+.upgrade-box{background:var(--warm);padding:16px 20px;font-size:13px;color:var(--ink);font-weight:300;line-height:1.7}
+.upgrade-box a{color:var(--duck);text-decoration:none;font-weight:400}
 
-    .user-box{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-size:13px;
-      color:var(--muted);
-      justify-content:flex-end;
-      flex-wrap:wrap;
-    }
-    .pill{
-      border-radius:999px;
-      background:#ffffff;
-      padding:4px 10px;
-      border:1px solid rgba(0,0,0,.10);
-    }
-    .btn{
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,.14);
-      background:#fff;
-      padding:7px 12px;
-      cursor:pointer;
-      font-size:13px;
-      color:var(--ink);
-      user-select:none;
-    }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; }
-    .btn-primary{
-      background:var(--brand);
-      border-color:transparent;
-      color:#fff;
-      font-weight:800;
-    }
+/* POST FORM */
+.pform-wrap{background:white;border:1px solid rgba(26,23,20,.06);padding:26px;margin-bottom:2px}
+.form-lbl-line{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--duck);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.form-lbl-line::after{content:'';flex:1;height:1px;background:var(--duck);opacity:.2}
+.form-h{font-family:'Shippori Mincho',serif;font-size:19px;font-weight:600;color:var(--ink);margin-bottom:20px}
+.fg{margin-bottom:16px}
+.flbl{display:block;font-size:11px;color:var(--mist);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
+.fi,.fsel,.fta{width:100%;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;color:var(--ink);background:var(--cream);border:1px solid rgba(26,23,20,.12);outline:none;transition:border-color .2s,box-shadow .2s;border-radius:0;-webkit-appearance:none}
+.fi:focus,.fsel:focus,.fta:focus{border-color:var(--duck);box-shadow:0 0 0 3px rgba(74,124,111,.1);background:white}
+.fta{resize:vertical;min-height:120px;line-height:1.7}
+.fsel{cursor:pointer}
+.ccount{font-size:11px;color:var(--mist);text-align:right;margin-top:3px}
 
-    /* Standard登録ボタンを少し暗く */
-    .btn-subscribe{
-      background: var(--brand-deep);
-      border-color: transparent;
-      color:#fff;
-      font-weight:900;
-    }
+/* BUTTONS */
+.btn-p{background:var(--duck);color:white;border:none;padding:12px 32px;font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .2s}
+.btn-p:hover:not(:disabled){background:var(--ink);transform:translateY(-1px)}
+.btn-p:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-s{background:transparent;color:var(--duck);border:1px solid var(--duck);padding:11px 26px;font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .2s}
+.btn-s:hover{background:var(--duck);color:white}
+.btn-d{background:transparent;color:var(--error);border:1px solid var(--error);padding:11px 26px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s}
+.btn-d:hover{background:var(--error);color:white}
+.fmsg{font-size:13px;margin-top:10px;font-weight:300}
+.fmsg.err{color:var(--error)}
+.fmsg.ok{color:var(--duck)}
 
-    .btn-outline{ background:#fff; color:var(--ink); }
-    .btn-danger{
-      background:#ffe7e3;
-      border-color:#ffb3a7;
-      color:#8b1a07;
-      font-weight:800;
-    }
-    .btn-ghost{
-      border-color:transparent;
-      background:transparent;
-      color:var(--brand-deep);
-      font-weight:800;
-    }
-    .input{
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,.14);
-      background:#fff;
-      padding:7px 10px;
-      font-size:13px;
-      min-width:220px;
-    }
-    .textarea{
-      border-radius:16px;
-      border:1px solid rgba(0,0,0,.14);
-      background:#fff;
-      padding:10px 12px;
-      font-size:13px;
-      width:100%;
-      min-height:110px;
-      resize:vertical;
-      line-height:1.6;
-    }
+/* ACCOUNT */
+.asec{background:white;border:1px solid rgba(26,23,20,.06);padding:24px;margin-bottom:2px}
+.asec-h{font-family:'Shippori Mincho',serif;font-size:17px;font-weight:600;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(26,23,20,.08)}
+.plan-box{background:var(--warm);padding:14px 18px;margin-bottom:12px}
+.plan-box-lbl{font-size:11px;color:var(--mist);letter-spacing:.04em;margin-bottom:3px}
+.plan-box-val{font-family:'Shippori Mincho',serif;font-size:20px;font-weight:600}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.pwf{max-width:300px;display:flex;flex-direction:column;gap:8px;margin-top:10px}
 
-    .tabs{
-      position:relative;
-      z-index:1;
-      display:flex;
-      gap:4px;
-      overflow:auto;
-      padding:4px;
-      border-radius:999px;
-      background: rgba(255,255,255,.92);
-      border: 1px solid var(--edge);
-      box-shadow: var(--shadow-mini);
-    }
-    .tab-btn{
-      flex:1;
-      min-width:0;
-      border:none;
-      background:transparent;
-      border-radius:999px;
-      padding:10px 12px;
-      font-size:14px;
-      cursor:pointer;
-      letter-spacing:.12em;
-      color:var(--ink);
-    }
-    .tab-btn.active{
-      background:var(--tab-active-bg);
-      color:var(--tab-active-text);
-      outline:none;
-      font-weight:900;
-    }
+/* MODAL */
+.mback{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.mback.show{display:flex}
+.modal{background:white;width:min(460px,96vw);padding:26px;position:relative}
+.modal-h{font-family:'Shippori Mincho',serif;font-size:17px;font-weight:600;margin-bottom:16px}
+.mclose{position:absolute;top:14px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--mist);padding:4px 8px;transition:color .2s}
+.mclose:hover{color:var(--ink)}
 
-    .main-page{ padding-top:190px; }
-    main{ margin-top:46px; }
+/* MISC */
+.loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--mist);font-size:13px;letter-spacing:.06em}
+.empty{text-align:center;padding:48px 20px;color:var(--mist);font-size:13px;font-weight:300;line-height:1.8}
+.empty-h{font-family:'Shippori Mincho',serif;font-size:17px;color:var(--ink);margin-bottom:8px}
 
-    .card{
-      background:var(--panel);
-      border-radius:var(--radius);
-      padding:20px 20px 24px;
-      margin-bottom:24px;
-      border:1px solid var(--edge);
-      box-shadow: var(--shadow-soft);
-    }
-    .tab-pane{display:none;}
-    .tab-pane.active{display:block;}
-
-    h2{ margin:0 0 10px; font-size:20px; }
-    h3{ margin:14px 0 6px; font-size:16px; }
-    p{ margin:6px 0; line-height:1.7; font-size:14px; }
-    .muted{color:var(--muted);}
-    .hidden{display:none;}
-    a{ color:var(--brand-link); text-decoration:none; }
-    a:hover{ text-decoration:underline; }
-
-    .status-box{
-      background:var(--plan-bg);
-      border:1px solid var(--plan-border);
-      border-radius:16px;
-      padding:12px 14px;
-      font-size:13px;
-      margin-top:8px;
-    }
-
-    .cta-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:10px;
-      align-items:center;
-    }
-    .cta-col{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      margin-top:10px;
-    }
-    .cta-col .cta-row{ margin-top:0; }
-
-    .pw-banner{
-      background:#ffe7e3;
-      border:1px solid #ffb3a7;
-      color:#8b1a07;
-      border-radius:12px;
-      padding:10px 14px;
-      margin-bottom:14px;
-      font-size:14px;
-      font-weight:800;
-      cursor:pointer;
-    }
-
-    /* ====== My Rules UI ====== */
-    .rules-wrap{
-      display:grid;
-      grid-template-columns: 320px 1fr;
-      gap:14px;
-      margin-top:10px;
-    }
-    .pane{
-      border:1px solid var(--edge);
-      border-radius:16px;
-      padding:14px;
-      background:#fff;
-    }
-    .pane h3{ margin-top:0; }
-
-    .list{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-top:10px;
-    }
-    .item{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 12px;
-      border:1px solid var(--edge);
-      border-radius:14px;
-      background:#fff;
-      cursor:pointer;
-    }
-    .item:hover{ box-shadow: 0 10px 18px rgba(43,36,27,.06); }
-    .item.active{
-      border-color: rgba(122,63,7,.35);
-      background: var(--brand-soft);
-    }
-    .item .title{
-      font-weight:900;
-      font-size:13px;
-      letter-spacing:.04em;
-    }
-    .item .sub{
-      font-size:12px;
-      color:var(--muted);
-      margin-top:2px;
-    }
-    .item-left{ min-width:0; }
-    .item-right{ display:flex; align-items:center; gap:6px; }
-    .icon-btn{
-      border:none;
-      background:transparent;
-      cursor:pointer;
-      padding:6px 8px;
-      border-radius:10px;
-      color:var(--brand-deep);
-      font-weight:900;
-      white-space:nowrap;
-    }
-    .icon-btn:hover{ background: rgba(0,0,0,.04); }
-    .danger{ color: var(--danger); }
-
-    .notice{
-      margin-top:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      border:1px solid rgba(0,0,0,.10);
-      background:#fff7e0;
-      font-size:13px;
-      color:var(--ink);
-    }
-
-    /* Free制限ボックス内 右上CTA（Standard登録ボタン） */
-    .notice.plan-notice{
-      position: relative;
-      padding-right: 240px; /* 右上ボタン分の余白（被り防止） */
-    }
-    .notice .notice-cta{
-      position: absolute;
-      right: 14px;
-      top: 12px;
-    }
-
-    .err{
-      margin-top:8px;
-      font-size:12px;
-      color:var(--danger);
-    }
-    .ok{
-      margin-top:8px;
-      font-size:12px;
-      color: var(--muted);
-    }
-
-    /* ===== Search ===== */
-    .search-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-top:10px;
-    }
-    .search-row .input{ min-width: 280px; }
-
-    /* ===== Modal ===== */
-    .modal-backdrop{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.35);
-      display:none;
-      z-index:200;
-      align-items:center;
-      justify-content:center;
-      padding:18px;
-    }
-    .modal-backdrop.show{ display:flex; }
-    .modal{
-      width:min(520px, 96vw);
-      background:#fff;
-      border-radius:18px;
-      border:1px solid var(--edge);
-      box-shadow: 0 20px 60px rgba(0,0,0,.22);
-      padding:16px 16px 14px;
-    }
-    .modal-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .modal-title{
-      font-weight:900;
-      letter-spacing:.06em;
-      font-size:14px;
-    }
-    .modal-close{
-      border:none;
-      background:transparent;
-      cursor:pointer;
-      font-size:18px;
-      line-height:1;
-      padding:6px 10px;
-      border-radius:10px;
-    }
-    .modal-close:hover{ background: rgba(0,0,0,.06); }
-
-    .field{
-      margin-top:10px;
-    }
-    .field label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin-bottom:6px;
-      letter-spacing:.04em;
-    }
-    .select{
-      border-radius:999px;
-      border:1px solid rgba(0,0,0,.14);
-      background:#fff;
-      padding:7px 10px;
-      font-size:13px;
-      min-width:260px;
-      height:34px;
-    }
-    .divider{
-      margin:14px 0;
-      border:none;
-      border-top:1px solid rgba(0,0,0,.08);
-    }
-
-    footer{
-      margin-top:18px;
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    @media (max-width: 768px){
-      .topbar{ flex-direction:column; align-items:flex-start; gap:8px; }
-      .brand img{ max-width:180px; }
-      .brand-title span{ font-size:16px; letter-spacing:.08em; white-space:normal; line-height:1.2; }
-      .user-box{ justify-content:flex-start; }
-
-      .tabs{
-        border-radius:16px;
-        padding:4px 6px;
-        gap:6px;
-        -webkit-overflow-scrolling:touch;
-      }
-      .tab-btn{
-        flex:0 0 auto;
-        white-space:nowrap;
-        font-size:12px;
-        letter-spacing:.08em;
-        padding:8px 10px;
-      }
-
-      .main-page{ padding-top:230px; }
-      main{ margin-top:40px; }
-
-      .rules-wrap{ grid-template-columns: 1fr; }
-      .search-row .input{ min-width: 100%; }
-      .select{ min-width: 100%; }
-
-      /* スマホでは右上固定をやめて自然配置 */
-      .notice.plan-notice{ padding-right: 12px; }
-      .notice .notice-cta{
-        position: static;
-        margin-top: 10px;
-      }
-    }
-  </style>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+@media(max-width:560px){
+  .uemail{display:none}
+  .pgrid{grid-template-columns:1fr}
+  .pform-wrap,.dcard,.rcard,.reply-form-box,.asec{padding:16px}
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
-
 <body>
-  <header class="site-header">
-    <div class="page header-wrap">
-      <div class="topbar">
-        <div class="brand">
-          <img src="/assets/logo-gyomu-karugamo.png" alt="業務かるがも" />
-          <div class="brand-title">
-            <span>忘れっぽい人のための「自分ルール置き場」</span>
-          </div>
-        </div>
 
-        <div class="user-box">
-          <span>ログイン中：</span>
-          <span id="userEmail" class="pill">-</span>
-          <button id="logout" class="btn btn-outline">ログアウト</button>
-        </div>
-      </div>
-
-      <nav class="tabs">
-        <button class="tab-btn active" data-tab="home">HOME</button>
-        <button class="tab-btn" data-tab="myrules">MY RULES</button>
-        <button class="tab-btn" data-tab="account">ACCOUNT</button>
-      </nav>
-    </div>
-  </header>
-
-  <div class="page main-page">
-    <main>
-      <!-- 未ログイン時 -->
-      <div id="notLoggedAlert" class="card hidden" style="background:#fff7e0;border:1px solid #f3d38a;">
-        <p class="muted" style="font-size:14px;margin-bottom:8px;">
-          未ログインか、ブラウザが変わったためログイン情報を確認できませんでした。もう一度ログインしてください。
-        </p>
-        <a href="./" style="font-size:14px;">ログイン画面に戻る</a>
-      </div>
-
-      <!-- HOME -->
-      <section id="tab-home" class="tab-pane active">
-        <div class="card">
-          <div id="pwBanner" class="pw-banner hidden">
-            パスワードが未設定です。こちらをクリックして設定してください。
-          </div>
-
-          <h2>ようこそ、業務かるがもへ</h2>
-          <p class="muted">
-            「忘れやすいこと」を、毎回同じ形で確認できる場所です。<br>
-            まずは <strong>MY RULES</strong> で「自分ルール」と「カテゴリ」を登録してください。
-          </p>
-
-          <div class="status-box">
-            <div>
-              現在のプラン：<strong id="planLabelText">Free</strong>
-            </div>
-            <p id="statusText" class="muted" style="margin-top:6px;">ログイン状態を確認しています…</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- MY RULES -->
-      <section id="tab-myrules" class="tab-pane">
-        <div class="card">
-          <h2>MY RULES</h2>
-          <p class="muted">
-            自分用の「注意点」「手順」「忘れがちなこと」をここに置いて、必要なときに見るだけ。
-          </p>
-
-          <!-- ここに「Free制限 + 右上に登録ボタン」をJSで描画 -->
-          <div id="planLimitNotice" class="notice hidden"></div>
-
-          <!-- 「新しいルール」「再読み込み」は登録ボタンの下の行（枠外） -->
-          <div class="cta-col" style="margin-top:12px;">
-            <div class="cta-row">
-              <!-- Standard登録ボタンは黄色枠内に移動したのでここには置かない -->
-            </div>
-            <div class="cta-row">
-              <button id="btnNewRule" class="btn btn-primary">新しいルールを作成</button>
-              <button id="btnReloadRules" class="btn btn-outline">再読み込み</button>
-            </div>
-          </div>
-
-          <div class="search-row">
-            <input id="searchText" class="input" placeholder="カテゴリ名 / ルールタイトルで検索" />
-            <button id="btnClearSearch" class="btn btn-ghost">クリア</button>
-            <span class="muted" style="font-size:12px;">表示件数：<strong id="resultCount">0</strong></span>
-          </div>
-
-          <div class="rules-wrap">
-            <!-- Categories -->
-            <div class="pane">
-              <h3>カテゴリ</h3>
-              <p class="muted" style="font-size:12px;margin-top:2px;">
-                例：メール、提出、月末、相手別、生活
-              </p>
-
-              <div id="catList" class="list"></div>
-              <p id="catEmpty" class="muted" style="margin-top:10px;">カテゴリがありません。まずはルール作成時に追加してください。</p>
-            </div>
-
-            <!-- Rules -->
-            <div class="pane">
-              <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:10px;">
-                <div>
-                  <h3 style="margin-bottom:2px;">ルール</h3>
-                  <p class="muted" style="font-size:12px;margin-top:0;">
-                    カテゴリを選ぶと、そのルールが表示されます。
-                  </p>
-                </div>
-                <div class="muted" style="font-size:12px;">
-                  選択中：<strong id="activeCatLabel">-</strong>
-                </div>
-              </div>
-
-              <div id="ruleNeedCat" class="notice" style="margin-top:12px;">
-                まず左の「カテゴリ」から1つ選んでください。
-              </div>
-
-              <div id="ruleList" class="list" style="margin-top:12px;"></div>
-              <p id="ruleEmpty" class="muted" style="margin-top:10px;">このカテゴリにはまだルールがありません。</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ACCOUNT -->
-      <section id="tab-account" class="tab-pane">
-        <div class="card">
-          <h2>アカウント・プラン情報</h2>
-          <p class="muted">現在のプラン確認、Standardプラン登録、解約ができます。</p>
-
-          <div class="status-box">
-            <div>
-              現在のプラン：<strong id="planLabelText2">Free</strong>
-            </div>
-            <p id="statusText2" class="muted" style="margin-top:6px;">ログイン状態を確認しています…</p>
-          </div>
-
-          <div class="cta-row">
-            <button id="btnSubscribe" class="btn btn-subscribe hidden">Standardプランに登録する</button>
-            <button id="btnCancel" class="btn btn-danger hidden">サブスクを解約する</button>
-          </div>
-
-          <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
-
-          <h3>メールアドレスの変更</h3>
-          <p class="muted" style="font-size:13px;">
-            新しいメールアドレスを入力すると確認メールを送信します。メール内のリンクから変更を完了してください。
-          </p>
-
-          <p style="font-size:13px;margin-top:8px;">
-            現在のメールアドレス：<strong id="currentEmailText"></strong>
-          </p>
-
-          <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-            <input id="emailNew" type="email" class="input" placeholder="new-address@example.com" />
-            <button id="btnChangeEmail" class="btn btn-outline">変更用メールを送信</button>
-          </div>
-          <p id="emailChangeMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
-
-          <hr style="margin:18px 0;border:none;border-top:1px solid rgba(0,0,0,.08);" />
-
-          <div id="pwSection" class="hidden">
-            <h3>パスワードの設定</h3>
-            <p class="muted" style="font-size:13px;">
-              初回登録がメール認証のみの場合、ここでパスワードを設定すると次回から「メール＋パスワード」でログインできます。
-            </p>
-            <small class="muted">8文字以上で、他サービスと使い回さないパスワード推奨。</small>
-
-            <form id="pwForm" novalidate style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-width:320px;">
-              <input id="pwNew"  type="password" class="input" placeholder="新しいパスワード（8文字以上）" />
-              <input id="pwNew2" type="password" class="input" placeholder="確認のため、同じパスワードをもう一度" />
-              <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-                <input type="checkbox" id="pwShowSetup" />
-                <label for="pwShowSetup" style="font-size:13px;">パスワードを表示する</label>
-              </div>
-              <button id="pwSubmit" type="submit" class="btn btn-outline">パスワードを設定する</button>
-            </form>
-
-            <p id="pwMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
-          </div>
-
-          <div id="pwChangeSection" class="hidden" style="margin-top:18px;">
-            <h3>パスワードの変更</h3>
-            <p class="muted" style="font-size:13px;">現在ログイン中のアカウントのパスワードを変更できます（古いパスワードは不要）。</p>
-            <small class="muted">8文字以上推奨。</small>
-
-            <form id="pwChangeForm" novalidate style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-width:320px;">
-              <input id="pwChangeNew"  type="password" class="input" placeholder="新しいパスワード（8文字以上）" />
-              <input id="pwChangeNew2" type="password" class="input" placeholder="確認のため、同じパスワードをもう一度" />
-              <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-                <input type="checkbox" id="pwShowChange" />
-                <label for="pwShowChange" style="font-size:13px;">パスワードを表示する</label>
-              </div>
-              <button id="pwChangeSubmit" type="submit" class="btn btn-outline">パスワードを変更する</button>
-            </form>
-
-            <p id="pwChangeMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div id="legalLinks" style="margin-top:4px;font-size:11px;">
-        <a href="/terms.html" target="_blank" rel="noopener">利用規約</a> /
-        <a href="/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>
-      </div>
-    </footer>
+<header class="site-header">
+  <a href="/app.html" class="hlogo">
+    <img src="/assets/icon.png" alt="業務かるがも">
+    <span class="hlogo-name">業務かるがも</span>
+  </a>
+  <div class="hright">
+    <span id="userEmail" class="uemail"></span>
+    <span id="planBadge" class="pbadge">Free</span>
+    <button id="btnLogout" class="btn-out">ログアウト</button>
   </div>
+</header>
 
-  <!-- ===== Modal: New Rule ===== -->
-  <div id="ruleModal" class="modal-backdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-label="新しいルール">
-      <div class="modal-head">
-        <div class="modal-title">新しいルール</div>
-        <button id="btnCloseModal" class="modal-close" aria-label="閉じる">×</button>
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="home">HOME</button>
+  <button class="tab-btn" data-tab="post">つぶやき</button>
+  <button class="tab-btn" data-tab="question">相談</button>
+  <button class="tab-btn" data-tab="account">アカウント</button>
+</nav>
+
+<div class="page">
+
+  <!-- HOME -->
+  <section id="tab-home" class="tab-pane active">
+    <div id="homeListView">
+      <div class="search-bar">
+        <input id="homeSearch" class="s-input" type="text" placeholder="キーワードで検索…" autocomplete="off">
+        <button class="s-clear" onclick="clearSearch('home')">クリア</button>
       </div>
-
-      <div class="field">
-        <label for="modalRuleTitle">ルールタイトル（自由入力）</label>
-        <input id="modalRuleTitle" class="input" placeholder="例：送る前に確認すること / この相手の注意点 など" style="width:100%;min-width:0;" />
+      <div class="type-filter">
+        <button class="type-btn active" data-type="">すべて</button>
+        <button class="type-btn" data-type="post">つぶやき</button>
+        <button class="type-btn" data-type="question">相談</button>
       </div>
-
-      <div class="field">
-        <label for="modalRuleBody">ルール本文（短くてOK / 箇条書きOK）</label>
-        <textarea id="modalRuleBody" class="textarea" placeholder="例：&#10;・件名に日付を入れる&#10;・添付ファイル名を確認する&#10;・宛先が合っているか見る"></textarea>
-      </div>
-
-      <hr class="divider" />
-
-      <div class="field">
-        <label>カテゴリ（選択 or 新規作成）</label>
-        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-          <select id="modalCatSelect" class="select" style="flex:1; min-width:260px;">
-            <option value="">カテゴリを選択</option>
-          </select>
-          <span class="muted" style="font-size:12px;">または</span>
-          <input id="modalNewCatName" class="input" placeholder="新しいカテゴリ名" style="flex:1; min-width:220px;" />
-        </div>
-        <div class="muted" style="font-size:12px;margin-top:6px;">
-          ※ 新しいカテゴリ名を入れた場合は「新規作成」が優先されます。
-        </div>
-      </div>
-
-      <div id="modalMsg" class="err hidden"></div>
-
-      <div class="cta-row" style="justify-content:flex-end; margin-top:14px;">
-        <button id="btnCreateRule" class="btn btn-primary">作成</button>
-        <button id="btnCancelModal" class="btn btn-outline">キャンセル</button>
-      </div>
+      <div id="homeList" class="card-list"><div class="loading">読み込み中…</div></div>
     </div>
+    <div id="homeDetail" class="detail-view"></div>
+  </section>
+
+  <!-- つぶやき -->
+  <section id="tab-post" class="tab-pane">
+    <div id="postListView">
+      <div class="search-bar">
+        <input id="postSearch" class="s-input" type="text" placeholder="キーワードで検索…" autocomplete="off">
+        <button class="s-clear" onclick="clearSearch('post')">クリア</button>
+      </div>
+      <div id="postFormArea"></div>
+      <div id="postList" class="card-list" style="margin-top:14px"><div class="loading">読み込み中…</div></div>
+    </div>
+    <div id="postDetail" class="detail-view"></div>
+  </section>
+
+  <!-- 相談 -->
+  <section id="tab-question" class="tab-pane">
+    <div id="questionListView">
+      <div class="search-bar">
+        <input id="questionSearch" class="s-input" type="text" placeholder="キーワードで検索…" autocomplete="off">
+        <button class="s-clear" onclick="clearSearch('question')">クリア</button>
+      </div>
+      <div class="cat-filter" id="qCatFilter">
+        <button class="cat-chip active" data-cat="">すべて</button>
+        <button class="cat-chip" data-cat="キャリア">キャリア</button>
+        <button class="cat-chip" data-cat="結婚・ライフプラン">結婚・ライフプラン</button>
+        <button class="cat-chip" data-cat="お金・将来">お金・将来</button>
+        <button class="cat-chip" data-cat="恋愛">恋愛</button>
+        <button class="cat-chip" data-cat="その他">その他</button>
+      </div>
+      <div id="questionFormArea"></div>
+      <div id="questionList" class="card-list" style="margin-top:14px"><div class="loading">読み込み中…</div></div>
+    </div>
+    <div id="questionDetail" class="detail-view"></div>
+  </section>
+
+  <!-- アカウント -->
+  <section id="tab-account" class="tab-pane">
+    <div id="accountWrap"></div>
+  </section>
+
+</div>
+
+<!-- 通報モーダル -->
+<div id="reportModal" class="mback">
+  <div class="modal">
+    <button class="mclose" id="reportClose">×</button>
+    <div class="modal-h">通報する</div>
+    <div class="fg">
+      <label class="flbl">通報の理由</label>
+      <select id="reportReason" class="fsel">
+        <option value="">選択してください</option>
+        <option value="harassment">誹謗中傷・個人攻撃</option>
+        <option value="spam">スパム・宣伝</option>
+        <option value="sexual">性的・不適切なコンテンツ</option>
+        <option value="fake">男性による虚偽登録の疑い</option>
+        <option value="other">その他</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button id="btnReport" class="btn-p">通報する</button>
+      <button id="btnReportCancel" class="btn-s">キャンセル</button>
+    </div>
+    <p id="reportMsg" class="fmsg"></p>
   </div>
+</div>
 
 <script>
-  // =========================
-  // Supabase 設定（差し替え）
-  // =========================
-  const SUPABASE_URL = "https://rhynpigqhnbwjyudvvfw.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeW5waWdxaG5id2p5dWR2dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODcyNTMsImV4cCI6MjA4MzM2MzI1M30.S9h-SH0JB0cEhMukUUaOuYEetx2I8qecZapIeCpk57M";
+/* ===== SUPABASE ===== */
+const SB_URL  = "https://rhynpigqhnbwjyudvvfw.supabase.co";
+const SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeW5waWdxaG5id2p5dWR2dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODcyNTMsImV4cCI6MjA4MzM2MzI1M30.S9h-SH0JB0cEhMukUUaOuYEetx2I8qecZapIeCpk57M";
+const BILLING = "https://app.gyomu-karugamo.com/data/billing.json";
+const PORTAL  = "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/create-portal-session";
+const APP_URL = "https://app.gyomu-karugamo.com/app.html";
 
-  const SITE_TOP_URL = "https://app.gyomu-karugamo.com/app.html";
+const sb = window.supabase.createClient(SB_URL, SB_KEY, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
 
-  const sb = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    }
-  );
+/* ===== STATE ===== */
+const S = {
+  user:null, profile:null, isStd:false,
+  threads:[], billingCfg:null, reportTarget:null,
+  reactions:{},
+  search:{ home:"", post:"", question:"" },
+  homeType:"", qCat:"",
+};
 
-  const BILLING_JSON_URL = "https://app.gyomu-karugamo.com/data/billing.json";
-  let BILLING_CONFIG = { stripe: { standard: { payment_link_url: null } } };
+/* ===== UTILS ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const AVC = ["#4a7c6f","#c4622d","#b8975a","#6a7c8f","#8a6a9a"];
+const avc = s => AVC[Math.abs([...String(s)].reduce((a,c)=>a+c.charCodeAt(0),0))%AVC.length];
+function rtime(ts){
+  const d=(Date.now()-new Date(ts))/1000;
+  if(d<60)return"たった今";
+  if(d<3600)return`${Math.floor(d/60)}分前`;
+  if(d<86400)return`${Math.floor(d/3600)}時間前`;
+  return`${Math.floor(d/86400)}日前`;
+}
+function attrHtml(p){
+  if(!p)return"";
+  return[p.age?`${p.age}歳`:"",p.work_style||"",p.marital_status||"",p.living_situation||""]
+    .filter(Boolean).map(t=>`<span class="attr-tag">${esc(t)}</span>`).join("");
+}
+function msg(el,txt,type="err"){if(!el)return;el.textContent=txt;el.className="fmsg"+(type?" "+type:"")}
 
-  const PORTAL_FUNCTION_URL = "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/create-portal-session";
-
-  // Freeの場合：カテゴリ・ルールに制限 / Standard：無制限
-  const FREE_LIMITS = { categories: 3, rules: 5 };
-
-  const $ = (s)=>document.querySelector(s);
-
-  function switchToTab(tab){
-    document.querySelectorAll(".tab-btn").forEach(btn=>{
-      btn.classList.toggle("active", btn.dataset.tab === tab);
-    });
-    document.querySelectorAll(".tab-pane").forEach(p=>{
-      p.classList.toggle("active", p.id === "tab-"+tab);
-    });
+/* ===== AUTH ===== */
+async function getUser(){
+  try{const{data}=await sb.auth.getSession();if(data?.session?.user)return data.session.user;}catch(e){}
+  const u=new URL(location.href);
+  if(u.searchParams.has("code")||u.hash.includes("access_token"))
+    try{await sb.auth.exchangeCodeForSession(location.href);}catch(e){}
+  for(let i=0;i<30;i++){
+    try{const{data:{user}}=await sb.auth.getUser();if(user)return user;}catch(e){}
+    await new Promise(r=>setTimeout(r,150));
   }
-  document.querySelectorAll(".tab-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>switchToTab(btn.dataset.tab));
+  return null;
+}
+async function loadProfile(uid){
+  let{data,error}=await sb.from("profiles").select("*").eq("id",uid).single();
+  const nf=error&&(error.code==="PGRST116"||String(error.details||"").includes("0 rows"));
+  if(nf){
+    await sb.from("profiles").upsert({id:uid,tier:"free",is_active:false,has_password:false},{onConflict:"id"});
+    ({data,error}=await sb.from("profiles").select("*").eq("id",uid).single());
+  }
+  return data;
+}
+
+/* ===== TABS ===== */
+function switchTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+  document.querySelectorAll(".tab-pane").forEach(p=>p.classList.toggle("active",p.id==="tab-"+tab));
+  if(tab==="home")     renderHomeTab();
+  if(tab==="post")     renderPostTab();
+  if(tab==="question") renderQuestionTab();
+  if(tab==="account")  renderAccount();
+}
+document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
+
+/* ===== DATA ===== */
+async function loadThreads(){
+  const{data}=await sb.from("threads").select(`
+    id,type,category,title,body,created_at,best_reply_id,user_id,
+    profiles!user_id(age,work_style,marital_status,living_situation),
+    replies(count)
+  `).order("created_at",{ascending:false}).limit(200);
+  S.threads=data||[];
+}
+
+/* ===== REACTIONS ===== */
+const EMOJIS=["わかる","参考になった","応援してる","つらいね"];
+const EICONS={"わかる":"🤝","参考になった":"💡","応援してる":"📣","つらいね":"🤍"};
+
+async function loadReactions(ids){
+  if(!ids.length)return;
+  const{data}=await sb.from("reactions").select("reply_id,emoji,user_id").in("reply_id",ids);
+  for(const r of(data||[])){
+    if(!S.reactions[r.reply_id])S.reactions[r.reply_id]={};
+    if(!S.reactions[r.reply_id][r.emoji])S.reactions[r.reply_id][r.emoji]={count:0,on:false};
+    S.reactions[r.reply_id][r.emoji].count++;
+    if(S.user&&r.user_id===S.user.id)S.reactions[r.reply_id][r.emoji].on=true;
+  }
+}
+
+async function toggleReaction(tid,emoji,cb){
+  if(!S.user)return;
+  if(!S.reactions[tid])S.reactions[tid]={};
+  const cur=S.reactions[tid][emoji];
+  if(cur?.on){
+    await sb.from("reactions").delete().eq("user_id",S.user.id).eq("reply_id",tid).eq("emoji",emoji);
+    S.reactions[tid][emoji]={count:Math.max(0,(cur.count||1)-1),on:false};
+  }else{
+    await sb.from("reactions").insert({user_id:S.user.id,reply_id:tid,emoji});
+    if(!S.reactions[tid][emoji])S.reactions[tid][emoji]={count:0,on:false};
+    S.reactions[tid][emoji]={count:(S.reactions[tid][emoji].count||0)+1,on:true};
+  }
+  if(cb)cb();
+}
+
+function buildReactSm(tid){
+  const r=S.reactions[tid]||{};
+  return`<div class="react-row-sm" data-rid="${tid}">`+
+    EMOJIS.map(e=>{const i=r[e]||{count:0,on:false};
+      return`<button class="rbtn-sm${i.on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount">${i.count}</span>`:""}</button>`;
+    }).join("")+`</div>`;
+}
+function buildReactFull(tid){
+  const r=S.reactions[tid]||{};
+  return`<div class="react-row" data-rid="${tid}">`+
+    EMOJIS.map(e=>{const i=r[e]||{count:0,on:false};
+      return`<button class="rbtn${i.on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount2">${i.count}</span>`:""}</button>`;
+    }).join("")+`</div>`;
+}
+
+function bindReacts(container,small,cb){
+  const cls=small?".rbtn-sm":".rbtn";
+  container.querySelectorAll(cls).forEach(b=>{
+    b.addEventListener("click",e=>{
+      e.stopPropagation();
+      if(!S.user)return;
+      toggleReaction(b.dataset.tid,b.dataset.e,cb);
+    });
+  });
+}
+
+/* ===== SEARCH ===== */
+function clearSearch(tab){
+  S.search[tab]="";
+  const el=$(`#${tab}Search`);if(el)el.value="";
+  if(tab==="home")renderHomeList();
+  if(tab==="post")renderPostList();
+  if(tab==="question")renderQuestionList();
+}
+function filterT(arr,q){
+  if(!q)return arr;
+  const lq=q.toLowerCase();
+  return arr.filter(t=>(t.title||"").toLowerCase().includes(lq)||(t.body||"").toLowerCase().includes(lq)||(t.category||"").toLowerCase().includes(lq));
+}
+
+/* ===== CARD HTML ===== */
+function cardHtml(t,showBadge){
+  const p=t.profiles,color=avc(t.user_id),init=p?.age?String(p.age)[0]:"?";
+  const rc=t.replies?.[0]?.count??0,isPost=t.type==="post";
+  return`<div class="post-card${isPost?" is-post":""}" data-id="${t.id}" data-type="${t.type}">
+    <div class="card-meta">
+      <div class="av" style="background:${color}">${init}</div>
+      <div class="av-info">
+        <div class="uname">${p?.age?p.age+"歳":"匿名"}</div>
+        <div class="attr-tags">${attrHtml(p)}</div>
+      </div>
+      ${showBadge?(isPost?`<span class="tbadge-post">つぶやき</span>`:`<span class="tbadge-q">相談</span>`):""}
+      ${!isPost&&t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
+    </div>
+    ${!isPost?`<div class="card-title">${esc(t.title)}</div>`:""}
+    <div class="card-preview">${esc(t.body)}</div>
+    <div class="card-footer">
+      ${!isPost?`<span>💬 ${rc}件の返信</span>`:""}
+      ${t.best_reply_id?`<span class="solved">✓ 解決済み</span>`:""}
+      <span>${rtime(t.created_at)}</span>
+    </div>
+    ${isPost?buildReactSm(t.id):""}
+  </div>`;
+}
+
+function bindCardList(container,tab,showBadge){
+  container.querySelectorAll(".post-card").forEach(c=>{
+    c.addEventListener("click",e=>{
+      if(e.target.closest(".rbtn-sm"))return;
+      openDetail(c.dataset.id,c.dataset.type,tab);
+    });
+  });
+  // つぶやきのリアクション再描画
+  bindReacts(container,true,()=>{
+    container.querySelectorAll(".react-row-sm").forEach(row=>{
+      const tid=row.dataset.rid;
+      row.outerHTML=buildReactSm(tid);
+    });
+    bindReacts(container,true,null);
+  });
+}
+
+/* ===== HOME ===== */
+function renderHomeTab(){
+  $("#homeDetail").classList.remove("show");
+  $("#homeListView").style.display="";
+  renderHomeList();
+  // タイプフィルター
+  document.querySelectorAll(".type-btn").forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll(".type-btn").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      S.homeType=b.dataset.type;
+      renderHomeList();
+    };
+  });
+  // 検索
+  const si=$("#homeSearch");
+  si.oninput=()=>{S.search.home=si.value.trim();renderHomeList();};
+}
+
+function renderHomeList(){
+  const el=$("#homeList");
+  let ts=S.threads;
+  if(S.homeType)ts=ts.filter(t=>t.type===S.homeType);
+  ts=filterT(ts,S.search.home);
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.home?"検索結果がありません":"まだ投稿がありません"}</div></div>`;return;}
+  // つぶやきのreactions事前ロード
+  const pids=ts.filter(t=>t.type==="post").map(t=>t.id);
+  loadReactions(pids).then(()=>{
+    el.innerHTML=ts.map(t=>cardHtml(t,true)).join("");
+    bindCardList(el,"home",true);
+  });
+}
+
+/* ===== つぶやきタブ ===== */
+function renderPostTab(){
+  $("#postDetail").classList.remove("show");
+  $("#postListView").style.display="";
+  renderPostForm();
+  renderPostList();
+  const si=$("#postSearch");
+  si.oninput=()=>{S.search.post=si.value.trim();renderPostList();};
+}
+
+function renderPostList(){
+  const el=$("#postList");
+  let ts=filterT(S.threads.filter(t=>t.type==="post"),S.search.post);
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.post?"検索結果がありません":"まだつぶやきがありません"}</div>最初のつぶやきをしてみましょう。</div>`;return;}
+  const ids=ts.map(t=>t.id);
+  loadReactions(ids).then(()=>{
+    el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");
+    bindCardList(el,"post",false);
+  });
+}
+
+function renderPostForm(){
+  const wrap=$("#postFormArea");
+  if(!S.isStd){
+    wrap.innerHTML=`<div class="upgrade-box">投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。閲覧は無料でできます。</div>`;
+    wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});
+    return;
+  }
+  wrap.innerHTML=`
+  <div class="pform-wrap">
+    <div class="form-lbl-line">つぶやく</div>
+    <div class="fg">
+      <textarea id="ptBody" class="fta" placeholder="いまどんな気持ち？自由につぶやいてみよう…" maxlength="500" style="min-height:90px"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+        <button id="btnPostSubmit" class="btn-p">つぶやく</button>
+        <span class="ccount"><span id="ptCount">0</span> / 500</span>
+      </div>
+    </div>
+    <p id="ptMsg" class="fmsg"></p>
+  </div>`;
+  $("#ptBody").addEventListener("input",e=>$("#ptCount").textContent=e.target.value.length);
+  $("#btnPostSubmit").addEventListener("click",submitPost);
+}
+
+async function submitPost(){
+  const body=$("#ptBody")?.value?.trim();
+  const m=$("#ptMsg");
+  if(!body){msg(m,"内容を入力してください。");return;}
+  const btn=$("#btnPostSubmit");btn.disabled=true;
+  const{error}=await sb.from("threads").insert({user_id:S.user.id,type:"post",body,category:null,title:null});
+  btn.disabled=false;
+  if(error){msg(m,"投稿に失敗しました。");return;}
+  msg(m,"投稿しました！","ok");
+  $("#ptBody").value="";$("#ptCount").textContent="0";
+  await loadThreads();renderPostList();
+  setTimeout(()=>{if(m)m.textContent="";},2000);
+}
+
+/* ===== 相談タブ ===== */
+function renderQuestionTab(){
+  $("#questionDetail").classList.remove("show");
+  $("#questionListView").style.display="";
+  renderQuestionForm();
+  renderQuestionList();
+  // カテゴリフィルター
+  document.querySelectorAll("#qCatFilter .cat-chip").forEach(c=>{
+    c.onclick=()=>{
+      document.querySelectorAll("#qCatFilter .cat-chip").forEach(x=>x.classList.remove("active"));
+      c.classList.add("active");
+      S.qCat=c.dataset.cat;
+      renderQuestionList();
+    };
+  });
+  const si=$("#questionSearch");
+  si.oninput=()=>{S.search.question=si.value.trim();renderQuestionList();};
+}
+
+function renderQuestionList(){
+  const el=$("#questionList");
+  let ts=S.threads.filter(t=>t.type==="question");
+  if(S.qCat)ts=ts.filter(t=>t.category===S.qCat);
+  ts=filterT(ts,S.search.question);
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.question?"検索結果がありません":"まだ相談がありません"}</div>悩みを投稿してみましょう。</div>`;return;}
+  el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");
+  bindCardList(el,"question",false);
+}
+
+function renderQuestionForm(){
+  const wrap=$("#questionFormArea");
+  if(!S.isStd){
+    wrap.innerHTML=`<div class="upgrade-box">相談投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。閲覧は無料でできます。</div>`;
+    wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});
+    return;
+  }
+  wrap.innerHTML=`
+  <div class="pform-wrap">
+    <div class="form-lbl-line">相談する</div>
+    <div class="fg">
+      <label class="flbl">カテゴリ <span style="color:var(--rust)">*</span></label>
+      <select id="qCat" class="fsel">
+        <option value="">選択してください</option>
+        <option>キャリア</option><option>結婚・ライフプラン</option>
+        <option>お金・将来</option><option>恋愛</option><option>その他</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="flbl">タイトル <span style="color:var(--rust)">*</span></label>
+      <input id="qTitle" class="fi" type="text" placeholder="例：転職するか迷っています" maxlength="60">
+      <div class="ccount"><span id="qTCount">0</span> / 60</div>
+    </div>
+    <div class="fg">
+      <label class="flbl">内容 <span style="color:var(--rust)">*</span></label>
+      <textarea id="qBody" class="fta" placeholder="状況や悩みをできるだけ具体的に書いてみてください…" maxlength="2000"></textarea>
+      <div class="ccount"><span id="qBCount">0</span> / 2000</div>
+    </div>
+    <button id="btnQSubmit" class="btn-p">相談を投稿する</button>
+    <p id="qMsg" class="fmsg"></p>
+  </div>`;
+  $("#qTitle").addEventListener("input",e=>$("#qTCount").textContent=e.target.value.length);
+  $("#qBody").addEventListener("input",e=>$("#qBCount").textContent=e.target.value.length);
+  $("#btnQSubmit").addEventListener("click",submitQuestion);
+}
+
+async function submitQuestion(){
+  const category=$("#qCat")?.value;
+  const title=$("#qTitle")?.value?.trim();
+  const body=$("#qBody")?.value?.trim();
+  const m=$("#qMsg");
+  if(!category){msg(m,"カテゴリを選択してください。");return;}
+  if(!title){msg(m,"タイトルを入力してください。");return;}
+  if(!body){msg(m,"内容を入力してください。");return;}
+  const btn=$("#btnQSubmit");btn.disabled=true;
+  const{error}=await sb.from("threads").insert({user_id:S.user.id,type:"question",category,title,body});
+  btn.disabled=false;
+  if(error){msg(m,"投稿に失敗しました。"+error.message);return;}
+  msg(m,"投稿しました！","ok");
+  $("#qCat").value="";$("#qTitle").value="";$("#qBody").value="";
+  $("#qTCount").textContent="0";$("#qBCount").textContent="0";
+  await loadThreads();renderQuestionList();
+  setTimeout(()=>{if(m)m.textContent="";},2000);
+}
+
+/* ===== 詳細 ===== */
+async function openDetail(threadId,type,fromTab){
+  const listViewId = fromTab==="home"?"homeListView":fromTab==="post"?"postListView":"questionListView";
+  const detailId   = fromTab==="home"?"homeDetail":fromTab==="post"?"postDetail":"questionDetail";
+  $(` #${listViewId}`).style.display="none";
+  const dv=$(`#${detailId}`);
+  dv.classList.add("show");
+  dv.innerHTML=`<button class="back-btn" id="backBtn">← 一覧に戻る</button><div class="loading">読み込み中…</div>`;
+  $("#backBtn").addEventListener("click",()=>goBack(fromTab,listViewId,detailId));
+
+  // スレッド取得
+  const{data:t}=await sb.from("threads").select(`*,profiles!user_id(age,work_style,marital_status,living_situation,bio)`).eq("id",threadId).single();
+  if(!t){dv.innerHTML+=`<div class="empty">投稿が見つかりませんでした。</div>`;return;}
+
+  const isPost=t.type==="post";
+  const isOwner=S.user?.id===t.user_id;
+  const p=t.profiles,color=avc(t.user_id),init=p?.age?String(p.age)[0]:"?";
+
+  // reactions プリロード（投稿本文）
+  await loadReactions([t.id]);
+
+  let html=`<button class="back-btn" id="backBtn2">← 一覧に戻る</button>
+  <div class="dcard">
+    <div class="card-meta">
+      <div class="av" style="background:${color};width:32px;height:32px">${init}</div>
+      <div class="av-info">
+        <div class="uname" style="font-size:13px">${p?.age?p.age+"歳":"匿名"}</div>
+        <div class="attr-tags">${attrHtml(p)}</div>
+      </div>
+      ${!isPost&&t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
+      ${S.user&&!isOwner?`<button class="report-btn" data-type="thread" data-id="${t.id}">通報</button>`:""}
+    </div>
+    ${!isPost?`<div class="dtitle">${esc(t.title)}</div>`:""}
+    <div class="dbody">${esc(t.body)}</div>
+    <div class="dfooter">
+      <span>${rtime(t.created_at)}</span>
+      ${t.best_reply_id?`<span class="solved">✓ ベストアンサーあり</span>`:""}
+    </div>
+    ${buildReactFull(t.id)}
+  </div>`;
+
+  // 相談の返信
+  if(!isPost){
+    const{data:replies}=await sb.from("replies").select(`*,profiles!user_id(age,work_style,marital_status,living_situation)`).eq("thread_id",threadId).order("created_at",{ascending:true});
+    const rids=(replies||[]).map(r=>r.id);
+    await loadReactions(rids);
+
+    html+=`<div class="replies-wrap">`;
+    if(!replies?.length){
+      html+=`<div style="padding:20px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。最初の返信をしてみましょう。</div>`;
+    }else{
+      const sorted=[...replies].sort((a,b)=>{
+        if(a.id===t.best_reply_id)return-1;
+        if(b.id===t.best_reply_id)return 1;
+        return 0;
+      });
+      html+=sorted.map(r=>{
+        const rp=r.profiles,rc=avc(r.user_id),ri=rp?.age?String(rp.age)[0]:"?";
+        const isBest=r.id===t.best_reply_id;
+        const canBest=isOwner&&!t.best_reply_id&&S.user?.id!==r.user_id;
+        return`<div class="rcard${isBest?" best":""}" data-rid="${r.id}">
+          ${isBest?`<div class="best-badge">✓ ベストアンサー</div>`:""}
+          <div class="card-meta">
+            <div class="av" style="background:${rc}">${ri}</div>
+            <div class="av-info">
+              <div class="uname">${rp?.age?rp.age+"歳":"匿名"}</div>
+              <div class="attr-tags">${attrHtml(rp)}</div>
+            </div>
+            <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
+            ${canBest?`<button class="btn-best" data-rid="${r.id}">ベストアンサーに選ぶ</button>`:""}
+            ${isBest&&isOwner?`<button class="btn-best on" disabled>✓ ベスト</button>`:""}
+            ${S.user&&S.user.id!==r.user_id?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
+          </div>
+          <div class="rbody">${esc(r.body)}</div>
+          ${buildReactFull(r.id)}
+        </div>`;
+      }).join("");
+    }
+    html+=`</div>`;
+
+    // 返信フォーム
+    if(!S.user){
+      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには<a href="/">ログイン</a>が必要です。</div></div>`;
+    }else if(!S.isStd){
+      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには <span class="upg-link2" style="color:var(--duck);cursor:pointer;font-weight:400">Standardプランへのアップグレード</span>が必要です。</div></div>`;
+    }else{
+      html+=`<div class="reply-form-box">
+        <div class="reply-form-lbl">返信する</div>
+        <textarea id="rBody" class="fta" placeholder="返信を入力してください…" maxlength="1000" style="min-height:100px"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <button id="btnReply" class="btn-p">返信する</button>
+          <span class="ccount"><span id="rCount">0</span>/1000</span>
+        </div>
+        <p id="rMsg" class="fmsg"></p>
+      </div>`;
+    }
+  }else{
+    // つぶやきの返信
+    const{data:replies}=await sb.from("replies").select(`*,profiles!user_id(age,work_style,marital_status,living_situation)`).eq("thread_id",threadId).order("created_at",{ascending:true});
+    const rids=(replies||[]).map(r=>r.id);
+    await loadReactions(rids);
+
+    html+=`<div class="replies-wrap">`;
+    if(!replies?.length){
+      html+=`<div style="padding:16px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。</div>`;
+    }else{
+      html+=replies.map(r=>{
+        const rp=r.profiles,rc=avc(r.user_id),ri=rp?.age?String(rp.age)[0]:"?";
+        return`<div class="rcard" data-rid="${r.id}">
+          <div class="card-meta">
+            <div class="av" style="background:${rc}">${ri}</div>
+            <div class="av-info">
+              <div class="uname">${rp?.age?rp.age+"歳":"匿名"}</div>
+              <div class="attr-tags">${attrHtml(rp)}</div>
+            </div>
+            <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
+            ${S.user&&S.user.id!==r.user_id?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
+          </div>
+          <div class="rbody">${esc(r.body)}</div>
+          ${buildReactFull(r.id)}
+        </div>`;
+      }).join("");
+    }
+    html+=`</div>`;
+    if(!S.user){
+      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには<a href="/">ログイン</a>が必要です。</div></div>`;
+    }else if(!S.isStd){
+      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには <span class="upg-link2" style="color:var(--duck);cursor:pointer;font-weight:400">Standardプランへのアップグレード</span>が必要です。</div></div>`;
+    }else{
+      html+=`<div class="reply-form-box">
+        <div class="reply-form-lbl">返信する</div>
+        <textarea id="rBody" class="fta" placeholder="返信を入力してください…" maxlength="1000" style="min-height:100px"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+          <button id="btnReply" class="btn-p">返信する</button>
+          <span class="ccount"><span id="rCount">0</span>/1000</span>
+        </div>
+        <p id="rMsg" class="fmsg"></p>
+      </div>`;
+    }
+  }
+
+  dv.innerHTML=html;
+
+  // イベントバインド
+  dv.querySelector("#backBtn2")?.addEventListener("click",()=>goBack(fromTab,listViewId,detailId));
+  dv.querySelectorAll(".report-btn").forEach(b=>bindReport(b));
+
+  // ベストアンサーボタン
+  dv.querySelectorAll(".btn-best:not([disabled])").forEach(b=>{
+    b.addEventListener("click",async e=>{
+      e.stopPropagation();
+      if(!confirm("このコメントをベストアンサーに選びますか？一度選ぶと変更できません。"))return;
+      b.disabled=true;
+      const{error}=await sb.from("threads").update({best_reply_id:b.dataset.rid}).eq("id",threadId);
+      if(error){b.disabled=false;alert("エラーが発生しました。");return;}
+      await loadThreads();
+      openDetail(threadId,type,fromTab);
+    });
   });
 
-  const sleep = ms => new Promise(r=>setTimeout(r,ms));
-
-  function urlHasAuthCode(){
-    const u = new URL(location.href);
-    return u.searchParams.has("code") || u.searchParams.has("token") || u.hash.includes("access_token");
-  }
-
-  async function getUserRobust({tries=40, interval=150}={}){
-    try{
-      const { data } = await sb.auth.getSession();
-      const s = data?.session;
-      if (s?.user) return s.user;
-    }catch(e){}
-
-    if (urlHasAuthCode()){
-      try{ await sb.auth.exchangeCodeForSession(window.location.href); }catch(e){}
-    }
-
-    for(let i=0;i<tries;i++){
-      try{
-        const { data:{ user } } = await sb.auth.getUser();
-        if (user) return user;
-      }catch(e){}
-      await sleep(interval);
-    }
-    return null;
-  }
-
-  async function loadProfileOrCreate(userId){
-    let { data:prof, error } = await sb
-      .from("profiles")
-      .select("id,tier,is_active,has_password,display_name")
-      .eq("id", userId)
-      .single();
-
-    const notFound = error && (error.code==="PGRST116" || String(error.details||"").includes("0 rows"));
-    if (notFound){
-      const up = await sb.from("profiles").upsert(
-        { id:userId, tier:"free", is_active:false, has_password:false },
-        { onConflict:"id" }
-      );
-      if (up.error) return { data:null, error:up.error };
-
-      ({ data:prof, error } = await sb
-        .from("profiles")
-        .select("id,tier,is_active,has_password,display_name")
-        .eq("id", userId)
-        .single());
-    }
-    return { data:prof, error };
-  }
-
-  function planLabel(tier, isActive){
-    if (!isActive) return "Free";
-    const t = String(tier||"free").toLowerCase();
-    if (t === "standard") return "Standard";
-    if (t === "pro") return "Pro";
-    return "Free";
-  }
-
-  function setStatus(text){
-    const el = $("#statusText");
-    if (el) el.textContent = text;
-    const el2 = $("#statusText2");
-    if (el2) el2.textContent = text;
-  }
-
-  function setPlanLabelText(v){
-    const a = $("#planLabelText");
-    const b = $("#planLabelText2");
-    if (a) a.textContent = v;
-    if (b) b.textContent = v;
-  }
-
-  async function loadBillingConfig(){
-    try{
-      const res = await fetch(BILLING_JSON_URL, { cache:"no-store" });
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      BILLING_CONFIG = data || BILLING_CONFIG;
-    }catch(e){
-      console.error("billing json load error", e);
-      BILLING_CONFIG = { stripe: { standard: { payment_link_url: null } } };
-    }
-  }
-
-  async function createCheckout(userId, userEmail){
-    const baseUrl = BILLING_CONFIG?.stripe?.standard?.payment_link_url;
-    if (!baseUrl){
-      alert("課金設定の読み込みに失敗しました（billing.json の payment_link_url を確認してください）");
-      return;
-    }
-
-    const params = new URLSearchParams();
-    if (userEmail) params.set("prefilled_email", String(userEmail));
-    if (userId) params.set("client_reference_id", String(userId));
-
-    const sep = baseUrl.includes("?") ? "&" : "?";
-    const url = params.toString() ? (baseUrl + sep + params.toString()) : baseUrl;
-
-    try{ gtag('event', 'begin_checkout', { plan:'standard', method:'stripe_payment_link' }); }catch(e){}
-    location.href = url;
-  }
-
-  async function openPortal(userId){
-    try{
-      const { data:sess } = await sb.auth.getSession();
-      const token = sess?.session?.access_token;
-      if (!token){
-        alert("セッションが取得できませんでした。再ログイン後にお試しください。");
-        return;
-      }
-
-      const res = await fetch(PORTAL_FUNCTION_URL, {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${token}`
-        },
-        body:JSON.stringify({ user_id:userId, return_url:SITE_TOP_URL })
-      });
-
-      if (!res.ok){
-        const bodyText = await res.text().catch(()=> "");
-        console.error("openPortal failed:", res.status, bodyText);
-        alert("サブスクリプション管理ページを開けませんでした。時間をおいて再度お試しください。");
-        return;
-      }
-
-      const data = await res.json();
-      if (!data?.url){
-        console.error("openPortal: url missing", data);
-        alert("サブスクリプション管理ページを開けませんでした。時間をおいて再度お試しください。");
-        return;
-      }
-      location.href = data.url;
-    }catch(e){
-      console.error("openPortal error", e);
-      alert("サブスクリプション管理ページを開けませんでした。時間をおいて再度お試しください。");
-    }
-  }
-
-  async function handleChangeEmail(currentUser){
-    const msgEl = $("#emailChangeMsg");
-    const btn = $("#btnChangeEmail");
-    const input = $("#emailNew");
-    if (!msgEl || !btn || !input) return;
-
-    msgEl.style.color = "#6f6a60";
-    msgEl.textContent = "";
-
-    const newEmail = input.value.trim();
-    const currentEmail = currentUser?.email || "";
-
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailPattern.test(newEmail)){
-      msgEl.style.color = "#b00020";
-      msgEl.textContent = "正しいメールアドレスを入力してください。";
-      return;
-    }
-    if (newEmail.toLowerCase() === currentEmail.toLowerCase()){
-      msgEl.style.color = "#b00020";
-      msgEl.textContent = "現在のメールアドレスと同じです。別のメールアドレスを入力してください。";
-      return;
-    }
-
-    btn.disabled = true;
-    try{
-      const { error } = await sb.auth.updateUser(
-        { email: newEmail },
-        { emailRedirectTo: SITE_TOP_URL }
-      );
-      if (error){
-        console.error(error);
-        msgEl.style.color = "#b00020";
-        msgEl.textContent = "メールアドレスの変更中にエラーが発生しました。時間をおいて再度お試しください。";
-        return;
-      }
-      msgEl.textContent = "新しいメールアドレス宛に確認メールを送信しました。メール内のリンクから変更を完了してください。";
-      input.value = "";
-    }finally{
-      btn.disabled = false;
-    }
-  }
-
-  function bindPasswordToggle(checkboxId, inputIds){
-    const cb = document.getElementById(checkboxId);
-    if (!cb) return;
-    cb.addEventListener("change", ()=>{
-      const type = cb.checked ? "text" : "password";
-      inputIds.forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.type = type;
-      });
-    });
-  }
-
-  async function setPasswordFlow(userId, isChange){
-    const msgEl = document.getElementById(isChange ? "pwChangeMsg" : "pwMsg");
-    const btnId = isChange ? "pwChangeSubmit" : "pwSubmit";
-    const p1id = isChange ? "pwChangeNew" : "pwNew";
-    const p2id = isChange ? "pwChangeNew2" : "pwNew2";
-
-    const btn = document.getElementById(btnId);
-    const p1 = (document.getElementById(p1id)?.value || "").trim();
-    const p2 = (document.getElementById(p2id)?.value || "").trim();
-
-    if (msgEl){ msgEl.style.color = "#6f6a60"; msgEl.textContent = ""; }
-
-    if (!p1){ if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="パスワードを入力してください。"; } return; }
-    if (!p2){ if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="確認用パスワードを入力してください。"; } return; }
-    if (p1.length < 8){ if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="パスワードは8文字以上にしてください。"; } return; }
-    if (p1 !== p2){ if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="パスワードが一致しません。"; } return; }
-
-    if (btn) btn.disabled = true;
-    try{
-      const { error:updateErr } = await sb.auth.updateUser({ password:p1 });
-      if (updateErr){
-        console.error(updateErr);
-        if (msgEl){ msgEl.style.color="#b00020"; msgEl.textContent="パスワード設定中にエラーが発生しました。時間をおいて再度お試しください。"; }
-        return;
-      }
-
-      try{ await sb.from("profiles").update({ has_password:true }).eq("id", userId); }catch(e){}
-
-      const sec = document.getElementById("pwSection");
-      const sec2 = document.getElementById("pwChangeSection");
-      if (sec && !isChange) sec.classList.add("hidden");
-      if (sec2 && !isChange) sec2.classList.remove("hidden");
-
-      const banner = document.getElementById("pwBanner");
-      if (banner) banner.classList.add("hidden");
-
-      if (msgEl){
-        msgEl.style.color="#6f6a60";
-        msgEl.textContent = isChange
-          ? "パスワードを変更しました。次回からは新しいパスワードでログインしてください。"
-          : "パスワードを設定しました。次回からはログイン画面でメールアドレスとパスワードをご利用ください。";
-      }
-
-      const a = document.getElementById(p1id);
-      const b = document.getElementById(p2id);
-      if (a) a.value = "";
-      if (b) b.value = "";
-    }finally{
-      if (btn) btn.disabled = false;
-    }
-  }
-
-  function setupPwBanner(hasPassword){
-    const banner = document.getElementById("pwBanner");
-    if (!banner) return;
-
-    if (hasPassword){
-      banner.classList.add("hidden");
-      banner.onclick = null;
-      return;
-    }
-
-    banner.classList.remove("hidden");
-    banner.onclick = ()=>{
-      switchToTab("account");
-      const target = document.getElementById("pwSection");
-      if (target) target.scrollIntoView({ behavior:"smooth", block:"center" });
-    };
-  }
-
-  // =========================
-  // MY RULES
-  // =========================
-  let APP_CTX = {
-    user: null,
-    profile: null,
-    isStandard: false,
-    limits: { ...FREE_LIMITS },
-    categories: [],
-    rules: [],
-    activeCategoryId: null,
-    searchText: ""
-  };
-
-  function setText(id, text){
-    const el = document.getElementById(id);
-    if (el) el.textContent = text;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function normalize(s){
-    return String(s ?? "").trim().toLowerCase();
-  }
-
-  function applySearchFilter(){
-    const q = normalize(APP_CTX.searchText);
-    if (!q) return { cats: APP_CTX.categories, rules: APP_CTX.rules };
-
-    const catsHit = new Set(
-      APP_CTX.categories
-        .filter(c => normalize(c.name).includes(q))
-        .map(c => c.id)
-    );
-
-    const ruleTitleHits = APP_CTX.rules.filter(r => normalize(r.title).includes(q));
-
-    if (ruleTitleHits.length){
-      const allowedCats = new Set(ruleTitleHits.map(r=>r.category_id));
-      return {
-        cats: APP_CTX.categories.filter(c => allowedCats.has(c.id)),
-        rules: ruleTitleHits
-      };
-    }
-
-    const cats = APP_CTX.categories.filter(c => catsHit.has(c.id));
-    return {
-      cats,
-      rules: APP_CTX.rules.filter(r => catsHit.has(r.category_id))
-    };
-  }
-
-  // Free制限表示（黄色枠）＋右上に Standard 登録ボタンを配置
-  function renderPlanNotice(){
-    const el = document.getElementById("planLimitNotice");
-    if (!el) return;
-
-    if (APP_CTX.isStandard){
-      el.classList.add("hidden");
-      el.classList.remove("plan-notice");
-      el.textContent = "";
-      return;
-    }
-
-    const c = APP_CTX.categories.length;
-    const r = APP_CTX.rules.length;
-
-    el.classList.remove("hidden");
-    el.classList.add("plan-notice");
-
-    el.innerHTML = `
-      <div style="font-weight:900;letter-spacing:.04em;margin-bottom:4px;">Freeプランの制限</div>
-      <div>カテゴリ：<strong>${c}</strong> / ${APP_CTX.limits.categories}</div>
-      <div>ルール（合計）：<strong>${r}</strong> / ${APP_CTX.limits.rules}</div>
-      <div class="muted" style="margin-top:6px;font-size:12px;">Standardはカテゴリ・ルールが無制限になります。</div>
-
-      <div class="notice-cta">
-        <button id="btnSubscribeRulesInner" class="btn btn-subscribe">Standardプランに登録する（無制限）</button>
-      </div>
-    `;
-
-    const btn = document.getElementById("btnSubscribeRulesInner");
-    if (btn && APP_CTX.user){
-      btn.onclick = ()=>createCheckout(APP_CTX.user.id, APP_CTX.user.email || "");
-    }
-  }
-
-  function renderCategories(){
-    const list = document.getElementById("catList");
-    const empty = document.getElementById("catEmpty");
-    if (!list || !empty) return;
-
-    const { cats, rules } = applySearchFilter();
-
-    if (APP_CTX.activeCategoryId && !cats.find(c=>c.id===APP_CTX.activeCategoryId)){
-      APP_CTX.activeCategoryId = cats.length ? cats[0].id : null;
-    }
-    if (!APP_CTX.activeCategoryId && cats.length){
-      APP_CTX.activeCategoryId = cats[0].id;
-    }
-
-    list.innerHTML = "";
-    if (!cats.length){
-      empty.classList.remove("hidden");
-      setText("activeCatLabel", "-");
-      return;
-    }
-    empty.classList.add("hidden");
-
-    for (const c of cats){
-      const count = rules.filter(r=>r.category_id === c.id).length;
-      const div = document.createElement("div");
-      div.className = "item" + (APP_CTX.activeCategoryId === c.id ? " active" : "");
-      div.innerHTML = `
-        <div class="item-left" style="min-width:0;">
-          <div class="title">${escapeHtml(c.name)}</div>
-          <div class="sub">ルール：${count}件</div>
-        </div>
-        <div class="item-right">
-          <button class="icon-btn" data-act="edit-cat" data-id="${c.id}" title="カテゴリ名を編集">編集</button>
-          <button class="icon-btn danger" data-act="del-cat" data-id="${c.id}" title="削除">削除</button>
-        </div>
-      `;
-      div.addEventListener("click", (e)=>{
-        const act = e.target?.dataset?.act;
-        if (act === "del-cat" || act === "edit-cat") return;
-        APP_CTX.activeCategoryId = c.id;
-        renderCategories();
-        renderRules();
-      });
-      list.appendChild(div);
-    }
-
-    list.querySelectorAll('button[data-act="del-cat"]').forEach(btn=>{
-      btn.addEventListener("click", async (e)=>{
+  // リアクション（投稿本文）
+  dv.querySelectorAll(".react-row").forEach(row=>{
+    const tid=row.dataset.rid;
+    const btns=row.querySelectorAll(".rbtn");
+    btns.forEach(b=>{
+      b.addEventListener("click",e=>{
         e.stopPropagation();
-        const id = btn.dataset.id;
-        if (!id) return;
-        if (!confirm("このカテゴリを削除しますか？（カテゴリ内のルールも削除されます）")) return;
-        await deleteCategory(id);
-      });
-    });
-
-    list.querySelectorAll('button[data-act="edit-cat"]').forEach(btn=>{
-      btn.addEventListener("click", async (e)=>{
-        e.stopPropagation();
-        const id = btn.dataset.id;
-        if (!id) return;
-        const cat = APP_CTX.categories.find(x=>x.id===id);
-        if (!cat) return;
-
-        const next = prompt("カテゴリ名を変更します。新しい名前を入力してください。", cat.name || "");
-        if (next === null) return;
-        const newName = String(next).trim();
-
-        try{
-          await updateCategoryName(id, newName);
-          await refreshRulesUI();
-          renderCategories();
-          renderRules();
-        }catch(err){
-          alert(err?.message || "カテゴリ名の更新に失敗しました。");
-        }
-      });
-    });
-  }
-
-  function renderRules(){
-    const need = document.getElementById("ruleNeedCat");
-    const list = document.getElementById("ruleList");
-    const empty = document.getElementById("ruleEmpty");
-    if (!need || !list || !empty) return;
-
-    const { cats, rules } = applySearchFilter();
-    const active = cats.find(c=>c.id === APP_CTX.activeCategoryId);
-
-    setText("activeCatLabel", active ? active.name : "-");
-
-    if (!active){
-      need.classList.remove("hidden");
-      list.innerHTML = "";
-      empty.classList.add("hidden");
-      setText("resultCount", String(rules.length));
-      return;
-    }
-
-    need.classList.add("hidden");
-
-    const shown = rules
-      .filter(r=>r.category_id === active.id)
-      .sort((a,b)=>(a.sort_order??0)-(b.sort_order??0));
-
-    list.innerHTML = "";
-    if (!shown.length){
-      empty.classList.remove("hidden");
-      setText("resultCount", "0");
-      return;
-    }
-    empty.classList.add("hidden");
-
-    for (const r of shown){
-      const div = document.createElement("div");
-      div.className = "item";
-      div.style.cursor = "default";
-      div.innerHTML = `
-        <div class="item-left" style="min-width:0;">
-          <div class="title">${escapeHtml(r.title)}</div>
-          <div class="sub" style="white-space:pre-wrap;margin-top:6px;">${escapeHtml(r.body || "")}</div>
-        </div>
-        <div class="item-right">
-          <button class="icon-btn" data-act="edit-rule" data-id="${r.id}" title="編集">編集</button>
-          <button class="icon-btn danger" data-act="del-rule" data-id="${r.id}" title="削除">削除</button>
-        </div>
-      `;
-      list.appendChild(div);
-    }
-
-    list.querySelectorAll('button[data-act="edit-rule"]').forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.dataset.id;
-        const r = APP_CTX.rules.find(x=>x.id===id);
-        if (!r) return;
-        openRuleModal({
-          mode: "edit",
-          ruleId: r.id,
-          title: r.title,
-          body: r.body || "",
-          categoryId: r.category_id
+        if(!S.user)return;
+        toggleReaction(b.dataset.tid,b.dataset.e,()=>{
+          row.outerHTML=buildReactFull(b.dataset.tid);
+          dv.querySelectorAll(".react-row").forEach(r2=>{
+            r2.querySelectorAll(".rbtn").forEach(b2=>{
+              b2.addEventListener("click",ev=>{ev.stopPropagation();if(!S.user)return;toggleReaction(b2.dataset.tid,b2.dataset.e,()=>{});});
+            });
+          });
         });
       });
     });
+  });
 
-    list.querySelectorAll('button[data-act="del-rule"]').forEach(btn=>{
-      btn.addEventListener("click", async ()=>{
-        const id = btn.dataset.id;
-        if (!id) return;
-        if (!confirm("このルールを削除しますか？")) return;
-        await deleteRule(id);
-      });
+  // アップグレードリンク
+  dv.querySelectorAll(".upg-link2").forEach(el=>{
+    el.addEventListener("click",()=>switchTab("account"));
+  });
+
+  // 返信送信
+  if(S.isStd){
+    const rBodyEl=dv.querySelector("#rBody");
+    const rCountEl=dv.querySelector("#rCount");
+    const rMsgEl=dv.querySelector("#rMsg");
+    rBodyEl?.addEventListener("input",e=>{if(rCountEl)rCountEl.textContent=e.target.value.length;});
+    dv.querySelector("#btnReply")?.addEventListener("click",async()=>{
+      const body=rBodyEl?.value?.trim();
+      if(!body){msg(rMsgEl,"返信内容を入力してください。");return;}
+      const btn=dv.querySelector("#btnReply");btn.disabled=true;
+      const{error}=await sb.from("replies").insert({thread_id:threadId,user_id:S.user.id,body});
+      btn.disabled=false;
+      if(error){msg(rMsgEl,"送信に失敗しました。");return;}
+      msg(rMsgEl,"返信しました！","ok");
+      rBodyEl.value="";if(rCountEl)rCountEl.textContent="0";
+      setTimeout(()=>openDetail(threadId,type,fromTab),800);
     });
+  }
+}
 
-    setText("resultCount", String(shown.length));
+function goBack(fromTab,listViewId,detailId){
+  $(`#${detailId}`).classList.remove("show");
+  $(`#${listViewId}`).style.display="";
+  if(fromTab==="home")renderHomeList();
+  if(fromTab==="post")renderPostList();
+  if(fromTab==="question")renderQuestionList();
+}
+
+/* ===== ACCOUNT ===== */
+function renderAccount(){
+  const wrap=$("#accountWrap");
+  const pr=S.profile,planTxt=S.isStd?"Standard":"Free";
+  wrap.innerHTML=`
+  <div class="asec">
+    <div class="asec-h">プラン情報</div>
+    <div class="plan-box">
+      <div class="plan-box-lbl">現在のプラン</div>
+      <div class="plan-box-val">${planTxt}</div>
+    </div>
+    <div id="planActions"></div>
+  </div>
+  <div class="asec">
+    <div class="asec-h">プロフィール属性</div>
+    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される属性情報です。すべて任意です。</p>
+    <div class="pgrid">
+      <div class="fg"><label class="flbl">年齢</label><input id="pAge" class="fi" type="number" min="18" max="99" placeholder="27" value="${pr?.age??""}"></div>
+      <div class="fg"><label class="flbl">働き方</label>
+        <select id="pWork" class="fsel">
+          <option value="">未設定</option>
+          ${["会社員","フリーランス","個人事業主","パート・アルバイト","専業主婦・主夫","求職中","その他"].map(v=>`<option${pr?.work_style===v?" selected":""}>${v}</option>`).join("")}
+        </select></div>
+      <div class="fg"><label class="flbl">婚活・恋愛状況</label>
+        <select id="pMarital" class="fsel">
+          <option value="">未設定</option>
+          ${["婚活中","交際中","独身","既婚","離婚経験あり"].map(v=>`<option${pr?.marital_status===v?" selected":""}>${v}</option>`).join("")}
+        </select></div>
+      <div class="fg"><label class="flbl">住まい</label>
+        <select id="pLiving" class="fsel">
+          <option value="">未設定</option>
+          ${["一人暮らし","実家暮らし","パートナーと同居","その他"].map(v=>`<option${pr?.living_situation===v?" selected":""}>${v}</option>`).join("")}
+        </select></div>
+    </div>
+    <div class="fg"><label class="flbl">一言（任意）</label><input id="pBio" class="fi" type="text" maxlength="50" placeholder="例：東京在住、転職検討中" value="${esc(pr?.bio??"")}"></div>
+    <button id="btnSaveProf" class="btn-p">保存する</button>
+    <p id="profMsg" class="fmsg"></p>
+  </div>
+  <div class="asec">
+    <div class="asec-h">メールアドレスの変更</div>
+    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:14px">現在：<strong style="color:var(--ink)">${esc(S.user?.email??"")}</strong></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input id="emailNew" class="fi" type="email" placeholder="新しいメールアドレス" style="flex:1;min-width:180px">
+      <button id="btnEmail" class="btn-s">変更メールを送信</button>
+    </div>
+    <p id="emailMsg" class="fmsg"></p>
+  </div>
+  <div class="asec" id="pwSec">
+    <div class="asec-h" id="pwSecH">パスワードの設定</div>
+    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:12px" id="pwSecD">パスワードを設定すると、次回からメール＋パスワードでログインできます。</p>
+    <div class="pwf">
+      <input id="pwN" class="fi" type="password" placeholder="新しいパスワード（8文字以上）">
+      <input id="pwN2" class="fi" type="password" placeholder="確認用パスワード">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mist);cursor:pointer">
+        <input type="checkbox" id="pwShow" style="accent-color:var(--duck)"> パスワードを表示
+      </label>
+      <button id="btnPw" class="btn-s" style="margin-top:4px">設定する</button>
+    </div>
+    <p id="pwMsg" class="fmsg"></p>
+  </div>`;
+
+  // プランアクション
+  const pa=$("#planActions");
+  if(S.isStd){
+    pa.innerHTML=`<button id="btnCancel" class="btn-d">サブスクを解約する</button>`;
+    $("#btnCancel").addEventListener("click",()=>openPortal());
+  }else{
+    pa.innerHTML=`<p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:12px;line-height:1.7">Standardプランで投稿・返信が無制限に使えます。</p>
+    <button id="btnSub" class="btn-p">Standardプランに登録する（¥680/月）</button>`;
+    $("#btnSub").addEventListener("click",()=>createCheckout());
   }
 
-  async function fetchCategories(){
-    const { data, error } = await sb
-      .from("rule_categories")
-      .select("id,name,sort_order,created_at")
-      .order("sort_order", { ascending:true })
-      .order("created_at", { ascending:true });
-
-    if (error) throw error;
-    APP_CTX.categories = data || [];
+  // パスワードセクション
+  if(pr?.has_password){
+    $("#pwSecH").textContent="パスワードの変更";
+    $("#pwSecD").textContent="現在のアカウントのパスワードを変更できます。";
+    $("#btnPw").textContent="変更する";
   }
 
-  async function fetchRules(){
-    const { data, error } = await sb
-      .from("rules")
-      .select("id,category_id,title,body,sort_order,created_at")
-      .order("sort_order", { ascending:true })
-      .order("created_at", { ascending:true });
-
-    if (error) throw error;
-    APP_CTX.rules = data || [];
-  }
-
-  async function refreshRulesUI(){
-    await Promise.all([fetchCategories(), fetchRules()]);
-    renderCategories();
-    renderRules();
-    renderPlanNotice();
-    rebuildModalCategoryOptions();
-  }
-
-  function isFreeOverCategoryLimit(nextAdded=0){
-    if (APP_CTX.isStandard) return false;
-    return (APP_CTX.categories.length + nextAdded) > APP_CTX.limits.categories;
-  }
-  function isFreeOverRuleLimit(nextAdded=0){
-    if (APP_CTX.isStandard) return false;
-    return (APP_CTX.rules.length + nextAdded) > APP_CTX.limits.rules;
-  }
-
-  function nextCategorySort(){
-    return (APP_CTX.categories.reduce((m,c)=>Math.max(m, c.sort_order ?? 0), 0) || 0) + 10;
-  }
-  function nextRuleSort(categoryId){
-    return (APP_CTX.rules
-      .filter(r=>r.category_id===categoryId)
-      .reduce((m,r)=>Math.max(m, r.sort_order ?? 0), 0) || 0) + 10;
-  }
-
-  async function addCategory(name){
-    const n = (name || "").trim();
-    if (!n) throw new Error("カテゴリ名を入力してください。");
-    if (n.length > 40) throw new Error("カテゴリ名は40文字以内にしてください。");
-    if (isFreeOverCategoryLimit(1)){
-      throw new Error(`Freeプランではカテゴリは最大${APP_CTX.limits.categories}個までです。Standardに登録すると無制限になります。`);
-    }
-
-    const exists = APP_CTX.categories.some(c => normalize(c.name) === normalize(n));
-    if (exists) throw new Error("同じ名前のカテゴリが既にあります。");
-
-    const { data, error } = await sb
-      .from("rule_categories")
-      .insert({ name:n, sort_order: nextCategorySort() })
-      .select("id,name,sort_order,created_at")
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  async function updateCategoryName(catId, newName){
-    const n = (newName || "").trim();
-    if (!n) throw new Error("カテゴリ名を入力してください。");
-    if (n.length > 40) throw new Error("カテゴリ名は40文字以内にしてください。");
-
-    const exists = APP_CTX.categories.some(c => c.id !== catId && normalize(c.name) === normalize(n));
-    if (exists) throw new Error("同じ名前のカテゴリが既にあります。");
-
-    const { error } = await sb
-      .from("rule_categories")
-      .update({ name: n })
-      .eq("id", catId);
-
-    if (error) throw error;
-  }
-
-  async function addRule({ categoryId, title, body }){
-    const catId = categoryId;
-    if (!catId) throw new Error("カテゴリを選択するか、新しいカテゴリ名を入力してください。");
-
-    const t = (title || "").trim();
-    if (!t) throw new Error("ルールタイトルを入力してください。");
-    if (t.length > 60) throw new Error("ルールタイトルは60文字以内にしてください。");
-
-    const b = (body || "").trim();
-    if (!b) throw new Error("ルール本文を入力してください。");
-    if (b.length > 600) throw new Error("ルール本文は600文字以内にしてください。");
-
-    if (isFreeOverRuleLimit(1)){
-      throw new Error(`Freeプランではルールは合計最大${APP_CTX.limits.rules}個までです。Standardに登録すると無制限になります。`);
-    }
-
-    const { error } = await sb
-      .from("rules")
-      .insert({
-        category_id: catId,
-        title: t,
-        body: b,
-        sort_order: nextRuleSort(catId)
-      });
-
-    if (error) throw error;
-  }
-
-  async function updateRule({ ruleId, categoryId, title, body }){
-    const rid = ruleId;
-    if (!rid) throw new Error("更新対象が見つかりません。");
-
-    const catId = categoryId;
-    if (!catId) throw new Error("カテゴリを選択するか、新しいカテゴリ名を入力してください。");
-
-    const t = (title || "").trim();
-    if (!t) throw new Error("ルールタイトルを入力してください。");
-    if (t.length > 60) throw new Error("ルールタイトルは60文字以内にしてください。");
-
-    const b = (body || "").trim();
-    if (!b) throw new Error("ルール本文を入力してください。");
-    if (b.length > 600) throw new Error("ルール本文は600文字以内にしてください。");
-
-    const { error } = await sb
-      .from("rules")
-      .update({ category_id: catId, title: t, body: b })
-      .eq("id", rid);
-
-    if (error) throw error;
-  }
-
-  async function deleteCategory(catId){
-    const { error } = await sb.from("rule_categories").delete().eq("id", catId);
-    if (error) alert(error.message || "削除に失敗しました。");
-    await refreshRulesUI();
-  }
-
-  async function deleteRule(ruleId){
-    const { error } = await sb.from("rules").delete().eq("id", ruleId);
-    if (error) alert(error.message || "削除に失敗しました。");
-    await refreshRulesUI();
-  }
-
-  // ===== Modal =====
-  const MODAL_STATE = { mode:"create", ruleId:null };
-
-  function openRuleModal(preset){
-    MODAL_STATE.mode = preset?.mode || "create";
-    MODAL_STATE.ruleId = preset?.ruleId || null;
-
-    const backdrop = document.getElementById("ruleModal");
-    const msg = document.getElementById("modalMsg");
-    if (msg){ msg.classList.add("hidden"); msg.textContent=""; }
-
-    document.getElementById("modalRuleTitle").value = preset?.title || "";
-    document.getElementById("modalRuleBody").value = preset?.body || "";
-    document.getElementById("modalNewCatName").value = "";
-    rebuildModalCategoryOptions(preset?.categoryId || "");
-
-    const sel = document.getElementById("modalCatSelect");
-    if (MODAL_STATE.mode === "create" && sel && !preset?.categoryId && APP_CTX.activeCategoryId){
-      sel.value = APP_CTX.activeCategoryId;
-    }
-
-    backdrop.classList.add("show");
-    backdrop.setAttribute("aria-hidden","false");
-
-    document.getElementById("btnCreateRule").textContent = (MODAL_STATE.mode === "edit") ? "更新" : "作成";
-
-    setTimeout(()=>document.getElementById("modalRuleTitle")?.focus(), 20);
-  }
-
-  function closeRuleModal(){
-    const backdrop = document.getElementById("ruleModal");
-    backdrop.classList.remove("show");
-    backdrop.setAttribute("aria-hidden","true");
-  }
-
-  function rebuildModalCategoryOptions(selectedId){
-    const sel = document.getElementById("modalCatSelect");
-    if (!sel) return;
-    const current = selectedId ?? sel.value ?? "";
-    sel.innerHTML = `<option value="">カテゴリを選択</option>`;
-    for (const c of APP_CTX.categories){
-      const opt = document.createElement("option");
-      opt.value = c.id;
-      opt.textContent = c.name;
-      sel.appendChild(opt);
-    }
-    if (current) sel.value = current;
-  }
-
-  async function submitModal(){
-    const msg = document.getElementById("modalMsg");
-    if (msg){ msg.classList.add("hidden"); msg.textContent=""; }
-
-    const title = document.getElementById("modalRuleTitle").value;
-    const body = document.getElementById("modalRuleBody").value;
-    const selectedCatId = document.getElementById("modalCatSelect").value;
-    const newCatName = document.getElementById("modalNewCatName").value;
-
-    try{
-      let categoryId = selectedCatId;
-
-      const newName = (newCatName || "").trim();
-      if (newName){
-        const created = await addCategory(newName);
-        categoryId = created.id;
-      }
-
-      if (MODAL_STATE.mode === "edit"){
-        await updateRule({ ruleId: MODAL_STATE.ruleId, categoryId, title, body });
-      }else{
-        await addRule({ categoryId, title, body });
-      }
-
-      await refreshRulesUI();
-
-      if (categoryId){
-        APP_CTX.activeCategoryId = categoryId;
-        renderCategories();
-        renderRules();
-      }
-
-      closeRuleModal();
-    }catch(e){
-      console.error(e);
-      const text = e?.message || "保存に失敗しました。";
-      if (msg){ msg.classList.remove("hidden"); msg.textContent = text; }
-    }
-  }
-
-  function bindModal(){
-    const backdrop = document.getElementById("ruleModal");
-    const btnClose = document.getElementById("btnCloseModal");
-    const btnCancel = document.getElementById("btnCancelModal");
-    const btnCreate = document.getElementById("btnCreateRule");
-
-    const close = ()=>closeRuleModal();
-
-    btnClose.onclick = close;
-    btnCancel.onclick = close;
-    backdrop.addEventListener("click", (e)=>{
-      if (e.target === backdrop) close();
-    });
-    window.addEventListener("keydown", (e)=>{
-      if (e.key === "Escape" && backdrop.classList.contains("show")) close();
-    });
-
-    btnCreate.onclick = async ()=>{
-      btnCreate.disabled = true;
-      try{ await submitModal(); }finally{ btnCreate.disabled = false; }
-    };
-  }
-
-  function bindMyRulesUI(){
-    const btnReload = document.getElementById("btnReloadRules");
-    if (btnReload){
-      btnReload.onclick = async ()=>{
-        btnReload.disabled = true;
-        try{ await refreshRulesUI(); }finally{ btnReload.disabled = false; }
-      };
-    }
-
-    const btnNewRule = document.getElementById("btnNewRule");
-    if (btnNewRule){
-      btnNewRule.onclick = ()=>openRuleModal({ mode:"create" });
-    }
-
-    const search = document.getElementById("searchText");
-    if (search){
-      search.addEventListener("input", ()=>{
-        APP_CTX.searchText = search.value || "";
-        renderCategories();
-        renderRules();
-      });
-    }
-
-    const btnClear = document.getElementById("btnClearSearch");
-    if (btnClear){
-      btnClear.onclick = ()=>{
-        APP_CTX.searchText = "";
-        if (search) search.value = "";
-        renderCategories();
-        renderRules();
-      };
-    }
-
-    bindModal();
-  }
-
-  // =========================
-  // main
-  // =========================
-  async function main(){
-    await loadBillingConfig();
-
-    const user = await getUserRobust();
-    if (!user){
-      $("#userEmail").textContent = "-";
-      const alertBox = $("#notLoggedAlert");
-      if (alertBox) alertBox.classList.remove("hidden");
-      setStatus("未ログインです。");
-      setPlanLabelText("Free");
-      return;
-    }
-
-    APP_CTX.user = user;
-
-    $("#userEmail").textContent = user.email || "";
-    $("#currentEmailText").textContent = user.email || "";
-
-    const profRes = await loadProfileOrCreate(user.id);
-    if (profRes.error || !profRes.data){
-      console.error("profile load error", profRes.error);
-      setStatus("アカウント情報の取得に失敗しました。");
-      setPlanLabelText("Free");
-      return;
-    }
-
-    const prof = profRes.data;
-    APP_CTX.profile = prof;
-
-    const tier = String(prof.tier||"free").toLowerCase();
-    const isActive = !!prof.is_active;
-    APP_CTX.isStandard = isActive && tier === "standard";
-
-    const planText = planLabel(tier, isActive);
-    setPlanLabelText(planText);
-    setStatus(APP_CTX.isStandard ? "準備ができました。" : "Freeプランです。");
-
-    const hasPassword = !!prof.has_password;
-    const pwSec = document.getElementById("pwSection");
-    const pwChg = document.getElementById("pwChangeSection");
-    if (pwSec) pwSec.classList.toggle("hidden", hasPassword);
-    if (pwChg) pwChg.classList.toggle("hidden", !hasPassword);
-    setupPwBanner(hasPassword);
-
-    bindPasswordToggle("pwShowSetup", ["pwNew","pwNew2"]);
-    bindPasswordToggle("pwShowChange", ["pwChangeNew","pwChangeNew2"]);
-
-    const btnChangeEmail = $("#btnChangeEmail");
-    if (btnChangeEmail) btnChangeEmail.onclick = ()=>handleChangeEmail(user);
-
-    const pwForm = document.getElementById("pwForm");
-    if (pwForm) pwForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(user.id, false); };
-
-    const pwChangeForm = document.getElementById("pwChangeForm");
-    if (pwChangeForm) pwChangeForm.onsubmit = (e)=>{ e.preventDefault(); setPasswordFlow(user.id, true); };
-
-    // ACCOUNT側のみ制御（MY RULES側は黄色枠内で動的生成）
-    const btnSubMain  = document.getElementById("btnSubscribe");
-    const btnCancel   = document.getElementById("btnCancel");
-
-    if (!APP_CTX.isStandard){
-      if (btnSubMain){
-        btnSubMain.classList.remove("hidden");
-        btnSubMain.onclick = ()=>createCheckout(user.id, user.email || "");
-      }
-      if (btnCancel){
-        btnCancel.classList.add("hidden");
-        btnCancel.onclick = null;
-      }
-    }else{
-      if (btnSubMain){
-        btnSubMain.classList.add("hidden");
-        btnSubMain.onclick = null;
-      }
-      if (btnCancel){
-        btnCancel.classList.remove("hidden");
-        btnCancel.onclick = ()=>openPortal(user.id);
-      }
-    }
-
-    // Logout
-    const logoutBtn = $("#logout");
-    if (logoutBtn){
-      logoutBtn.onclick = async ()=>{
-        try{ await sb.auth.signOut(); }catch(e){}
-        location.replace("./");
-      };
-    }
-
-    // Bind + initial load
-    bindMyRulesUI();
-    try{
-      await refreshRulesUI();
-    }catch(e){
-      console.error("MY RULES load error", e);
-      const el = document.getElementById("planLimitNotice");
-      if (el){
-        el.classList.remove("hidden");
-        el.classList.remove("plan-notice");
-        el.innerHTML = `<div style="font-weight:900;margin-bottom:4px;">MY RULESの読み込みに失敗しました</div>
-                        <div class="muted" style="font-size:12px;">Supabaseに rule_categories / rules テーブルを作成済みか確認してください。</div>`;
-      }
-    }
-  }
-
-  main();
+  // イベント
+  $("#btnSaveProf").addEventListener("click",saveProfile);
+  $("#btnEmail").addEventListener("click",changeEmail);
+  $("#pwShow").addEventListener("change",e=>{const t=e.target.checked?"text":"password";$("#pwN").type=t;$("#pwN2").type=t;});
+  $("#btnPw").addEventListener("click",savePassword);
+}
+
+async function saveProfile(){
+  const m=$("#profMsg");
+  const upd={age:parseInt($("#pAge").value)||null,work_style:$("#pWork").value||null,marital_status:$("#pMarital").value||null,living_situation:$("#pLiving").value||null,bio:$("#pBio").value.trim()||null};
+  const btn=$("#btnSaveProf");btn.disabled=true;
+  const{error}=await sb.from("profiles").update(upd).eq("id",S.user.id);
+  btn.disabled=false;
+  if(error){msg(m,"保存に失敗しました。");return;}
+  S.profile={...S.profile,...upd};msg(m,"保存しました！","ok");
+}
+async function changeEmail(){
+  const m=$("#emailMsg"),ne=$("#emailNew").value.trim();
+  if(!ne||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ne)){msg(m,"正しいメールアドレスを入力してください。");return;}
+  const btn=$("#btnEmail");btn.disabled=true;
+  const{error}=await sb.auth.updateUser({email:ne},{emailRedirectTo:APP_URL});
+  btn.disabled=false;
+  if(error){msg(m,"変更に失敗しました。");return;}
+  msg(m,"確認メールを送信しました。メール内のリンクから変更を完了してください。","ok");
+  $("#emailNew").value="";
+}
+async function savePassword(){
+  const m=$("#pwMsg"),p1=$("#pwN").value,p2=$("#pwN2").value;
+  if(!p1){msg(m,"パスワードを入力してください。");return;}
+  if(p1.length<8){msg(m,"8文字以上で入力してください。");return;}
+  if(p1!==p2){msg(m,"パスワードが一致しません。");return;}
+  const btn=$("#btnPw");btn.disabled=true;
+  const{error}=await sb.auth.updateUser({password:p1});
+  btn.disabled=false;
+  if(error){msg(m,"設定に失敗しました。");return;}
+  await sb.from("profiles").update({has_password:true}).eq("id",S.user.id);
+  S.profile.has_password=true;
+  msg(m,"パスワードを設定しました！","ok");
+  $("#pwN").value="";$("#pwN2").value="";
+}
+
+/* ===== 課金 ===== */
+async function loadBilling(){
+  try{const r=await fetch(BILLING,{cache:"no-store"});S.billingCfg=await r.json();}catch(e){}
+}
+async function createCheckout(){
+  const base=S.billingCfg?.stripe?.standard?.payment_link_url;
+  if(!base){alert("課金設定の読み込みに失敗しました。");return;}
+  const p=new URLSearchParams();
+  if(S.user?.email)p.set("prefilled_email",S.user.email);
+  if(S.user?.id)p.set("client_reference_id",S.user.id);
+  location.href=base+(base.includes("?")?"&":"?")+p.toString();
+}
+async function openPortal(){
+  try{
+    const{data:sess}=await sb.auth.getSession();
+    const token=sess?.session?.access_token;
+    if(!token){alert("再ログインしてください。");return;}
+    const r=await fetch(PORTAL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({user_id:S.user.id,return_url:APP_URL})});
+    const d=await r.json();
+    if(d?.url)location.href=d.url;else alert("サブスクリプション管理ページを開けませんでした。");
+  }catch(e){alert("エラーが発生しました。");}
+}
+
+/* ===== 通報 ===== */
+function bindReport(btn){
+  btn.addEventListener("click",e=>{
+    e.stopPropagation();
+    S.reportTarget={type:btn.dataset.type,id:btn.dataset.id};
+    $("#reportModal").classList.add("show");
+    $("#reportReason").value="";
+    msg($("#reportMsg"),"");
+  });
+}
+$("#reportClose").addEventListener("click",()=>$("#reportModal").classList.remove("show"));
+$("#btnReportCancel").addEventListener("click",()=>$("#reportModal").classList.remove("show"));
+$("#btnReport").addEventListener("click",async()=>{
+  const reason=$("#reportReason").value;
+  const m=$("#reportMsg");
+  if(!reason){msg(m,"理由を選択してください。");return;}
+  if(!S.reportTarget||!S.user)return;
+  const btn=$("#btnReport");btn.disabled=true;
+  const{error}=await sb.from("reports").insert({reporter_id:S.user.id,target_type:S.reportTarget.type,target_id:S.reportTarget.id,reason});
+  btn.disabled=false;
+  if(error){msg(m,"通報に失敗しました。");return;}
+  msg(m,"通報しました。ご協力ありがとうございます。","ok");
+  setTimeout(()=>{$("#reportModal").classList.remove("show");S.reportTarget=null;},1500);
+});
+
+/* ===== LOGOUT ===== */
+$("#btnLogout").addEventListener("click",async()=>{await sb.auth.signOut();location.replace("/");});
+
+/* ===== MAIN ===== */
+async function main(){
+  await loadBilling();
+  const user=await getUser();
+  if(!user){location.replace("/");return;}
+  S.user=user;
+  $("#userEmail").textContent=user.email||"";
+  const prof=await loadProfile(user.id);
+  S.profile=prof;
+  const tier=String(prof?.tier||"free").toLowerCase();
+  S.isStd=!!prof?.is_active&&tier==="standard";
+  const badge=$("#planBadge");
+  if(S.isStd){badge.textContent="Standard";badge.classList.add("std");}
+  await loadThreads();
+  renderHomeTab();
+  renderPostTab();
+  renderQuestionTab();
+  // HOME のみ表示（他は非表示）
+  switchTab("home");
+}
+
+main();
 </script>
-
 </body>
 </html>
