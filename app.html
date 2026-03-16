@@ -134,7 +134,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .pform-wrap{background:white;border:1px solid rgba(26,23,20,.06);padding:26px;margin-bottom:2px}
 .form-lbl-line{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--duck);margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .form-lbl-line::after{content:'';flex:1;height:1px;background:var(--duck);opacity:.2}
-.form-h{font-family:'Shippori Mincho',serif;font-size:19px;font-weight:600;color:var(--ink);margin-bottom:20px}
 .fg{margin-bottom:16px}
 .flbl{display:block;font-size:11px;color:var(--mist);letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
 .fi,.fsel,.fta{width:100%;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:300;color:var(--ink);background:var(--cream);border:1px solid rgba(26,23,20,.12);outline:none;transition:border-color .2s,box-shadow .2s;border-radius:0;-webkit-appearance:none}
@@ -220,6 +219,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
         <button class="type-btn" data-type="post">つぶやき</button>
         <button class="type-btn" data-type="question">相談</button>
       </div>
+      <div id="homeCatFilter" class="cat-filter"></div>
       <div id="homeList" class="card-list"><div class="loading">読み込み中…</div></div>
     </div>
     <div id="homeDetail" class="detail-view"></div>
@@ -232,6 +232,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
         <input id="postSearch" class="s-input" type="text" placeholder="キーワードで検索…" autocomplete="off">
         <button class="s-clear" onclick="clearSearch('post')">クリア</button>
       </div>
+      <div id="postCatFilter" class="cat-filter"></div>
       <div id="postFormArea"></div>
       <div id="postList" class="card-list" style="margin-top:14px"><div class="loading">読み込み中…</div></div>
     </div>
@@ -245,14 +246,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
         <input id="questionSearch" class="s-input" type="text" placeholder="キーワードで検索…" autocomplete="off">
         <button class="s-clear" onclick="clearSearch('question')">クリア</button>
       </div>
-      <div class="cat-filter" id="qCatFilter">
-        <button class="cat-chip active" data-cat="">すべて</button>
-        <button class="cat-chip" data-cat="キャリア">キャリア</button>
-        <button class="cat-chip" data-cat="結婚・ライフプラン">結婚・ライフプラン</button>
-        <button class="cat-chip" data-cat="お金・将来">お金・将来</button>
-        <button class="cat-chip" data-cat="恋愛">恋愛</button>
-        <button class="cat-chip" data-cat="その他">その他</button>
-      </div>
+      <div id="questionCatFilter" class="cat-filter"></div>
       <div id="questionFormArea"></div>
       <div id="questionList" class="card-list" style="margin-top:14px"><div class="loading">読み込み中…</div></div>
     </div>
@@ -302,13 +296,30 @@ const sb = window.supabase.createClient(SB_URL, SB_KEY, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
 
+/* ===================================================================
+   ★ カテゴリ設定 — ここだけ編集すれば全タブに反映されます
+   label: 表示名
+   value: DBに保存する値（変更しないこと）
+   types: どのタブで使うか ("post"/"question"/"all")
+=================================================================== */
+const CATEGORIES = [
+  { label:"すべて",            value:"",             types:["all"] },
+  { label:"キャリア",          value:"キャリア",      types:["question","all"] },
+  { label:"結婚・ライフプラン", value:"結婚・ライフプラン", types:["question","all"] },
+  { label:"お金・将来",        value:"お金・将来",    types:["question","all"] },
+  { label:"恋愛",              value:"恋愛",          types:["question","all"] },
+  { label:"仕事の悩み",        value:"仕事の悩み",    types:["post","question","all"] },
+  { label:"日常・雑談",        value:"日常・雑談",    types:["post","all"] },
+  { label:"その他",            value:"その他",        types:["post","question","all"] },
+];
+
 /* ===== STATE ===== */
 const S = {
   user:null, profile:null, isStd:false,
   threads:[], billingCfg:null, reportTarget:null,
   reactions:{},
   search:{ home:"", post:"", question:"" },
-  homeType:"", qCat:"",
+  homeType:"", homeCat:"", postCat:"", qCat:"",
 };
 
 /* ===== UTILS ===== */
@@ -325,10 +336,33 @@ function rtime(ts){
 }
 function attrHtml(p){
   if(!p)return"";
-  return[p.age?`${p.age}歳`:"",p.work_style||"",p.marital_status||"",p.living_situation||""]
+  const name = p.display_name ? `<span class="attr-tag">${esc(p.display_name)}</span>` : "";
+  const rest = [p.age?`${p.age}歳`:"",p.work_style||"",p.marital_status||"",p.living_situation||""]
     .filter(Boolean).map(t=>`<span class="attr-tag">${esc(t)}</span>`).join("");
+  return name + rest;
 }
 function msg(el,txt,type="err"){if(!el)return;el.textContent=txt;el.className="fmsg"+(type?" "+type:"")}
+
+/* ===== カテゴリフィルターHTML生成 ===== */
+function buildCatFilter(containerId, typeKey, stateProp) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  // typeKey: "post" | "question" | "all"
+  const cats = CATEGORIES.filter(c => c.types.includes("all") || c.types.includes(typeKey));
+  container.innerHTML = cats.map(c =>
+    `<button class="cat-chip${S[stateProp]===c.value?" active":""}" data-cat="${esc(c.value)}">${esc(c.label)}</button>`
+  ).join("");
+  container.querySelectorAll(".cat-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      container.querySelectorAll(".cat-chip").forEach(x => x.classList.remove("active"));
+      chip.classList.add("active");
+      S[stateProp] = chip.dataset.cat;
+      if (stateProp === "homeCat") renderHomeList();
+      if (stateProp === "postCat") renderPostList();
+      if (stateProp === "qCat")    renderQuestionList();
+    });
+  });
+}
 
 /* ===== AUTH ===== */
 async function getUser(){
@@ -365,11 +399,12 @@ document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>
 
 /* ===== DATA ===== */
 async function loadThreads(){
-  const{data}=await sb.from("threads").select(`
+  const{data,error}=await sb.from("threads").select(`
     id,type,category,title,body,created_at,best_reply_id,user_id,
-    profiles!user_id(age,work_style,marital_status,living_situation),
+    profiles!user_id(display_name,age,work_style,marital_status,living_situation),
     replies(count)
   `).order("created_at",{ascending:false}).limit(200);
+  if(error) console.error("loadThreads error:", error);
   S.threads=data||[];
 }
 
@@ -445,19 +480,21 @@ function filterT(arr,q){
 
 /* ===== CARD HTML ===== */
 function cardHtml(t,showBadge){
-  const p=t.profiles,color=avc(t.user_id),init=p?.age?String(p.age)[0]:"?";
+  const p=t.profiles,color=avc(t.user_id);
+  const displayLabel = p?.display_name || (p?.age ? `${p.age}歳` : "匿名");
+  const init = displayLabel[0] || "？";
   const rc=t.replies?.[0]?.count??0,isPost=t.type==="post";
   return`<div class="post-card${isPost?" is-post":""}" data-id="${t.id}" data-type="${t.type}">
     <div class="card-meta">
-      <div class="av" style="background:${color}">${init}</div>
+      <div class="av" style="background:${color}">${esc(init)}</div>
       <div class="av-info">
-        <div class="uname">${p?.age?p.age+"歳":"匿名"}</div>
+        <div class="uname">${esc(displayLabel)}</div>
         <div class="attr-tags">${attrHtml(p)}</div>
       </div>
       ${showBadge?(isPost?`<span class="tbadge-post">つぶやき</span>`:`<span class="tbadge-q">相談</span>`):""}
-      ${!isPost&&t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
+      ${t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
     </div>
-    ${!isPost?`<div class="card-title">${esc(t.title)}</div>`:""}
+    ${!isPost&&t.title?`<div class="card-title">${esc(t.title)}</div>`:""}
     <div class="card-preview">${esc(t.body)}</div>
     <div class="card-footer">
       ${!isPost?`<span>💬 ${rc}件の返信</span>`:""}
@@ -475,7 +512,6 @@ function bindCardList(container,tab,showBadge){
       openDetail(c.dataset.id,c.dataset.type,tab);
     });
   });
-  // つぶやきのリアクション再描画
   bindReacts(container,true,()=>{
     container.querySelectorAll(".react-row-sm").forEach(row=>{
       const tid=row.dataset.rid;
@@ -489,8 +525,8 @@ function bindCardList(container,tab,showBadge){
 function renderHomeTab(){
   $("#homeDetail").classList.remove("show");
   $("#homeListView").style.display="";
+  buildCatFilter("homeCatFilter", "all", "homeCat");
   renderHomeList();
-  // タイプフィルター
   document.querySelectorAll(".type-btn").forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll(".type-btn").forEach(x=>x.classList.remove("active"));
@@ -499,7 +535,6 @@ function renderHomeTab(){
       renderHomeList();
     };
   });
-  // 検索
   const si=$("#homeSearch");
   si.oninput=()=>{S.search.home=si.value.trim();renderHomeList();};
 }
@@ -507,10 +542,10 @@ function renderHomeTab(){
 function renderHomeList(){
   const el=$("#homeList");
   let ts=S.threads;
-  if(S.homeType)ts=ts.filter(t=>t.type===S.homeType);
+  if(S.homeType) ts=ts.filter(t=>t.type===S.homeType);
+  if(S.homeCat)  ts=ts.filter(t=>t.category===S.homeCat);
   ts=filterT(ts,S.search.home);
-  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.home?"検索結果がありません":"まだ投稿がありません"}</div></div>`;return;}
-  // つぶやきのreactions事前ロード
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.home||S.homeCat?"該当する投稿がありません":"まだ投稿がありません"}</div></div>`;return;}
   const pids=ts.filter(t=>t.type==="post").map(t=>t.id);
   loadReactions(pids).then(()=>{
     el.innerHTML=ts.map(t=>cardHtml(t,true)).join("");
@@ -522,6 +557,7 @@ function renderHomeList(){
 function renderPostTab(){
   $("#postDetail").classList.remove("show");
   $("#postListView").style.display="";
+  buildCatFilter("postCatFilter", "post", "postCat");
   renderPostForm();
   renderPostList();
   const si=$("#postSearch");
@@ -530,8 +566,10 @@ function renderPostTab(){
 
 function renderPostList(){
   const el=$("#postList");
-  let ts=filterT(S.threads.filter(t=>t.type==="post"),S.search.post);
-  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.post?"検索結果がありません":"まだつぶやきがありません"}</div>最初のつぶやきをしてみましょう。</div>`;return;}
+  let ts=S.threads.filter(t=>t.type==="post");
+  if(S.postCat) ts=ts.filter(t=>t.category===S.postCat);
+  ts=filterT(ts,S.search.post);
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.post||S.postCat?"該当する投稿がありません":"まだつぶやきがありません"}</div>最初のつぶやきをしてみましょう。</div>`;return;}
   const ids=ts.map(t=>t.id);
   loadReactions(ids).then(()=>{
     el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");
@@ -546,9 +584,18 @@ function renderPostForm(){
     wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});
     return;
   }
+  // つぶやき用カテゴリ（"すべて"を除く）
+  const postCats = CATEGORIES.filter(c => c.value && (c.types.includes("post") || c.types.includes("all")));
   wrap.innerHTML=`
   <div class="pform-wrap">
     <div class="form-lbl-line">つぶやく</div>
+    <div class="fg">
+      <label class="flbl">カテゴリ（任意）</label>
+      <select id="ptCat" class="fsel">
+        <option value="">なし</option>
+        ${postCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}
+      </select>
+    </div>
     <div class="fg">
       <textarea id="ptBody" class="fta" placeholder="いまどんな気持ち？自由につぶやいてみよう…" maxlength="500" style="min-height:90px"></textarea>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
@@ -564,14 +611,17 @@ function renderPostForm(){
 
 async function submitPost(){
   const body=$("#ptBody")?.value?.trim();
+  const category=$("#ptCat")?.value||null;
   const m=$("#ptMsg");
   if(!body){msg(m,"内容を入力してください。");return;}
   const btn=$("#btnPostSubmit");btn.disabled=true;
-  const{error}=await sb.from("threads").insert({user_id:S.user.id,type:"post",body,category:null,title:null});
+  const payload={user_id:S.user.id,type:"post",body,title:null};
+  if(category) payload.category=category;
+  const{error}=await sb.from("threads").insert(payload);
   btn.disabled=false;
-  if(error){msg(m,"投稿に失敗しました。");return;}
+  if(error){console.error("submitPost error:",error);msg(m,"投稿に失敗しました。（"+error.message+")");return;}
   msg(m,"投稿しました！","ok");
-  $("#ptBody").value="";$("#ptCount").textContent="0";
+  $("#ptBody").value="";$("#ptCat").value="";$("#ptCount").textContent="0";
   await loadThreads();renderPostList();
   setTimeout(()=>{if(m)m.textContent="";},2000);
 }
@@ -580,17 +630,9 @@ async function submitPost(){
 function renderQuestionTab(){
   $("#questionDetail").classList.remove("show");
   $("#questionListView").style.display="";
+  buildCatFilter("questionCatFilter", "question", "qCat");
   renderQuestionForm();
   renderQuestionList();
-  // カテゴリフィルター
-  document.querySelectorAll("#qCatFilter .cat-chip").forEach(c=>{
-    c.onclick=()=>{
-      document.querySelectorAll("#qCatFilter .cat-chip").forEach(x=>x.classList.remove("active"));
-      c.classList.add("active");
-      S.qCat=c.dataset.cat;
-      renderQuestionList();
-    };
-  });
   const si=$("#questionSearch");
   si.oninput=()=>{S.search.question=si.value.trim();renderQuestionList();};
 }
@@ -598,9 +640,9 @@ function renderQuestionTab(){
 function renderQuestionList(){
   const el=$("#questionList");
   let ts=S.threads.filter(t=>t.type==="question");
-  if(S.qCat)ts=ts.filter(t=>t.category===S.qCat);
+  if(S.qCat) ts=ts.filter(t=>t.category===S.qCat);
   ts=filterT(ts,S.search.question);
-  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.question?"検索結果がありません":"まだ相談がありません"}</div>悩みを投稿してみましょう。</div>`;return;}
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.question||S.qCat?"該当する投稿がありません":"まだ相談がありません"}</div>悩みを投稿してみましょう。</div>`;return;}
   el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");
   bindCardList(el,"question",false);
 }
@@ -612,15 +654,15 @@ function renderQuestionForm(){
     wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});
     return;
   }
+  const qCats = CATEGORIES.filter(c => c.value && (c.types.includes("question") || c.types.includes("all")));
   wrap.innerHTML=`
   <div class="pform-wrap">
     <div class="form-lbl-line">相談する</div>
     <div class="fg">
       <label class="flbl">カテゴリ <span style="color:var(--rust)">*</span></label>
-      <select id="qCat" class="fsel">
+      <select id="qCatSel" class="fsel">
         <option value="">選択してください</option>
-        <option>キャリア</option><option>結婚・ライフプラン</option>
-        <option>お金・将来</option><option>恋愛</option><option>その他</option>
+        ${qCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}
       </select>
     </div>
     <div class="fg">
@@ -642,7 +684,7 @@ function renderQuestionForm(){
 }
 
 async function submitQuestion(){
-  const category=$("#qCat")?.value;
+  const category=$("#qCatSel")?.value;
   const title=$("#qTitle")?.value?.trim();
   const body=$("#qBody")?.value?.trim();
   const m=$("#qMsg");
@@ -652,9 +694,9 @@ async function submitQuestion(){
   const btn=$("#btnQSubmit");btn.disabled=true;
   const{error}=await sb.from("threads").insert({user_id:S.user.id,type:"question",category,title,body});
   btn.disabled=false;
-  if(error){msg(m,"投稿に失敗しました。"+error.message);return;}
+  if(error){console.error("submitQuestion error:",error);msg(m,"投稿に失敗しました。（"+error.message+")");return;}
   msg(m,"投稿しました！","ok");
-  $("#qCat").value="";$("#qTitle").value="";$("#qBody").value="";
+  $("#qCatSel").value="";$("#qTitle").value="";$("#qBody").value="";
   $("#qTCount").textContent="0";$("#qBCount").textContent="0";
   await loadThreads();renderQuestionList();
   setTimeout(()=>{if(m)m.textContent="";},2000);
@@ -664,32 +706,32 @@ async function submitQuestion(){
 async function openDetail(threadId,type,fromTab){
   const listViewId = fromTab==="home"?"homeListView":fromTab==="post"?"postListView":"questionListView";
   const detailId   = fromTab==="home"?"homeDetail":fromTab==="post"?"postDetail":"questionDetail";
-  $(` #${listViewId}`).style.display="none";
+  $(`#${listViewId}`).style.display="none";
   const dv=$(`#${detailId}`);
   dv.classList.add("show");
   dv.innerHTML=`<button class="back-btn" id="backBtn">← 一覧に戻る</button><div class="loading">読み込み中…</div>`;
   $("#backBtn").addEventListener("click",()=>goBack(fromTab,listViewId,detailId));
 
-  // スレッド取得
-  const{data:t}=await sb.from("threads").select(`*,profiles!user_id(age,work_style,marital_status,living_situation,bio)`).eq("id",threadId).single();
+  const{data:t}=await sb.from("threads").select(`*,profiles!user_id(display_name,age,work_style,marital_status,living_situation,bio)`).eq("id",threadId).single();
   if(!t){dv.innerHTML+=`<div class="empty">投稿が見つかりませんでした。</div>`;return;}
 
   const isPost=t.type==="post";
   const isOwner=S.user?.id===t.user_id;
-  const p=t.profiles,color=avc(t.user_id),init=p?.age?String(p.age)[0]:"?";
+  const p=t.profiles,color=avc(t.user_id);
+  const displayLabel = p?.display_name || (p?.age ? `${p.age}歳` : "匿名");
+  const init = displayLabel[0] || "？";
 
-  // reactions プリロード（投稿本文）
   await loadReactions([t.id]);
 
   let html=`<button class="back-btn" id="backBtn2">← 一覧に戻る</button>
   <div class="dcard">
     <div class="card-meta">
-      <div class="av" style="background:${color};width:32px;height:32px">${init}</div>
+      <div class="av" style="background:${color};width:32px;height:32px">${esc(init)}</div>
       <div class="av-info">
-        <div class="uname" style="font-size:13px">${p?.age?p.age+"歳":"匿名"}</div>
+        <div class="uname" style="font-size:13px">${esc(displayLabel)}</div>
         <div class="attr-tags">${attrHtml(p)}</div>
       </div>
-      ${!isPost&&t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
+      ${t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
       ${S.user&&!isOwner?`<button class="report-btn" data-type="thread" data-id="${t.id}">通報</button>`:""}
     </div>
     ${!isPost?`<div class="dtitle">${esc(t.title)}</div>`:""}
@@ -701,113 +743,67 @@ async function openDetail(threadId,type,fromTab){
     ${buildReactFull(t.id)}
   </div>`;
 
-  // 相談の返信
-  if(!isPost){
-    const{data:replies}=await sb.from("replies").select(`*,profiles!user_id(age,work_style,marital_status,living_situation)`).eq("thread_id",threadId).order("created_at",{ascending:true});
-    const rids=(replies||[]).map(r=>r.id);
-    await loadReactions(rids);
+  const{data:replies}=await sb.from("replies").select(`*,profiles!user_id(display_name,age,work_style,marital_status,living_situation)`).eq("thread_id",threadId).order("created_at",{ascending:true});
+  const rids=(replies||[]).map(r=>r.id);
+  await loadReactions(rids);
 
-    html+=`<div class="replies-wrap">`;
-    if(!replies?.length){
-      html+=`<div style="padding:20px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。最初の返信をしてみましょう。</div>`;
-    }else{
-      const sorted=[...replies].sort((a,b)=>{
-        if(a.id===t.best_reply_id)return-1;
-        if(b.id===t.best_reply_id)return 1;
-        return 0;
-      });
-      html+=sorted.map(r=>{
-        const rp=r.profiles,rc=avc(r.user_id),ri=rp?.age?String(rp.age)[0]:"?";
-        const isBest=r.id===t.best_reply_id;
-        const canBest=isOwner&&!t.best_reply_id&&S.user?.id!==r.user_id;
-        return`<div class="rcard${isBest?" best":""}" data-rid="${r.id}">
-          ${isBest?`<div class="best-badge">✓ ベストアンサー</div>`:""}
-          <div class="card-meta">
-            <div class="av" style="background:${rc}">${ri}</div>
-            <div class="av-info">
-              <div class="uname">${rp?.age?rp.age+"歳":"匿名"}</div>
-              <div class="attr-tags">${attrHtml(rp)}</div>
-            </div>
-            <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
-            ${canBest?`<button class="btn-best" data-rid="${r.id}">ベストアンサーに選ぶ</button>`:""}
-            ${isBest&&isOwner?`<button class="btn-best on" disabled>✓ ベスト</button>`:""}
-            ${S.user&&S.user.id!==r.user_id?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
-          </div>
-          <div class="rbody">${esc(r.body)}</div>
-          ${buildReactFull(r.id)}
-        </div>`;
-      }).join("");
-    }
-    html+=`</div>`;
-
-    // 返信フォーム
-    if(!S.user){
-      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには<a href="/">ログイン</a>が必要です。</div></div>`;
-    }else if(!S.isStd){
-      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには <span class="upg-link2" style="color:var(--duck);cursor:pointer;font-weight:400">Standardプランへのアップグレード</span>が必要です。</div></div>`;
-    }else{
-      html+=`<div class="reply-form-box">
-        <div class="reply-form-lbl">返信する</div>
-        <textarea id="rBody" class="fta" placeholder="返信を入力してください…" maxlength="1000" style="min-height:100px"></textarea>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-          <button id="btnReply" class="btn-p">返信する</button>
-          <span class="ccount"><span id="rCount">0</span>/1000</span>
-        </div>
-        <p id="rMsg" class="fmsg"></p>
-      </div>`;
-    }
+  html+=`<div class="replies-wrap">`;
+  if(!replies?.length){
+    html+=`<div style="padding:20px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。最初の返信をしてみましょう。</div>`;
   }else{
-    // つぶやきの返信
-    const{data:replies}=await sb.from("replies").select(`*,profiles!user_id(age,work_style,marital_status,living_situation)`).eq("thread_id",threadId).order("created_at",{ascending:true});
-    const rids=(replies||[]).map(r=>r.id);
-    await loadReactions(rids);
-
-    html+=`<div class="replies-wrap">`;
-    if(!replies?.length){
-      html+=`<div style="padding:16px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。</div>`;
-    }else{
-      html+=replies.map(r=>{
-        const rp=r.profiles,rc=avc(r.user_id),ri=rp?.age?String(rp.age)[0]:"?";
-        return`<div class="rcard" data-rid="${r.id}">
-          <div class="card-meta">
-            <div class="av" style="background:${rc}">${ri}</div>
-            <div class="av-info">
-              <div class="uname">${rp?.age?rp.age+"歳":"匿名"}</div>
-              <div class="attr-tags">${attrHtml(rp)}</div>
-            </div>
-            <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
-            ${S.user&&S.user.id!==r.user_id?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
+    const sorted=[...replies].sort((a,b)=>{
+      if(a.id===t.best_reply_id)return-1;
+      if(b.id===t.best_reply_id)return 1;
+      return 0;
+    });
+    html+=sorted.map(r=>{
+      const rp=r.profiles,rc=avc(r.user_id);
+      const rLabel = rp?.display_name || (rp?.age ? `${rp.age}歳` : "匿名");
+      const ri = rLabel[0] || "？";
+      const isBest=r.id===t.best_reply_id;
+      const canBest=isOwner&&!t.best_reply_id&&S.user?.id!==r.user_id;
+      return`<div class="rcard${isBest?" best":""}" data-rid="${r.id}">
+        ${isBest?`<div class="best-badge">✓ ベストアンサー</div>`:""}
+        <div class="card-meta">
+          <div class="av" style="background:${rc}">${esc(ri)}</div>
+          <div class="av-info">
+            <div class="uname">${esc(rLabel)}</div>
+            <div class="attr-tags">${attrHtml(rp)}</div>
           </div>
-          <div class="rbody">${esc(r.body)}</div>
-          ${buildReactFull(r.id)}
-        </div>`;
-      }).join("");
-    }
-    html+=`</div>`;
-    if(!S.user){
-      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには<a href="/">ログイン</a>が必要です。</div></div>`;
-    }else if(!S.isStd){
-      html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには <span class="upg-link2" style="color:var(--duck);cursor:pointer;font-weight:400">Standardプランへのアップグレード</span>が必要です。</div></div>`;
-    }else{
-      html+=`<div class="reply-form-box">
-        <div class="reply-form-lbl">返信する</div>
-        <textarea id="rBody" class="fta" placeholder="返信を入力してください…" maxlength="1000" style="min-height:100px"></textarea>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-          <button id="btnReply" class="btn-p">返信する</button>
-          <span class="ccount"><span id="rCount">0</span>/1000</span>
+          <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
+          ${canBest?`<button class="btn-best" data-rid="${r.id}">ベストアンサーに選ぶ</button>`:""}
+          ${isBest&&isOwner?`<button class="btn-best on" disabled>✓ ベスト</button>`:""}
+          ${S.user&&S.user.id!==r.user_id?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
         </div>
-        <p id="rMsg" class="fmsg"></p>
+        <div class="rbody">${esc(r.body)}</div>
+        ${buildReactFull(r.id)}
       </div>`;
-    }
+    }).join("");
+  }
+  html+=`</div>`;
+
+  // 返信フォーム
+  if(!S.user){
+    html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには<a href="/">ログイン</a>が必要です。</div></div>`;
+  }else if(!S.isStd){
+    html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには <span class="upg-link2" style="color:var(--duck);cursor:pointer;font-weight:400">Standardプランへのアップグレード</span>が必要です。</div></div>`;
+  }else{
+    html+=`<div class="reply-form-box">
+      <div class="reply-form-lbl">返信する</div>
+      <textarea id="rBody" class="fta" placeholder="返信を入力してください…" maxlength="1000" style="min-height:100px"></textarea>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+        <button id="btnReply" class="btn-p">返信する</button>
+        <span class="ccount"><span id="rCount">0</span>/1000</span>
+      </div>
+      <p id="rMsg" class="fmsg"></p>
+    </div>`;
   }
 
   dv.innerHTML=html;
 
-  // イベントバインド
   dv.querySelector("#backBtn2")?.addEventListener("click",()=>goBack(fromTab,listViewId,detailId));
   dv.querySelectorAll(".report-btn").forEach(b=>bindReport(b));
 
-  // ベストアンサーボタン
   dv.querySelectorAll(".btn-best:not([disabled])").forEach(b=>{
     b.addEventListener("click",async e=>{
       e.stopPropagation();
@@ -820,32 +816,23 @@ async function openDetail(threadId,type,fromTab){
     });
   });
 
-  // リアクション（投稿本文）
   dv.querySelectorAll(".react-row").forEach(row=>{
     const tid=row.dataset.rid;
-    const btns=row.querySelectorAll(".rbtn");
-    btns.forEach(b=>{
+    row.querySelectorAll(".rbtn").forEach(b=>{
       b.addEventListener("click",e=>{
         e.stopPropagation();
         if(!S.user)return;
         toggleReaction(b.dataset.tid,b.dataset.e,()=>{
-          row.outerHTML=buildReactFull(b.dataset.tid);
-          dv.querySelectorAll(".react-row").forEach(r2=>{
-            r2.querySelectorAll(".rbtn").forEach(b2=>{
-              b2.addEventListener("click",ev=>{ev.stopPropagation();if(!S.user)return;toggleReaction(b2.dataset.tid,b2.dataset.e,()=>{});});
-            });
-          });
+          openDetail(threadId,type,fromTab);
         });
       });
     });
   });
 
-  // アップグレードリンク
   dv.querySelectorAll(".upg-link2").forEach(el=>{
     el.addEventListener("click",()=>switchTab("account"));
   });
 
-  // 返信送信
   if(S.isStd){
     const rBodyEl=dv.querySelector("#rBody");
     const rCountEl=dv.querySelector("#rCount");
@@ -888,9 +875,19 @@ function renderAccount(){
   </div>
   <div class="asec">
     <div class="asec-h">プロフィール属性</div>
-    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される属性情報です。すべて任意です。</p>
+    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される情報です。すべて任意です。</p>
+    <div class="fg">
+      <label class="flbl">表示名（ニックネーム）</label>
+      <input id="pDisplayName" class="fi" type="text" maxlength="20" placeholder="例：なつみ、ぽんこつOL など" value="${esc(pr?.display_name??"")}">
+      <div class="ccount" style="text-align:right;margin-top:3px"><span id="dnCount">${(pr?.display_name||"").length}</span> / 20</div>
+    </div>
     <div class="pgrid">
-      <div class="fg"><label class="flbl">年齢</label><input id="pAge" class="fi" type="number" min="18" max="99" placeholder="27" value="${pr?.age??""}"></div>
+      <div class="fg">
+        <label class="flbl">年齢</label>
+        <input id="pAge" class="fi" type="number" min="18" max="65" placeholder="27" value="${pr?.age??""}"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');if(+this.value>65)this.value=65;if(this.value&&+this.value<18)this.value=18;">
+        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜65の範囲で入力</div>
+      </div>
       <div class="fg"><label class="flbl">働き方</label>
         <select id="pWork" class="fsel">
           <option value="">未設定</option>
@@ -934,7 +931,11 @@ function renderAccount(){
     <p id="pwMsg" class="fmsg"></p>
   </div>`;
 
-  // プランアクション
+  // 表示名カウンター
+  $("#pDisplayName").addEventListener("input",e=>{
+    $("#dnCount").textContent=e.target.value.length;
+  });
+
   const pa=$("#planActions");
   if(S.isStd){
     pa.innerHTML=`<button id="btnCancel" class="btn-d">サブスクを解約する</button>`;
@@ -945,14 +946,12 @@ function renderAccount(){
     $("#btnSub").addEventListener("click",()=>createCheckout());
   }
 
-  // パスワードセクション
   if(pr?.has_password){
     $("#pwSecH").textContent="パスワードの変更";
     $("#pwSecD").textContent="現在のアカウントのパスワードを変更できます。";
     $("#btnPw").textContent="変更する";
   }
 
-  // イベント
   $("#btnSaveProf").addEventListener("click",saveProfile);
   $("#btnEmail").addEventListener("click",changeEmail);
   $("#pwShow").addEventListener("change",e=>{const t=e.target.checked?"text":"password";$("#pwN").type=t;$("#pwN2").type=t;});
@@ -961,7 +960,16 @@ function renderAccount(){
 
 async function saveProfile(){
   const m=$("#profMsg");
-  const upd={age:parseInt($("#pAge").value)||null,work_style:$("#pWork").value||null,marital_status:$("#pMarital").value||null,living_situation:$("#pLiving").value||null,bio:$("#pBio").value.trim()||null};
+  const ageRaw=parseInt($("#pAge").value);
+  const age=(ageRaw>=18&&ageRaw<=65)?ageRaw:null;
+  const upd={
+    display_name:$("#pDisplayName").value.trim()||null,
+    age,
+    work_style:$("#pWork").value||null,
+    marital_status:$("#pMarital").value||null,
+    living_situation:$("#pLiving").value||null,
+    bio:$("#pBio").value.trim()||null
+  };
   const btn=$("#btnSaveProf");btn.disabled=true;
   const{error}=await sb.from("profiles").update(upd).eq("id",S.user.id);
   btn.disabled=false;
@@ -1058,10 +1066,6 @@ async function main(){
   const badge=$("#planBadge");
   if(S.isStd){badge.textContent="Standard";badge.classList.add("std");}
   await loadThreads();
-  renderHomeTab();
-  renderPostTab();
-  renderQuestionTab();
-  // HOME のみ表示（他は非表示）
   switchTab("home");
 }
 
