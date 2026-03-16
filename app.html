@@ -23,8 +23,6 @@
 }
 html,body{min-height:100vh}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);padding-top:calc(var(--hh) + var(--nh))}
-
-/* HEADER */
 .site-header{position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:100;background:rgba(245,240,232,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(26,23,20,.08);display:flex;align-items:center;padding:0 20px;justify-content:space-between}
 .hlogo{display:flex;align-items:center;gap:9px;text-decoration:none}
 .hlogo img{width:30px;height:30px;object-fit:contain}
@@ -39,44 +37,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .notif-btn:hover{color:var(--duck)}
 .notif-badge{position:absolute;top:0;right:0;background:var(--rust);color:white;font-size:9px;font-weight:600;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
 .notif-badge.hidden{display:none}
-
-/* TAB NAV */
 .tab-nav{position:fixed;top:var(--hh);left:0;right:0;height:var(--nh);z-index:99;background:white;border-bottom:1px solid rgba(26,23,20,.08);display:flex;align-items:stretch}
 .tab-btn{flex:1;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mist);cursor:pointer;position:relative;transition:color .2s}
 .tab-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--duck);transform:scaleX(0);transition:transform .2s}
 .tab-btn.active{color:var(--duck)}
 .tab-btn.active::after{transform:scaleX(1)}
-
-/* PAGE */
 .page{max-width:680px;margin:0 auto;padding:24px 16px 80px}
 .tab-pane{display:none}
 .tab-pane.active{display:block}
-
-/* SEARCH */
 .search-bar{display:flex;gap:8px;margin-bottom:14px}
 .s-input{flex:1;padding:9px 14px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:300;color:var(--ink);background:white;border:1px solid rgba(26,23,20,.12);outline:none;transition:border-color .2s,box-shadow .2s}
 .s-input:focus{border-color:var(--duck);box-shadow:0 0 0 3px rgba(74,124,111,.1)}
 .s-input::placeholder{color:#b0a898}
 .s-clear{font-size:12px;color:var(--mist);background:none;border:none;cursor:pointer;padding:8px 10px;font-family:'DM Sans',sans-serif;white-space:nowrap}
 .s-clear:hover{color:var(--duck)}
-
-/* TYPE FILTER */
 .type-filter{display:flex;border:1px solid rgba(26,23,20,.10);background:white;margin-bottom:14px}
 .type-btn{flex:1;padding:9px;font-size:12px;letter-spacing:.06em;text-align:center;cursor:pointer;border:none;background:none;color:var(--mist);font-family:'DM Sans',sans-serif;transition:all .2s;border-right:1px solid rgba(26,23,20,.08)}
 .type-btn:last-child{border-right:none}
 .type-btn.active{background:var(--ink);color:white}
-
-/* CAT FILTER */
 .cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
 .cat-chip{font-size:11px;padding:5px 12px;border:1px solid rgba(26,23,20,.12);background:white;color:var(--mist);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;letter-spacing:.04em}
 .cat-chip.active{background:var(--duck);color:white;border-color:var(--duck)}
 .cat-chip:hover:not(.active){border-color:var(--duck);color:var(--duck)}
-
-/* AVATAR */
 .av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;flex-shrink:0;margin-top:1px;overflow:hidden}
 img.av{object-fit:cover;display:block}
-
-/* CARD LIST */
 .card-list{display:flex;flex-direction:column;gap:2px}
 .post-card{background:white;padding:18px 20px;border:1px solid rgba(26,23,20,.06);cursor:pointer;transition:all .2s}
 .post-card:hover{border-color:rgba(74,124,111,.4);transform:translateX(2px)}
@@ -93,15 +77,11 @@ img.av{object-fit:cover;display:block}
 .post-card.is-post .card-preview{-webkit-line-clamp:4;color:#4a4440;font-size:14px}
 .card-footer{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:11px;color:var(--mist);flex-wrap:wrap}
 .solved{color:var(--duck)}
-
-/* REACTION (card) */
 .react-row-sm{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid rgba(26,23,20,.05)}
 .rbtn-sm{display:inline-flex;align-items:center;gap:3px;font-size:12px;padding:4px 8px;background:var(--cream);border:1px solid rgba(26,23,20,.08);cursor:pointer;transition:all .15s;color:var(--mist);font-family:'DM Sans',sans-serif;line-height:1}
 .rbtn-sm:hover{border-color:var(--duck);color:var(--duck);background:var(--duck-pale)}
 .rbtn-sm.on{background:var(--duck-pale);border-color:var(--duck);color:var(--duck)}
 .rcount{font-size:11px}
-
-/* DETAIL */
 .detail-view{display:none}
 .detail-view.show{display:block}
 .back-btn{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0;margin-bottom:20px;font-family:'DM Sans',sans-serif;transition:color .2s}
@@ -110,15 +90,11 @@ img.av{object-fit:cover;display:block}
 .dtitle{font-family:'Shippori Mincho',serif;font-size:20px;font-weight:600;line-height:1.55;margin-bottom:14px}
 .dbody{font-size:14px;line-height:1.9;color:#4a4440;font-weight:300;white-space:pre-wrap}
 .dfooter{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;font-size:11px;color:var(--mist)}
-
-/* REACTION (detail) */
 .react-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid rgba(26,23,20,.06)}
 .rbtn{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:5px 10px;background:var(--cream);border:1px solid rgba(26,23,20,.10);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;color:var(--ink)}
 .rbtn:hover{border-color:var(--duck);background:var(--duck-pale)}
 .rbtn.on{background:var(--duck-pale);border-color:var(--duck);color:var(--duck)}
 .rcount2{font-size:11px;color:var(--mist)}
-
-/* REPLY CARDS */
 .replies-wrap{margin-top:2px}
 .rcard{background:white;border:1px solid rgba(26,23,20,.06);padding:18px 20px;margin-bottom:2px;position:relative}
 .rcard.best{border-color:var(--duck);background:#f8fdfb}
@@ -130,14 +106,10 @@ img.av{object-fit:cover;display:block}
 .btn-best{font-size:11px;color:var(--mist);background:none;border:1px solid rgba(26,23,20,.12);padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap;flex-shrink:0}
 .btn-best:hover{border-color:var(--duck);color:var(--duck)}
 .btn-best.on{background:var(--duck);color:white;border-color:var(--duck)}
-
-/* REPLY FORM */
 .reply-form-box{background:white;border:1px solid rgba(26,23,20,.06);padding:20px;margin-top:2px}
 .reply-form-lbl{font-size:12px;color:var(--mist);letter-spacing:.06em;margin-bottom:10px}
 .upgrade-box{background:var(--warm);padding:16px 20px;font-size:13px;color:var(--ink);font-weight:300;line-height:1.7}
 .upgrade-box a{color:var(--duck);text-decoration:none;font-weight:400}
-
-/* POST FORM */
 .pform-wrap{background:white;border:1px solid rgba(26,23,20,.06);padding:26px;margin-bottom:2px}
 .form-lbl-line{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--duck);margin-bottom:16px;display:flex;align-items:center;gap:10px}
 .form-lbl-line::after{content:'';flex:1;height:1px;background:var(--duck);opacity:.2}
@@ -148,8 +120,8 @@ img.av{object-fit:cover;display:block}
 .fta{resize:vertical;min-height:120px;line-height:1.7}
 .fsel{cursor:pointer}
 .ccount{font-size:11px;color:var(--mist);text-align:right;margin-top:3px}
-
-/* AVATAR UPLOAD */
+.req{color:var(--rust)}
+/* AVATAR */
 .av-upload-wrap{display:flex;align-items:center;gap:16px;margin-bottom:8px}
 .av-preview{width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--warm);background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--mist);flex-shrink:0}
 .av-preview img{width:100%;height:100%;object-fit:cover}
@@ -158,7 +130,6 @@ img.av{object-fit:cover;display:block}
 .btn-av:hover{background:var(--duck);color:white}
 .btn-av-del{font-size:12px;color:var(--mist);background:none;border:1px solid rgba(26,23,20,.12);padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
 .btn-av-del:hover{border-color:var(--error);color:var(--error)}
-
 /* BUTTONS */
 .btn-p{background:var(--duck);color:white;border:none;padding:12px 32px;font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .2s}
 .btn-p:hover:not(:disabled){background:var(--ink);transform:translateY(-1px)}
@@ -170,7 +141,6 @@ img.av{object-fit:cover;display:block}
 .fmsg{font-size:13px;margin-top:10px;font-weight:300}
 .fmsg.err{color:var(--error)}
 .fmsg.ok{color:var(--duck)}
-
 /* ACCOUNT */
 .asec{background:white;border:1px solid rgba(26,23,20,.06);padding:24px;margin-bottom:2px}
 .asec-h{font-family:'Shippori Mincho',serif;font-size:17px;font-weight:600;color:var(--ink);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid rgba(26,23,20,.08)}
@@ -179,7 +149,6 @@ img.av{object-fit:cover;display:block}
 .plan-box-val{font-family:'Shippori Mincho',serif;font-size:20px;font-weight:600}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .pwf{max-width:300px;display:flex;flex-direction:column;gap:8px;margin-top:10px}
-
 /* NOTIFICATION */
 .notif-list{display:flex;flex-direction:column;gap:2px}
 .notif-card{background:white;padding:16px 20px;border:1px solid rgba(26,23,20,.06);cursor:pointer;transition:all .2s;display:flex;gap:12px;align-items:flex-start}
@@ -192,7 +161,6 @@ img.av{object-fit:cover;display:block}
 .notif-time{font-size:11px;color:var(--mist);margin-top:3px}
 .notif-read-all{font-size:12px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;text-decoration:underline;margin-bottom:12px;display:block}
 .notif-read-all:hover{color:var(--duck)}
-
 /* MODAL */
 .mback{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
 .mback.show{display:flex}
@@ -200,12 +168,10 @@ img.av{object-fit:cover;display:block}
 .modal-h{font-family:'Shippori Mincho',serif;font-size:17px;font-weight:600;margin-bottom:16px}
 .mclose{position:absolute;top:14px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--mist);padding:4px 8px;transition:color .2s}
 .mclose:hover{color:var(--ink)}
-
 /* MISC */
 .loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--mist);font-size:13px;letter-spacing:.06em}
 .empty{text-align:center;padding:48px 20px;color:var(--mist);font-size:13px;font-weight:300;line-height:1.8}
 .empty-h{font-family:'Shippori Mincho',serif;font-size:17px;color:var(--ink);margin-bottom:8px}
-
 @media(max-width:560px){
   .uemail{display:none}
   .pgrid{grid-template-columns:1fr}
@@ -290,6 +256,7 @@ img.av{object-fit:cover;display:block}
   </section>
 </div>
 
+<!-- 通報モーダル -->
 <div id="reportModal" class="mback">
   <div class="modal">
     <button class="mclose" id="reportClose">×</button>
@@ -316,7 +283,9 @@ img.av{object-fit:cover;display:block}
 <script>
 const SB_URL  = "https://rhynpigqhnbwjyudvvfw.supabase.co";
 const SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeW5waWdxaG5id2p5dWR2dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODcyNTMsImV4cCI6MjA4MzM2MzI1M30.S9h-SH0JB0cEhMukUUaOuYEetx2I8qecZapIeCpk57M";
-const BILLING = "https://app.gyomu-karugamo.com/data/billing.json";
+const BILLING     = "https://app.gyomu-karugamo.com/data/billing.json";
+const CATEGORIES_URL = "https://app.gyomu-karugamo.com/data/categories.json";
+const ATTRIBUTES_URL = "https://app.gyomu-karugamo.com/data/attributes.json";
 const PORTAL  = "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/create-portal-session";
 const APP_URL = "https://app.gyomu-karugamo.com/app.html";
 const AVATAR_BUCKET = "avatars";
@@ -325,30 +294,19 @@ const sb = window.supabase.createClient(SB_URL, SB_KEY, {
   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
 });
 
-/* ===================================================================
-   ★ カテゴリ設定 — ここだけ編集すれば全タブに反映
-=================================================================== */
-const CATEGORIES = [
-  {label:"すべて",            value:"",                 types:["all"]},
-  {label:"キャリア",          value:"キャリア",          types:["question","all"]},
-  {label:"結婚・ライフプラン", value:"結婚・ライフプラン", types:["question","all"]},
-  {label:"お金・将来",        value:"お金・将来",         types:["question","all"]},
-  {label:"恋愛",              value:"恋愛",              types:["question","all"]},
-  {label:"仕事の悩み",        value:"仕事の悩み",         types:["post","question","all"]},
-  {label:"日常・雑談",        value:"日常・雑談",         types:["post","all"]},
-  {label:"その他",            value:"その他",            types:["post","question","all"]},
-];
-
+/* ===== STATE ===== */
 const S = {
-  user:null,profile:null,isStd:false,
-  threads:[],billingCfg:null,reportTarget:null,
-  reactions:{},    // {tid: {emoji: {count}}}
-  myReactions:{},  // {tid: emoji | null}
+  user:null, profile:null, isStd:false,
+  threads:[], billingCfg:null, reportTarget:null,
+  reactions:{}, myReactions:{},
   search:{home:"",post:"",question:""},
-  homeType:"",homeCat:"",postCat:"",qCat:"",
-  notifications:[],unreadCount:0,
+  homeType:"", homeCat:"", postCat:"", qCat:"",
+  notifications:[], unreadCount:0,
+  // JSONから読み込むマスターデータ
+  CATEGORIES:[], ATTRIBUTES:{work_style:[],marital_status:[],living_situation:[]},
 };
 
+/* ===== UTILS ===== */
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 const AVC=["#4a7c6f","#c4622d","#b8975a","#6a7c8f","#8a6a9a"];
@@ -360,18 +318,16 @@ function rtime(ts){
   if(d<86400)return`${Math.floor(d/3600)}時間前`;
   return`${Math.floor(d/86400)}日前`;
 }
-// 属性タグ：表示名は含めない
 function attrHtml(p){
   if(!p)return"";
   return[p.age?`${p.age}歳`:"",p.work_style||"",p.marital_status||"",p.living_situation||""]
     .filter(Boolean).map(t=>`<span class="attr-tag">${esc(t)}</span>`).join("");
 }
-// アバターHTML生成
 function avatarHtml(p,size=28){
   const uid=p?._uid||"x";
   const color=avc(uid);
   const label=p?.display_name||(p?.age?`${p.age}歳`:"?");
-  const init=(label[0]||"?");
+  const init=label[0]||"?";
   if(p?.avatar_url){
     return`<img class="av" src="${esc(p.avatar_url)}" style="width:${size}px;height:${size}px;border-radius:50%" alt="">`;
   }
@@ -379,11 +335,41 @@ function avatarHtml(p,size=28){
 }
 function msg(el,txt,type="err"){if(!el)return;el.textContent=txt;el.className="fmsg"+(type?" "+type:"")}
 
-/* カテゴリフィルター */
-function buildCatFilter(containerId,typeKey,stateProp){
+/* ===== JSONマスターデータ読み込み ===== */
+async function loadMasterData(){
+  try{
+    const [catRes, attrRes] = await Promise.all([
+      fetch(CATEGORIES_URL,{cache:"no-store"}),
+      fetch(ATTRIBUTES_URL,{cache:"no-store"})
+    ]);
+    S.CATEGORIES = await catRes.json();
+    S.ATTRIBUTES = await attrRes.json();
+  }catch(e){
+    console.error("マスターデータ読み込み失敗:", e);
+    // フォールバック
+    S.CATEGORIES = [
+      {label:"すべて",value:"",types:["all"]},
+      {label:"キャリア",value:"キャリア",types:["question","all"]},
+      {label:"結婚・ライフプラン",value:"結婚・ライフプラン",types:["question","all"]},
+      {label:"お金・将来",value:"お金・将来",types:["question","all"]},
+      {label:"恋愛",value:"恋愛",types:["question","all"]},
+      {label:"仕事の悩み",value:"仕事の悩み",types:["post","question","all"]},
+      {label:"日常・雑談",value:"日常・雑談",types:["post","all"]},
+      {label:"その他",value:"その他",types:["post","question","all"]},
+    ];
+    S.ATTRIBUTES = {
+      work_style:["会社員","フリーランス","個人事業主","パート・アルバイト","専業主婦・主夫","求職中","その他"],
+      marital_status:["婚活中","交際中","独身","既婚（子あり）","既婚（子なし）","離婚経験あり"],
+      living_situation:["一人暮らし","実家暮らし","パートナーと同居","その他"],
+    };
+  }
+}
+
+/* ===== カテゴリフィルター ===== */
+function buildCatFilter(containerId, typeKey, stateProp){
   const container=document.getElementById(containerId);
   if(!container)return;
-  const cats=CATEGORIES.filter(c=>c.types.includes("all")||c.types.includes(typeKey));
+  const cats=S.CATEGORIES.filter(c=>c.types.includes("all")||c.types.includes(typeKey));
   container.innerHTML=cats.map(c=>
     `<button class="cat-chip${S[stateProp]===c.value?" active":""}" data-cat="${esc(c.value)}">${esc(c.label)}</button>`
   ).join("");
@@ -399,7 +385,7 @@ function buildCatFilter(containerId,typeKey,stateProp){
   });
 }
 
-/* AUTH */
+/* ===== AUTH ===== */
 async function getUser(){
   try{const{data}=await sb.auth.getSession();if(data?.session?.user)return data.session.user;}catch(e){}
   const u=new URL(location.href);
@@ -421,7 +407,7 @@ async function loadProfile(uid){
   return data;
 }
 
-/* TABS */
+/* ===== TABS ===== */
 function switchTab(tab){
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
   document.querySelectorAll(".tab-pane").forEach(p=>p.classList.toggle("active",p.id==="tab-"+tab));
@@ -433,7 +419,7 @@ function switchTab(tab){
 }
 document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
 
-/* DATA */
+/* ===== DATA ===== */
 async function loadThreads(){
   const{data,error}=await sb.from("threads").select(`
     id,type,category,title,body,created_at,best_reply_id,user_id,
@@ -441,13 +427,10 @@ async function loadThreads(){
     replies!replies_thread_id_fkey(count)
   `).order("created_at",{ascending:false}).limit(200);
   if(error){console.error("loadThreads error:",error);return;}
-  S.threads=(data||[]).map(t=>{
-    if(t.profiles)t.profiles._uid=t.user_id;
-    return t;
-  });
+  S.threads=(data||[]).map(t=>{if(t.profiles)t.profiles._uid=t.user_id;return t;});
 }
 
-/* REACTIONS - 1種類のみ・切り替え式 */
+/* ===== REACTIONS ===== */
 const EMOJIS=["わかる","参考になった","応援してる","つらいね"];
 const EICONS={"わかる":"🤝","参考になった":"💡","応援してる":"📣","つらいね":"🤍"};
 
@@ -466,14 +449,11 @@ async function toggleReaction(tid,emoji,cb){
   if(!S.user)return;
   const current=S.myReactions[tid]||null;
   if(!S.reactions[tid])S.reactions[tid]={};
-
   if(current===emoji){
-    // 同じ → 解除
     await sb.from("reactions").delete().eq("user_id",S.user.id).eq("reply_id",tid).eq("emoji",emoji);
     if(S.reactions[tid][emoji])S.reactions[tid][emoji].count=Math.max(0,S.reactions[tid][emoji].count-1);
     S.myReactions[tid]=null;
   }else{
-    // 別のもの → 前を解除して新しいのを追加
     if(current){
       await sb.from("reactions").delete().eq("user_id",S.user.id).eq("reply_id",tid).eq("emoji",current);
       if(S.reactions[tid][current])S.reactions[tid][current].count=Math.max(0,S.reactions[tid][current].count-1);
@@ -500,7 +480,6 @@ function buildReactFull(tid){
       return`<button class="rbtn${on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount2">${i.count}</span>`:""}</button>`;
     }).join("")+`</div>`;
 }
-
 function bindReactsSm(container){
   container.querySelectorAll(".rbtn-sm").forEach(b=>{
     b.addEventListener("click",e=>{
@@ -514,7 +493,7 @@ function bindReactsSm(container){
   });
 }
 
-/* 通知 */
+/* ===== 通知 ===== */
 async function loadNotifications(){
   if(!S.user)return;
   const{data}=await sb.from("notifications")
@@ -578,7 +557,7 @@ async function createNotification(threadId,replyId){
   await sb.from("notifications").insert({user_id:th.user_id,thread_id:threadId,reply_id:replyId});
 }
 
-/* SEARCH */
+/* ===== SEARCH ===== */
 function clearSearch(tab){
   S.search[tab]="";const el=$(`#${tab}Search`);if(el)el.value="";
   if(tab==="home")renderHomeList();
@@ -590,7 +569,7 @@ function filterT(arr,q){
   return arr.filter(t=>(t.title||"").toLowerCase().includes(lq)||(t.body||"").toLowerCase().includes(lq)||(t.category||"").toLowerCase().includes(lq));
 }
 
-/* CARD HTML */
+/* ===== CARD HTML ===== */
 function cardHtml(t,showBadge){
   const p=t.profiles||{};p._uid=t.user_id;
   const label=p.display_name||(p.age?`${p.age}歳`:"匿名");
@@ -626,7 +605,7 @@ function bindCardList(container,tab){
   bindReactsSm(container);
 }
 
-/* HOME */
+/* ===== HOME ===== */
 function renderHomeTab(){
   $("#homeDetail").classList.remove("show");
   $("#homeListView").style.display="";
@@ -650,7 +629,7 @@ function renderHomeList(){
   loadReactions(pids).then(()=>{el.innerHTML=ts.map(t=>cardHtml(t,true)).join("");bindCardList(el,"home");});
 }
 
-/* つぶやき */
+/* ===== つぶやき ===== */
 function renderPostTab(){
   $("#postDetail").classList.remove("show");
   $("#postListView").style.display="";
@@ -670,10 +649,10 @@ function renderPostList(){
 function renderPostForm(){
   const wrap=$("#postFormArea");
   if(!S.isStd){
-    wrap.innerHTML=`<div class="upgrade-box">投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。</div>`;
+    wrap.innerHTML=`<div class="upgrade-box">投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。閲覧は無料でできます。</div>`;
     wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});return;
   }
-  const postCats=CATEGORIES.filter(c=>c.value&&(c.types.includes("post")||c.types.includes("all")));
+  const postCats=S.CATEGORIES.filter(c=>c.value&&(c.types.includes("post")||c.types.includes("all")));
   wrap.innerHTML=`<div class="pform-wrap">
     <div class="form-lbl-line">つぶやく</div>
     <div class="fg">
@@ -708,7 +687,7 @@ async function submitPost(){
   setTimeout(()=>{if(m)m.textContent="";},2000);
 }
 
-/* 相談 */
+/* ===== 相談 ===== */
 function renderQuestionTab(){
   $("#questionDetail").classList.remove("show");
   $("#questionListView").style.display="";
@@ -727,19 +706,19 @@ function renderQuestionList(){
 function renderQuestionForm(){
   const wrap=$("#questionFormArea");
   if(!S.isStd){
-    wrap.innerHTML=`<div class="upgrade-box">相談投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。</div>`;
+    wrap.innerHTML=`<div class="upgrade-box">相談投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。閲覧は無料でできます。</div>`;
     wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});return;
   }
-  const qCats=CATEGORIES.filter(c=>c.value&&(c.types.includes("question")||c.types.includes("all")));
+  const qCats=S.CATEGORIES.filter(c=>c.value&&(c.types.includes("question")||c.types.includes("all")));
   wrap.innerHTML=`<div class="pform-wrap">
     <div class="form-lbl-line">相談する</div>
-    <div class="fg"><label class="flbl">カテゴリ <span style="color:var(--rust)">*</span></label>
+    <div class="fg"><label class="flbl">カテゴリ <span class="req">*</span></label>
       <select id="qCatSel" class="fsel"><option value="">選択してください</option>
       ${qCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}</select></div>
-    <div class="fg"><label class="flbl">タイトル <span style="color:var(--rust)">*</span></label>
+    <div class="fg"><label class="flbl">タイトル <span class="req">*</span></label>
       <input id="qTitle" class="fi" type="text" placeholder="例：転職するか迷っています" maxlength="60">
       <div class="ccount"><span id="qTCount">0</span> / 60</div></div>
-    <div class="fg"><label class="flbl">内容 <span style="color:var(--rust)">*</span></label>
+    <div class="fg"><label class="flbl">内容 <span class="req">*</span></label>
       <textarea id="qBody" class="fta" placeholder="状況や悩みをできるだけ具体的に書いてみてください…" maxlength="2000"></textarea>
       <div class="ccount"><span id="qBCount">0</span> / 2000</div></div>
     <button id="btnQSubmit" class="btn-p">相談を投稿する</button>
@@ -766,7 +745,7 @@ async function submitQuestion(){
   setTimeout(()=>{if(m)m.textContent="";},2000);
 }
 
-/* 詳細 */
+/* ===== 詳細 ===== */
 async function openDetail(threadId,type,fromTab){
   const listId=fromTab==="home"?"homeListView":fromTab==="post"?"postListView":"questionListView";
   const detId=fromTab==="home"?"homeDetail":fromTab==="post"?"postDetail":"questionDetail";
@@ -792,7 +771,7 @@ async function openDetail(threadId,type,fromTab){
         <div class="attr-tags">${attrHtml(p)}</div>
       </div>
       ${t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
-      ${S.user&&!isOwner?`<button class="report-btn" data-type="thread" data-id="${t.id}">通報</button>`:""}
+      ${S.user&&!isOwner&&S.isStd?`<button class="report-btn" data-type="thread" data-id="${t.id}">通報</button>`:""}
     </div>
     ${!isPost?`<div class="dtitle">${esc(t.title)}</div>`:""}
     <div class="dbody">${esc(t.body)}</div>
@@ -826,7 +805,7 @@ async function openDetail(threadId,type,fromTab){
           <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
           ${canBest?`<button class="btn-best" data-rid="${r.id}">ベストアンサーに選ぶ</button>`:""}
           ${isBest&&isOwner?`<button class="btn-best on" disabled>✓ ベスト</button>`:""}
-          ${S.user&&S.user.id!==r.user_id?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
+          ${S.user&&S.user.id!==r.user_id&&S.isStd?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
         </div>
         <div class="rbody">${esc(r.body)}</div>
         ${buildReactFull(r.id)}
@@ -866,7 +845,6 @@ async function openDetail(threadId,type,fromTab){
     });
   });
 
-  // リアクション（detail） - 切り替え式
   function bindDetailReacts(){
     dv.querySelectorAll(".react-row").forEach(row=>{
       row.querySelectorAll(".rbtn").forEach(b=>{
@@ -881,7 +859,6 @@ async function openDetail(threadId,type,fromTab){
     });
   }
   bindDetailReacts();
-
   dv.querySelectorAll(".upg-link2").forEach(el2=>el2.addEventListener("click",()=>switchTab("account")));
 
   if(S.isStd){
@@ -909,10 +886,12 @@ function goBack(fromTab,listId,detId){
   if(fromTab==="question")renderQuestionList();
 }
 
-/* ACCOUNT */
+/* ===== ACCOUNT ===== */
 function renderAccount(){
   const wrap=$("#accountWrap");
   const pr=S.profile,planTxt=S.isStd?"Standard":"Free";
+  const attr=S.ATTRIBUTES;
+
   wrap.innerHTML=`
   <div class="asec">
     <div class="asec-h">プラン情報</div>
@@ -921,7 +900,7 @@ function renderAccount(){
   </div>
   <div class="asec">
     <div class="asec-h">プロフィール</div>
-    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される情報です。すべて任意です。</p>
+    <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される情報です。</p>
 
     <label class="flbl">アイコン画像</label>
     <div class="av-upload-wrap">
@@ -933,31 +912,33 @@ function renderAccount(){
         ${pr?.avatar_url?`<button class="btn-av-del" id="btnAvDel">削除する</button>`:""}
       </div>
     </div>
-    <input type="file" id="avFileInput" accept="image/*" style="display:none">
+    <input type="file" id="avFileInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none">
     <p id="avMsg" class="fmsg" style="margin-bottom:16px"></p>
 
     <div class="fg">
-      <label class="flbl">表示名（ニックネーム）</label>
+      <label class="flbl">表示名（ニックネーム）<span class="req"> *</span></label>
       <input id="pDisplayName" class="fi" type="text" maxlength="20" placeholder="例：ぽんこつOL、のんびり在宅勢 など" value="${esc(pr?.display_name??"")}">
-      <div class="ccount"><span id="dnCount">${(pr?.display_name||"").length}</span> / 20</div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px">
+        <span style="font-size:10px;color:var(--mist)">投稿時に表示されます（必須）</span>
+        <span class="ccount"><span id="dnCount">${(pr?.display_name||"").length}</span> / 20</span>
+      </div>
     </div>
     <div class="pgrid">
       <div class="fg"><label class="flbl">年齢</label>
-        <input id="pAge" class="fi" type="number" min="18" max="100" placeholder="27" value="${pr?.age??""}"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'');if(+this.value>100)this.value=100;if(this.value&&+this.value<18)this.value=18;">
-        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜100の範囲</div>
+        <input id="pAge" class="fi" type="number" min="18" max="100" placeholder="例：27" value="${pr?.age??""}">
+        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜100で入力</div>
       </div>
       <div class="fg"><label class="flbl">働き方</label>
         <select id="pWork" class="fsel"><option value="">未設定</option>
-        ${["会社員","フリーランス","個人事業主","パート・アルバイト","専業主婦・主夫","求職中","その他"].map(v=>`<option${pr?.work_style===v?" selected":""}>${v}</option>`).join("")}
+        ${(attr.work_style||[]).map(v=>`<option${pr?.work_style===v?" selected":""}>${v}</option>`).join("")}
         </select></div>
       <div class="fg"><label class="flbl">婚活・恋愛状況</label>
         <select id="pMarital" class="fsel"><option value="">未設定</option>
-        ${["婚活中","交際中","独身","既婚","離婚経験あり"].map(v=>`<option${pr?.marital_status===v?" selected":""}>${v}</option>`).join("")}
+        ${(attr.marital_status||[]).map(v=>`<option${pr?.marital_status===v?" selected":""}>${v}</option>`).join("")}
         </select></div>
       <div class="fg"><label class="flbl">住まい</label>
         <select id="pLiving" class="fsel"><option value="">未設定</option>
-        ${["一人暮らし","実家暮らし","パートナーと同居","その他"].map(v=>`<option${pr?.living_situation===v?" selected":""}>${v}</option>`).join("")}
+        ${(attr.living_situation||[]).map(v=>`<option${pr?.living_situation===v?" selected":""}>${v}</option>`).join("")}
         </select></div>
     </div>
     <div class="fg"><label class="flbl">一言（任意）</label>
@@ -989,8 +970,9 @@ function renderAccount(){
     <p id="pwMsg" class="fmsg"></p>
   </div>`;
 
-  $("#pDisplayName").addEventListener("input",e=>{"#dnCount"&&($("#dnCount").textContent=e.target.value.length);});
-  if($("#dnCount"))$("#pDisplayName").dispatchEvent(new Event("input"));
+  // 表示名カウンター
+  const dnInp=$("#pDisplayName");
+  dnInp.addEventListener("input",e=>$("#dnCount").textContent=e.target.value.length);
 
   // アバター
   $("#btnAvUpload").addEventListener("click",()=>$("#avFileInput").click());
@@ -1002,7 +984,7 @@ function renderAccount(){
     pa.innerHTML=`<button id="btnCancel" class="btn-d">サブスクを解約する</button>`;
     $("#btnCancel").addEventListener("click",openPortal);
   }else{
-    pa.innerHTML=`<p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:12px;line-height:1.7">Standardプランで投稿・返信が無制限に使えます。</p>
+    pa.innerHTML=`<p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:12px;line-height:1.7">Standardプランで投稿・返信・通報が無制限に使えます。</p>
     <button id="btnSub" class="btn-p">Standardプランに登録する（¥980/月）</button>`;
     $("#btnSub").addEventListener("click",createCheckout);
   }
@@ -1017,27 +999,53 @@ function renderAccount(){
   $("#btnPw").addEventListener("click",savePassword);
 }
 
-/* アバター */
+/* ===== アバターアップロード ===== */
 async function uploadAvatar(e){
-  const file=e.target.files[0];if(!file)return;
+  const file=e.target.files[0];
+  if(!file)return;
+  // リセット
+  e.target.value="";
   if(file.size>2*1024*1024){msg($("#avMsg"),"2MB以下の画像を選択してください。");return;}
   msg($("#avMsg"),"アップロード中…","ok");
-  const ext=file.name.split(".").pop()||"jpg";
-  const path=`${S.user.id}/avatar.${ext}`;
-  const{error:upErr}=await sb.storage.from(AVATAR_BUCKET).upload(path,file,{upsert:true,contentType:file.type});
-  if(upErr){msg($("#avMsg"),"アップロードに失敗しました。");return;}
-  const{data:urlData}=sb.storage.from(AVATAR_BUCKET).getPublicUrl(path);
-  const url=urlData.publicUrl+"?t="+Date.now();
-  await sb.from("profiles").update({avatar_url:url}).eq("id",S.user.id);
-  S.profile.avatar_url=url;
-  msg($("#avMsg"),"保存しました！","ok");
-  const prev=$("#avPreview");if(prev)prev.innerHTML=`<img src="${esc(url)}" alt="">`;
-  // 削除ボタンがなければ追加
-  if(!$("#btnAvDel")){
-    const actions=document.querySelector(".av-upload-actions");
-    if(actions){const b=document.createElement("button");b.className="btn-av-del";b.id="btnAvDel";b.textContent="削除する";actions.appendChild(b);b.addEventListener("click",deleteAvatar);}
+  try{
+    const ext=file.name.split(".").pop().toLowerCase()||"jpg";
+    const path=`${S.user.id}/avatar.${ext}`;
+    // アップロード
+    const{error:upErr}=await sb.storage.from(AVATAR_BUCKET).upload(path,file,{
+      upsert:true,
+      contentType:file.type||"image/jpeg"
+    });
+    if(upErr){
+      console.error("storage upload error:",upErr);
+      msg($("#avMsg"),`アップロードに失敗しました。(${upErr.message})`);
+      return;
+    }
+    // 公開URL取得
+    const{data:urlData}=sb.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+    const url=urlData.publicUrl+"?t="+Date.now();
+    // DB更新
+    const{error:dbErr}=await sb.from("profiles").update({avatar_url:url}).eq("id",S.user.id);
+    if(dbErr){msg($("#avMsg"),"保存に失敗しました。");return;}
+    S.profile.avatar_url=url;
+    msg($("#avMsg"),"保存しました！","ok");
+    const prev=$("#avPreview");
+    if(prev)prev.innerHTML=`<img src="${esc(url)}" alt="">`;
+    // 削除ボタン追加
+    if(!$("#btnAvDel")){
+      const actions=document.querySelector(".av-upload-actions");
+      if(actions){
+        const b=document.createElement("button");
+        b.className="btn-av-del";b.id="btnAvDel";b.textContent="削除する";
+        actions.appendChild(b);
+        b.addEventListener("click",deleteAvatar);
+      }
+    }
+  }catch(err){
+    console.error("uploadAvatar exception:",err);
+    msg($("#avMsg"),"予期しないエラーが発生しました。");
   }
 }
+
 async function deleteAvatar(){
   if(!confirm("アイコン画像を削除しますか？"))return;
   await sb.from("profiles").update({avatar_url:null}).eq("id",S.user.id);
@@ -1048,11 +1056,19 @@ async function deleteAvatar(){
 
 async function saveProfile(){
   const m=$("#profMsg");
+  const displayName=$("#pDisplayName").value.trim();
+  // 表示名は必須
+  if(!displayName){msg(m,"表示名を入力してください。");return;}
   const ageRaw=parseInt($("#pAge").value);
-  const age=(ageRaw>=18&&ageRaw<=100)?ageRaw:null;
-  const upd={display_name:$("#pDisplayName").value.trim()||null,age,
-    work_style:$("#pWork").value||null,marital_status:$("#pMarital").value||null,
-    living_situation:$("#pLiving").value||null,bio:$("#pBio").value.trim()||null};
+  const age=(!isNaN(ageRaw)&&ageRaw>=18&&ageRaw<=100)?ageRaw:null;
+  const upd={
+    display_name:displayName,
+    age,
+    work_style:$("#pWork").value||null,
+    marital_status:$("#pMarital").value||null,
+    living_situation:$("#pLiving").value||null,
+    bio:$("#pBio").value.trim()||null
+  };
   const btn=$("#btnSaveProf");btn.disabled=true;
   const{error}=await sb.from("profiles").update(upd).eq("id",S.user.id);
   btn.disabled=false;
@@ -1082,7 +1098,7 @@ async function savePassword(){
   $("#pwN").value="";$("#pwN2").value="";
 }
 
-/* 課金 */
+/* ===== 課金 ===== */
 async function loadBilling(){
   try{const r=await fetch(BILLING,{cache:"no-store"});S.billingCfg=await r.json();}catch(e){}
 }
@@ -1104,10 +1120,11 @@ async function openPortal(){
   }catch(e){alert("エラーが発生しました。");}
 }
 
-/* 通報 */
+/* ===== 通報（Standardのみ） ===== */
 function bindReport(btn){
   btn.addEventListener("click",e=>{
     e.stopPropagation();
+    if(!S.isStd){alert("通報機能はStandardプランのみご利用いただけます。");return;}
     S.reportTarget={type:btn.dataset.type,id:btn.dataset.id};
     $("#reportModal").classList.add("show");
     $("#reportReason").value="";msg($("#reportMsg"),"");
@@ -1130,9 +1147,9 @@ $("#btnReport").addEventListener("click",async()=>{
 $("#btnNotif").addEventListener("click",()=>switchTab("notif"));
 $("#btnLogout").addEventListener("click",async()=>{await sb.auth.signOut();location.replace("/");});
 
-/* MAIN */
+/* ===== MAIN ===== */
 async function main(){
-  await loadBilling();
+  await Promise.all([loadBilling(), loadMasterData()]);
   const user=await getUser();
   if(!user){location.replace("/");return;}
   S.user=user;
