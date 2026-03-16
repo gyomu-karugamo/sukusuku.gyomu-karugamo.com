@@ -402,7 +402,7 @@ async function loadThreads(){
   const{data,error}=await sb.from("threads").select(`
     id,type,category,title,body,created_at,best_reply_id,user_id,
     profiles!user_id(display_name,age,work_style,marital_status,living_situation),
-    replies(count)
+    replies!replies_thread_id_fkey(count)
   `).order("created_at",{ascending:false}).limit(200);
   if(error) console.error("loadThreads error:", error);
   S.threads=data||[];
