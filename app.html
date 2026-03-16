@@ -615,8 +615,8 @@ async function submitPost(){
   const m=$("#ptMsg");
   if(!body){msg(m,"内容を入力してください。");return;}
   const btn=$("#btnPostSubmit");btn.disabled=true;
-  const payload={user_id:S.user.id,type:"post",body,title:null};
-  if(category) payload.category=category;
+  // categoryはNOT NULL制約のため、未選択時は空文字を渡す
+  const payload={user_id:S.user.id,type:"post",body,title:null,category:category||""};
   const{error}=await sb.from("threads").insert(payload);
   btn.disabled=false;
   if(error){console.error("submitPost error:",error);msg(m,"投稿に失敗しました。（"+error.message+")");return;}
@@ -878,15 +878,15 @@ function renderAccount(){
     <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される情報です。すべて任意です。</p>
     <div class="fg">
       <label class="flbl">表示名（ニックネーム）</label>
-      <input id="pDisplayName" class="fi" type="text" maxlength="20" placeholder="例：なつみ、ぽんこつOL など" value="${esc(pr?.display_name??"")}">
+      <input id="pDisplayName" class="fi" type="text" maxlength="20" placeholder="例：ぽんこつOL、のんびり在宅勢 など" value="${esc(pr?.display_name??"")}">
       <div class="ccount" style="text-align:right;margin-top:3px"><span id="dnCount">${(pr?.display_name||"").length}</span> / 20</div>
     </div>
     <div class="pgrid">
       <div class="fg">
         <label class="flbl">年齢</label>
-        <input id="pAge" class="fi" type="number" min="18" max="65" placeholder="27" value="${pr?.age??""}"
-          oninput="this.value=this.value.replace(/[^0-9]/g,'');if(+this.value>65)this.value=65;if(this.value&&+this.value<18)this.value=18;">
-        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜65の範囲で入力</div>
+        <input id="pAge" class="fi" type="number" min="18" max="100" placeholder="27" value="${pr?.age??""}"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'');if(+this.value>100)this.value=100;if(this.value&&+this.value<18)this.value=18;">
+        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜100の範囲で入力</div>
       </div>
       <div class="fg"><label class="flbl">働き方</label>
         <select id="pWork" class="fsel">
@@ -961,7 +961,7 @@ function renderAccount(){
 async function saveProfile(){
   const m=$("#profMsg");
   const ageRaw=parseInt($("#pAge").value);
-  const age=(ageRaw>=18&&ageRaw<=65)?ageRaw:null;
+  const age=(ageRaw>=18&&ageRaw<=100)?ageRaw:null;
   const upd={
     display_name:$("#pDisplayName").value.trim()||null,
     age,
