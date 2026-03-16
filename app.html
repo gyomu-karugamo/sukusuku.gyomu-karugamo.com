@@ -97,9 +97,17 @@ img.av{object-fit:cover;display:block}
 .rcount2{font-size:11px;color:var(--mist)}
 .replies-wrap{margin-top:2px}
 .rcard{background:white;border:1px solid rgba(26,23,20,.06);padding:18px 20px;margin-bottom:2px;position:relative}
-.rcard.best{border-color:var(--duck);background:#f8fdfb}
-.rcard.best::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--duck)}
-.best-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;letter-spacing:.06em;background:var(--duck-pale);color:var(--duck);padding:3px 8px;margin-bottom:8px}
+.rcard.best{border-color:var(--duck);background:linear-gradient(135deg,#f0faf7 0%,#fff 60%);box-shadow:0 2px 12px rgba(74,124,111,.12)}
+.rcard.best::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--duck)}
+.best-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;letter-spacing:.06em;background:var(--duck);color:white;padding:5px 12px;margin-bottom:10px}
+/* ベストアンサー確認モーダル */
+.best-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px}
+.best-confirm-box{background:white;width:min(420px,94vw);padding:28px;border-top:4px solid var(--duck)}
+.best-confirm-title{font-family:'Shippori Mincho',serif;font-size:17px;font-weight:600;margin-bottom:10px;color:var(--ink)}
+.best-confirm-body{font-size:13px;color:var(--mist);line-height:1.8;margin-bottom:6px;font-weight:300}
+.best-confirm-preview{font-size:13px;color:var(--ink);background:var(--cream);padding:12px 14px;margin:12px 0;line-height:1.7;border-left:3px solid var(--duck);font-weight:300;max-height:80px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.best-confirm-warn{font-size:12px;color:var(--rust);margin-bottom:18px}
+.best-confirm-btns{display:flex;gap:8px;flex-wrap:wrap}
 .rbody{font-size:14px;line-height:1.8;color:#4a4440;font-weight:300;white-space:pre-wrap;margin-top:10px}
 .report-btn{font-size:11px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0 0 0 6px;font-family:'DM Sans',sans-serif;flex-shrink:0;transition:color .2s}
 .report-btn:hover{color:var(--rust)}
@@ -834,14 +842,39 @@ async function openDetail(threadId,type,fromTab){
   dv.querySelector("#backBtn2")?.addEventListener("click",()=>goBack(fromTab,listId,detId));
   dv.querySelectorAll(".report-btn").forEach(b=>bindReport(b));
 
+  // ベストアンサー確認モーダル（カスタムUI）
   dv.querySelectorAll(".btn-best:not([disabled])").forEach(b=>{
     b.addEventListener("click",async e=>{
       e.stopPropagation();
-      if(!confirm("このコメントをベストアンサーに選びますか？"))return;
-      b.disabled=true;
-      const{error}=await sb.from("threads").update({best_reply_id:b.dataset.rid}).eq("id",threadId);
-      if(error){b.disabled=false;alert("エラーが発生しました。");return;}
-      await loadThreads();openDetail(threadId,type,fromTab);
+      const rid=b.dataset.rid;
+      // 対象返信の本文を取得
+      const replyBody=dv.querySelector(`.rcard[data-rid="${rid}"] .rbody`)?.textContent||"";
+      const replyName=dv.querySelector(`.rcard[data-rid="${rid}"] .uname`)?.textContent||"";
+      // 確認オーバーレイを生成
+      const overlay=document.createElement("div");
+      overlay.className="best-confirm-overlay";
+      overlay.innerHTML=`
+        <div class="best-confirm-box">
+          <div class="best-confirm-title">🏆 ベストアンサーに選ぶ</div>
+          <div class="best-confirm-body">以下の返信をベストアンサーに選択しますか？</div>
+          <div class="best-confirm-preview">${esc(replyBody)}</div>
+          <div class="best-confirm-warn">⚠️ 一度選ぶと変更できません。よく確認してから決定してください。</div>
+          <div class="best-confirm-btns">
+            <button id="bestConfirmOk" class="btn-p">✓ ベストアンサーに選ぶ</button>
+            <button id="bestConfirmCancel" class="btn-s">キャンセル</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector("#bestConfirmCancel").addEventListener("click",()=>overlay.remove());
+      overlay.addEventListener("click",e2=>{if(e2.target===overlay)overlay.remove();});
+      overlay.querySelector("#bestConfirmOk").addEventListener("click",async()=>{
+        overlay.querySelector("#bestConfirmOk").disabled=true;
+        const{error}=await sb.from("threads").update({best_reply_id:rid}).eq("id",threadId);
+        overlay.remove();
+        if(error){alert("エラーが発生しました。");return;}
+        await loadThreads();
+        openDetail(threadId,type,fromTab);
+      });
     });
   });
 
@@ -1125,7 +1158,16 @@ function bindReport(btn){
   btn.addEventListener("click",e=>{
     e.stopPropagation();
     if(!S.isStd){alert("通報機能はStandardプランのみご利用いただけます。");return;}
-    S.reportTarget={type:btn.dataset.type,id:btn.dataset.id};
+    // 通報対象の本文スナップショットを取得
+    let snapshot="";
+    const targetType=btn.dataset.type;
+    const targetId=btn.dataset.id;
+    if(targetType==="reply"){
+      snapshot=btn.closest(".rcard")?.querySelector(".rbody")?.textContent||"";
+    }else if(targetType==="thread"){
+      snapshot=document.querySelector(".dbody")?.textContent||"";
+    }
+    S.reportTarget={type:targetType,id:targetId,snapshot};
     $("#reportModal").classList.add("show");
     $("#reportReason").value="";msg($("#reportMsg"),"");
   });
@@ -1137,7 +1179,13 @@ $("#btnReport").addEventListener("click",async()=>{
   if(!reason){msg(m,"理由を選択してください。");return;}
   if(!S.reportTarget||!S.user)return;
   const btn=$("#btnReport");btn.disabled=true;
-  const{error}=await sb.from("reports").insert({reporter_id:S.user.id,target_type:S.reportTarget.type,target_id:S.reportTarget.id,reason});
+  const{error}=await sb.from("reports").insert({
+    reporter_id:S.user.id,
+    target_type:S.reportTarget.type,
+    target_id:S.reportTarget.id,
+    reason,
+    content_snapshot:S.reportTarget.snapshot||null
+  });
   btn.disabled=false;
   if(error){msg(m,"通報に失敗しました。");return;}
   msg(m,"通報しました。ご協力ありがとうございます。","ok");
