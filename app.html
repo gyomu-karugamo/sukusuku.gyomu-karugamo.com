@@ -35,10 +35,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .pbadge.std{background:var(--duck);color:white}
 .btn-out{font-size:12px;color:var(--mist);background:none;border:1px solid rgba(26,23,20,.12);padding:5px 11px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
 .btn-out:hover{color:var(--ink);border-color:var(--ink)}
+.notif-btn{position:relative;background:none;border:none;cursor:pointer;padding:4px 6px;color:var(--mist);font-size:18px;line-height:1;transition:color .2s}
+.notif-btn:hover{color:var(--duck)}
+.notif-badge{position:absolute;top:0;right:0;background:var(--rust);color:white;font-size:9px;font-weight:600;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;pointer-events:none}
+.notif-badge.hidden{display:none}
 
 /* TAB NAV */
 .tab-nav{position:fixed;top:var(--hh);left:0;right:0;height:var(--nh);z-index:99;background:white;border-bottom:1px solid rgba(26,23,20,.08);display:flex;align-items:stretch}
-.tab-btn{flex:1;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mist);cursor:pointer;position:relative;transition:color .2s}
+.tab-btn{flex:1;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mist);cursor:pointer;position:relative;transition:color .2s}
 .tab-btn::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--duck);transform:scaleX(0);transition:transform .2s}
 .tab-btn.active{color:var(--duck)}
 .tab-btn.active::after{transform:scaleX(1)}
@@ -56,7 +60,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .s-clear{font-size:12px;color:var(--mist);background:none;border:none;cursor:pointer;padding:8px 10px;font-family:'DM Sans',sans-serif;white-space:nowrap}
 .s-clear:hover{color:var(--duck)}
 
-/* TYPE FILTER (HOME) */
+/* TYPE FILTER */
 .type-filter{display:flex;border:1px solid rgba(26,23,20,.10);background:white;margin-bottom:14px}
 .type-btn{flex:1;padding:9px;font-size:12px;letter-spacing:.06em;text-align:center;cursor:pointer;border:none;background:none;color:var(--mist);font-family:'DM Sans',sans-serif;transition:all .2s;border-right:1px solid rgba(26,23,20,.08)}
 .type-btn:last-child{border-right:none}
@@ -68,12 +72,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .cat-chip.active{background:var(--duck);color:white;border-color:var(--duck)}
 .cat-chip:hover:not(.active){border-color:var(--duck);color:var(--duck)}
 
+/* AVATAR */
+.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;flex-shrink:0;margin-top:1px;overflow:hidden}
+img.av{object-fit:cover;display:block}
+
 /* CARD LIST */
 .card-list{display:flex;flex-direction:column;gap:2px}
 .post-card{background:white;padding:18px 20px;border:1px solid rgba(26,23,20,.06);cursor:pointer;transition:all .2s}
 .post-card:hover{border-color:rgba(74,124,111,.4);transform:translateX(2px)}
 .card-meta{display:flex;align-items:flex-start;gap:7px;margin-bottom:10px;flex-wrap:wrap}
-.av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:white;flex-shrink:0;margin-top:1px}
 .av-info{min-width:0}
 .uname{font-size:12px;color:var(--ink)}
 .attr-tags{display:flex;gap:3px;flex-wrap:wrap;margin-top:2px}
@@ -142,6 +149,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .fsel{cursor:pointer}
 .ccount{font-size:11px;color:var(--mist);text-align:right;margin-top:3px}
 
+/* AVATAR UPLOAD */
+.av-upload-wrap{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.av-preview{width:64px;height:64px;border-radius:50%;overflow:hidden;border:2px solid var(--warm);background:var(--warm);display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--mist);flex-shrink:0}
+.av-preview img{width:100%;height:100%;object-fit:cover}
+.av-upload-actions{display:flex;flex-direction:column;gap:6px}
+.btn-av{font-size:12px;color:var(--duck);background:none;border:1px solid var(--duck);padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-av:hover{background:var(--duck);color:white}
+.btn-av-del{font-size:12px;color:var(--mist);background:none;border:1px solid rgba(26,23,20,.12);padding:6px 14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-av-del:hover{border-color:var(--error);color:var(--error)}
+
 /* BUTTONS */
 .btn-p{background:var(--duck);color:white;border:none;padding:12px 32px;font-family:'DM Sans',sans-serif;font-size:14px;letter-spacing:.04em;cursor:pointer;transition:all .2s}
 .btn-p:hover:not(:disabled){background:var(--ink);transform:translateY(-1px)}
@@ -162,6 +179,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 .plan-box-val{font-family:'Shippori Mincho',serif;font-size:20px;font-weight:600}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .pwf{max-width:300px;display:flex;flex-direction:column;gap:8px;margin-top:10px}
+
+/* NOTIFICATION */
+.notif-list{display:flex;flex-direction:column;gap:2px}
+.notif-card{background:white;padding:16px 20px;border:1px solid rgba(26,23,20,.06);cursor:pointer;transition:all .2s;display:flex;gap:12px;align-items:flex-start}
+.notif-card:hover{border-color:rgba(74,124,111,.4)}
+.notif-card.unread{border-left:3px solid var(--duck);background:#fafcfb}
+.notif-icon{font-size:18px;flex-shrink:0}
+.notif-body{flex:1;min-width:0}
+.notif-text{font-size:13px;color:var(--ink);line-height:1.6;font-weight:300}
+.notif-text strong{font-weight:500}
+.notif-time{font-size:11px;color:var(--mist);margin-top:3px}
+.notif-read-all{font-size:12px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;text-decoration:underline;margin-bottom:12px;display:block}
+.notif-read-all:hover{color:var(--duck)}
 
 /* MODAL */
 .mback{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
@@ -194,6 +224,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
   <div class="hright">
     <span id="userEmail" class="uemail"></span>
     <span id="planBadge" class="pbadge">Free</span>
+    <button id="btnNotif" class="notif-btn" title="通知">🔔<span id="notifBadge" class="notif-badge hidden"></span></button>
     <button id="btnLogout" class="btn-out">ログアウト</button>
   </div>
 </header>
@@ -202,12 +233,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
   <button class="tab-btn active" data-tab="home">HOME</button>
   <button class="tab-btn" data-tab="post">つぶやき</button>
   <button class="tab-btn" data-tab="question">相談</button>
-  <button class="tab-btn" data-tab="account">アカウント</button>
+  <button class="tab-btn" data-tab="notif">通知</button>
+  <button class="tab-btn" data-tab="account">設定</button>
 </nav>
 
 <div class="page">
-
-  <!-- HOME -->
   <section id="tab-home" class="tab-pane active">
     <div id="homeListView">
       <div class="search-bar">
@@ -225,7 +255,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
     <div id="homeDetail" class="detail-view"></div>
   </section>
 
-  <!-- つぶやき -->
   <section id="tab-post" class="tab-pane">
     <div id="postListView">
       <div class="search-bar">
@@ -239,7 +268,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
     <div id="postDetail" class="detail-view"></div>
   </section>
 
-  <!-- 相談 -->
   <section id="tab-question" class="tab-pane">
     <div id="questionListView">
       <div class="search-bar">
@@ -253,14 +281,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
     <div id="questionDetail" class="detail-view"></div>
   </section>
 
-  <!-- アカウント -->
+  <section id="tab-notif" class="tab-pane">
+    <div id="notifWrap"><div class="loading">読み込み中…</div></div>
+  </section>
+
   <section id="tab-account" class="tab-pane">
     <div id="accountWrap"></div>
   </section>
-
 </div>
 
-<!-- 通報モーダル -->
 <div id="reportModal" class="mback">
   <div class="modal">
     <button class="mclose" id="reportClose">×</button>
@@ -285,48 +314,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);p
 </div>
 
 <script>
-/* ===== SUPABASE ===== */
 const SB_URL  = "https://rhynpigqhnbwjyudvvfw.supabase.co";
 const SB_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeW5waWdxaG5id2p5dWR2dmZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODcyNTMsImV4cCI6MjA4MzM2MzI1M30.S9h-SH0JB0cEhMukUUaOuYEetx2I8qecZapIeCpk57M";
 const BILLING = "https://app.gyomu-karugamo.com/data/billing.json";
 const PORTAL  = "https://rhynpigqhnbwjyudvvfw.functions.supabase.co/create-portal-session";
 const APP_URL = "https://app.gyomu-karugamo.com/app.html";
+const AVATAR_BUCKET = "avatars";
 
 const sb = window.supabase.createClient(SB_URL, SB_KEY, {
-  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
 });
 
 /* ===================================================================
-   ★ カテゴリ設定 — ここだけ編集すれば全タブに反映されます
-   label: 表示名
-   value: DBに保存する値（変更しないこと）
-   types: どのタブで使うか ("post"/"question"/"all")
+   ★ カテゴリ設定 — ここだけ編集すれば全タブに反映
 =================================================================== */
 const CATEGORIES = [
-  { label:"すべて",            value:"",             types:["all"] },
-  { label:"キャリア",          value:"キャリア",      types:["question","all"] },
-  { label:"結婚・ライフプラン", value:"結婚・ライフプラン", types:["question","all"] },
-  { label:"お金・将来",        value:"お金・将来",    types:["question","all"] },
-  { label:"恋愛",              value:"恋愛",          types:["question","all"] },
-  { label:"仕事の悩み",        value:"仕事の悩み",    types:["post","question","all"] },
-  { label:"日常・雑談",        value:"日常・雑談",    types:["post","all"] },
-  { label:"その他",            value:"その他",        types:["post","question","all"] },
+  {label:"すべて",            value:"",                 types:["all"]},
+  {label:"キャリア",          value:"キャリア",          types:["question","all"]},
+  {label:"結婚・ライフプラン", value:"結婚・ライフプラン", types:["question","all"]},
+  {label:"お金・将来",        value:"お金・将来",         types:["question","all"]},
+  {label:"恋愛",              value:"恋愛",              types:["question","all"]},
+  {label:"仕事の悩み",        value:"仕事の悩み",         types:["post","question","all"]},
+  {label:"日常・雑談",        value:"日常・雑談",         types:["post","all"]},
+  {label:"その他",            value:"その他",            types:["post","question","all"]},
 ];
 
-/* ===== STATE ===== */
 const S = {
-  user:null, profile:null, isStd:false,
-  threads:[], billingCfg:null, reportTarget:null,
-  reactions:{},
-  search:{ home:"", post:"", question:"" },
-  homeType:"", homeCat:"", postCat:"", qCat:"",
+  user:null,profile:null,isStd:false,
+  threads:[],billingCfg:null,reportTarget:null,
+  reactions:{},    // {tid: {emoji: {count}}}
+  myReactions:{},  // {tid: emoji | null}
+  search:{home:"",post:"",question:""},
+  homeType:"",homeCat:"",postCat:"",qCat:"",
+  notifications:[],unreadCount:0,
 };
 
-/* ===== UTILS ===== */
-const $ = s => document.querySelector(s);
-const esc = s => String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const AVC = ["#4a7c6f","#c4622d","#b8975a","#6a7c8f","#8a6a9a"];
-const avc = s => AVC[Math.abs([...String(s)].reduce((a,c)=>a+c.charCodeAt(0),0))%AVC.length];
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const AVC=["#4a7c6f","#c4622d","#b8975a","#6a7c8f","#8a6a9a"];
+const avc=s=>AVC[Math.abs([...String(s)].reduce((a,c)=>a+c.charCodeAt(0),0))%AVC.length];
 function rtime(ts){
   const d=(Date.now()-new Date(ts))/1000;
   if(d<60)return"たった今";
@@ -334,37 +360,46 @@ function rtime(ts){
   if(d<86400)return`${Math.floor(d/3600)}時間前`;
   return`${Math.floor(d/86400)}日前`;
 }
+// 属性タグ：表示名は含めない
 function attrHtml(p){
   if(!p)return"";
-  const name = p.display_name ? `<span class="attr-tag">${esc(p.display_name)}</span>` : "";
-  const rest = [p.age?`${p.age}歳`:"",p.work_style||"",p.marital_status||"",p.living_situation||""]
+  return[p.age?`${p.age}歳`:"",p.work_style||"",p.marital_status||"",p.living_situation||""]
     .filter(Boolean).map(t=>`<span class="attr-tag">${esc(t)}</span>`).join("");
-  return name + rest;
+}
+// アバターHTML生成
+function avatarHtml(p,size=28){
+  const uid=p?._uid||"x";
+  const color=avc(uid);
+  const label=p?.display_name||(p?.age?`${p.age}歳`:"?");
+  const init=(label[0]||"?");
+  if(p?.avatar_url){
+    return`<img class="av" src="${esc(p.avatar_url)}" style="width:${size}px;height:${size}px;border-radius:50%" alt="">`;
+  }
+  return`<div class="av" style="background:${color};width:${size}px;height:${size}px;font-size:${Math.floor(size*0.4)}px">${esc(init)}</div>`;
 }
 function msg(el,txt,type="err"){if(!el)return;el.textContent=txt;el.className="fmsg"+(type?" "+type:"")}
 
-/* ===== カテゴリフィルターHTML生成 ===== */
-function buildCatFilter(containerId, typeKey, stateProp) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  // typeKey: "post" | "question" | "all"
-  const cats = CATEGORIES.filter(c => c.types.includes("all") || c.types.includes(typeKey));
-  container.innerHTML = cats.map(c =>
+/* カテゴリフィルター */
+function buildCatFilter(containerId,typeKey,stateProp){
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  const cats=CATEGORIES.filter(c=>c.types.includes("all")||c.types.includes(typeKey));
+  container.innerHTML=cats.map(c=>
     `<button class="cat-chip${S[stateProp]===c.value?" active":""}" data-cat="${esc(c.value)}">${esc(c.label)}</button>`
   ).join("");
-  container.querySelectorAll(".cat-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      container.querySelectorAll(".cat-chip").forEach(x => x.classList.remove("active"));
+  container.querySelectorAll(".cat-chip").forEach(chip=>{
+    chip.addEventListener("click",()=>{
+      container.querySelectorAll(".cat-chip").forEach(x=>x.classList.remove("active"));
       chip.classList.add("active");
-      S[stateProp] = chip.dataset.cat;
-      if (stateProp === "homeCat") renderHomeList();
-      if (stateProp === "postCat") renderPostList();
-      if (stateProp === "qCat")    renderQuestionList();
+      S[stateProp]=chip.dataset.cat;
+      if(stateProp==="homeCat")renderHomeList();
+      if(stateProp==="postCat")renderPostList();
+      if(stateProp==="qCat")renderQuestionList();
     });
   });
 }
 
-/* ===== AUTH ===== */
+/* AUTH */
 async function getUser(){
   try{const{data}=await sb.auth.getSession();if(data?.session?.user)return data.session.user;}catch(e){}
   const u=new URL(location.href);
@@ -386,29 +421,33 @@ async function loadProfile(uid){
   return data;
 }
 
-/* ===== TABS ===== */
+/* TABS */
 function switchTab(tab){
   document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
   document.querySelectorAll(".tab-pane").forEach(p=>p.classList.toggle("active",p.id==="tab-"+tab));
-  if(tab==="home")     renderHomeTab();
-  if(tab==="post")     renderPostTab();
-  if(tab==="question") renderQuestionTab();
-  if(tab==="account")  renderAccount();
+  if(tab==="home")    renderHomeTab();
+  if(tab==="post")    renderPostTab();
+  if(tab==="question")renderQuestionTab();
+  if(tab==="notif")   renderNotifTab();
+  if(tab==="account") renderAccount();
 }
 document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
 
-/* ===== DATA ===== */
+/* DATA */
 async function loadThreads(){
   const{data,error}=await sb.from("threads").select(`
     id,type,category,title,body,created_at,best_reply_id,user_id,
-    profiles!user_id(display_name,age,work_style,marital_status,living_situation),
+    profiles!user_id(display_name,age,work_style,marital_status,living_situation,avatar_url),
     replies!replies_thread_id_fkey(count)
   `).order("created_at",{ascending:false}).limit(200);
-  if(error) console.error("loadThreads error:", error);
-  S.threads=data||[];
+  if(error){console.error("loadThreads error:",error);return;}
+  S.threads=(data||[]).map(t=>{
+    if(t.profiles)t.profiles._uid=t.user_id;
+    return t;
+  });
 }
 
-/* ===== REACTIONS ===== */
+/* REACTIONS - 1種類のみ・切り替え式 */
 const EMOJIS=["わかる","参考になった","応援してる","つらいね"];
 const EICONS={"わかる":"🤝","参考になった":"💡","応援してる":"📣","つらいね":"🤍"};
 
@@ -417,78 +456,151 @@ async function loadReactions(ids){
   const{data}=await sb.from("reactions").select("reply_id,emoji,user_id").in("reply_id",ids);
   for(const r of(data||[])){
     if(!S.reactions[r.reply_id])S.reactions[r.reply_id]={};
-    if(!S.reactions[r.reply_id][r.emoji])S.reactions[r.reply_id][r.emoji]={count:0,on:false};
+    if(!S.reactions[r.reply_id][r.emoji])S.reactions[r.reply_id][r.emoji]={count:0};
     S.reactions[r.reply_id][r.emoji].count++;
-    if(S.user&&r.user_id===S.user.id)S.reactions[r.reply_id][r.emoji].on=true;
+    if(S.user&&r.user_id===S.user.id)S.myReactions[r.reply_id]=r.emoji;
   }
 }
 
 async function toggleReaction(tid,emoji,cb){
   if(!S.user)return;
+  const current=S.myReactions[tid]||null;
   if(!S.reactions[tid])S.reactions[tid]={};
-  const cur=S.reactions[tid][emoji];
-  if(cur?.on){
+
+  if(current===emoji){
+    // 同じ → 解除
     await sb.from("reactions").delete().eq("user_id",S.user.id).eq("reply_id",tid).eq("emoji",emoji);
-    S.reactions[tid][emoji]={count:Math.max(0,(cur.count||1)-1),on:false};
+    if(S.reactions[tid][emoji])S.reactions[tid][emoji].count=Math.max(0,S.reactions[tid][emoji].count-1);
+    S.myReactions[tid]=null;
   }else{
+    // 別のもの → 前を解除して新しいのを追加
+    if(current){
+      await sb.from("reactions").delete().eq("user_id",S.user.id).eq("reply_id",tid).eq("emoji",current);
+      if(S.reactions[tid][current])S.reactions[tid][current].count=Math.max(0,S.reactions[tid][current].count-1);
+    }
     await sb.from("reactions").insert({user_id:S.user.id,reply_id:tid,emoji});
-    if(!S.reactions[tid][emoji])S.reactions[tid][emoji]={count:0,on:false};
-    S.reactions[tid][emoji]={count:(S.reactions[tid][emoji].count||0)+1,on:true};
+    if(!S.reactions[tid][emoji])S.reactions[tid][emoji]={count:0};
+    S.reactions[tid][emoji].count++;
+    S.myReactions[tid]=emoji;
   }
   if(cb)cb();
 }
 
 function buildReactSm(tid){
-  const r=S.reactions[tid]||{};
+  const r=S.reactions[tid]||{};const my=S.myReactions[tid]||null;
   return`<div class="react-row-sm" data-rid="${tid}">`+
-    EMOJIS.map(e=>{const i=r[e]||{count:0,on:false};
-      return`<button class="rbtn-sm${i.on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount">${i.count}</span>`:""}</button>`;
+    EMOJIS.map(e=>{const i=r[e]||{count:0};const on=(my===e);
+      return`<button class="rbtn-sm${on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount">${i.count}</span>`:""}</button>`;
     }).join("")+`</div>`;
 }
 function buildReactFull(tid){
-  const r=S.reactions[tid]||{};
+  const r=S.reactions[tid]||{};const my=S.myReactions[tid]||null;
   return`<div class="react-row" data-rid="${tid}">`+
-    EMOJIS.map(e=>{const i=r[e]||{count:0,on:false};
-      return`<button class="rbtn${i.on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount2">${i.count}</span>`:""}</button>`;
+    EMOJIS.map(e=>{const i=r[e]||{count:0};const on=(my===e);
+      return`<button class="rbtn${on?" on":""}" data-e="${e}" data-tid="${tid}">${EICONS[e]} ${e}${i.count>0?` <span class="rcount2">${i.count}</span>`:""}</button>`;
     }).join("")+`</div>`;
 }
 
-function bindReacts(container,small,cb){
-  const cls=small?".rbtn-sm":".rbtn";
-  container.querySelectorAll(cls).forEach(b=>{
+function bindReactsSm(container){
+  container.querySelectorAll(".rbtn-sm").forEach(b=>{
     b.addEventListener("click",e=>{
-      e.stopPropagation();
-      if(!S.user)return;
-      toggleReaction(b.dataset.tid,b.dataset.e,cb);
+      e.stopPropagation();if(!S.user)return;
+      const tid=b.dataset.tid,emoji=b.dataset.e;
+      toggleReaction(tid,emoji,()=>{
+        const row=container.querySelector(`.react-row-sm[data-rid="${tid}"]`);
+        if(row){const d=document.createElement("div");d.innerHTML=buildReactSm(tid);row.replaceWith(d.firstChild);bindReactsSm(container);}
+      });
     });
   });
 }
 
-/* ===== SEARCH ===== */
+/* 通知 */
+async function loadNotifications(){
+  if(!S.user)return;
+  const{data}=await sb.from("notifications")
+    .select(`id,is_read,created_at,thread_id,reply_id,
+      threads!thread_id(title,body,type),
+      replies!reply_id(body,profiles!user_id(display_name))`)
+    .eq("user_id",S.user.id)
+    .order("created_at",{ascending:false}).limit(50);
+  S.notifications=data||[];
+  S.unreadCount=S.notifications.filter(n=>!n.is_read).length;
+  updateNotifBadge();
+}
+function updateNotifBadge(){
+  const badge=$("#notifBadge");if(!badge)return;
+  if(S.unreadCount>0){badge.textContent=S.unreadCount>99?"99+":S.unreadCount;badge.classList.remove("hidden");}
+  else badge.classList.add("hidden");
+}
+function renderNotifTab(){
+  const wrap=$("#notifWrap");
+  if(!S.notifications.length){
+    wrap.innerHTML=`<div class="empty"><div class="empty-h">通知はありません</div>返信があると通知が届きます。</div>`;return;
+  }
+  const hasUnread=S.notifications.some(n=>!n.is_read);
+  let html=hasUnread?`<button class="notif-read-all" id="btnReadAll">すべて既読にする</button>`:"";
+  html+=`<div class="notif-list">`;
+  html+=S.notifications.map(n=>{
+    const who=n.replies?.profiles?.display_name||"誰か";
+    const th=n.threads;
+    const title=th?.title||(th?.body?.slice(0,20)+"…")||"投稿";
+    return`<div class="notif-card${n.is_read?"":" unread"}" data-tid="${n.thread_id}" data-type="${th?.type||'question'}">
+      <div class="notif-icon">💬</div>
+      <div class="notif-body">
+        <div class="notif-text"><strong>${esc(who)}</strong>さんが「${esc(title)}」に返信しました</div>
+        <div class="notif-time">${rtime(n.created_at)}</div>
+      </div>
+    </div>`;
+  }).join("")+`</div>`;
+  wrap.innerHTML=html;
+  $("#btnReadAll")?.addEventListener("click",async()=>{
+    const ids=S.notifications.filter(n=>!n.is_read).map(n=>n.id);
+    if(ids.length)await sb.from("notifications").update({is_read:true}).in("id",ids);
+    S.notifications=S.notifications.map(n=>({...n,is_read:true}));
+    S.unreadCount=0;updateNotifBadge();renderNotifTab();
+  });
+  wrap.querySelectorAll(".notif-card").forEach(card=>{
+    card.addEventListener("click",async()=>{
+      const n=S.notifications.find(x=>x.thread_id===card.dataset.tid);
+      if(n&&!n.is_read){
+        await sb.from("notifications").update({is_read:true}).eq("id",n.id);
+        n.is_read=true;S.unreadCount=Math.max(0,S.unreadCount-1);updateNotifBadge();
+      }
+      switchTab("home");
+      await new Promise(r=>setTimeout(r,80));
+      openDetail(card.dataset.tid,card.dataset.type,"home");
+    });
+  });
+}
+async function createNotification(threadId,replyId){
+  const{data:th}=await sb.from("threads").select("user_id").eq("id",threadId).single();
+  if(!th||th.user_id===S.user.id)return;
+  await sb.from("notifications").insert({user_id:th.user_id,thread_id:threadId,reply_id:replyId});
+}
+
+/* SEARCH */
 function clearSearch(tab){
-  S.search[tab]="";
-  const el=$(`#${tab}Search`);if(el)el.value="";
+  S.search[tab]="";const el=$(`#${tab}Search`);if(el)el.value="";
   if(tab==="home")renderHomeList();
   if(tab==="post")renderPostList();
   if(tab==="question")renderQuestionList();
 }
 function filterT(arr,q){
-  if(!q)return arr;
-  const lq=q.toLowerCase();
+  if(!q)return arr;const lq=q.toLowerCase();
   return arr.filter(t=>(t.title||"").toLowerCase().includes(lq)||(t.body||"").toLowerCase().includes(lq)||(t.category||"").toLowerCase().includes(lq));
 }
 
-/* ===== CARD HTML ===== */
+/* CARD HTML */
 function cardHtml(t,showBadge){
-  const p=t.profiles,color=avc(t.user_id);
-  const displayLabel = p?.display_name || (p?.age ? `${p.age}歳` : "匿名");
-  const init = displayLabel[0] || "？";
-  const rc=t.replies?.[0]?.count??0,isPost=t.type==="post";
+  const p=t.profiles||{};p._uid=t.user_id;
+  const label=p.display_name||(p.age?`${p.age}歳`:"匿名");
+  const rc=t.replies?.[0]?.count??0;
+  const isPost=t.type==="post";
   return`<div class="post-card${isPost?" is-post":""}" data-id="${t.id}" data-type="${t.type}">
     <div class="card-meta">
-      <div class="av" style="background:${color}">${esc(init)}</div>
+      ${avatarHtml(p,28)}
       <div class="av-info">
-        <div class="uname">${esc(displayLabel)}</div>
+        <div class="uname">${esc(label)}</div>
         <div class="attr-tags">${attrHtml(p)}</div>
       </div>
       ${showBadge?(isPost?`<span class="tbadge-post">つぶやき</span>`:`<span class="tbadge-q">相談</span>`):""}
@@ -497,104 +609,77 @@ function cardHtml(t,showBadge){
     ${!isPost&&t.title?`<div class="card-title">${esc(t.title)}</div>`:""}
     <div class="card-preview">${esc(t.body)}</div>
     <div class="card-footer">
-      ${!isPost?`<span>💬 ${rc}件の返信</span>`:""}
+      <span>💬 ${rc}件の返信</span>
       ${t.best_reply_id?`<span class="solved">✓ 解決済み</span>`:""}
       <span>${rtime(t.created_at)}</span>
     </div>
     ${isPost?buildReactSm(t.id):""}
   </div>`;
 }
-
-function bindCardList(container,tab,showBadge){
+function bindCardList(container,tab){
   container.querySelectorAll(".post-card").forEach(c=>{
     c.addEventListener("click",e=>{
       if(e.target.closest(".rbtn-sm"))return;
       openDetail(c.dataset.id,c.dataset.type,tab);
     });
   });
-  bindReacts(container,true,()=>{
-    container.querySelectorAll(".react-row-sm").forEach(row=>{
-      const tid=row.dataset.rid;
-      row.outerHTML=buildReactSm(tid);
-    });
-    bindReacts(container,true,null);
-  });
+  bindReactsSm(container);
 }
 
-/* ===== HOME ===== */
+/* HOME */
 function renderHomeTab(){
   $("#homeDetail").classList.remove("show");
   $("#homeListView").style.display="";
-  buildCatFilter("homeCatFilter", "all", "homeCat");
+  buildCatFilter("homeCatFilter","all","homeCat");
   renderHomeList();
   document.querySelectorAll(".type-btn").forEach(b=>{
     b.onclick=()=>{
       document.querySelectorAll(".type-btn").forEach(x=>x.classList.remove("active"));
-      b.classList.add("active");
-      S.homeType=b.dataset.type;
-      renderHomeList();
+      b.classList.add("active");S.homeType=b.dataset.type;renderHomeList();
     };
   });
-  const si=$("#homeSearch");
-  si.oninput=()=>{S.search.home=si.value.trim();renderHomeList();};
+  const si=$("#homeSearch");si.oninput=()=>{S.search.home=si.value.trim();renderHomeList();};
 }
-
 function renderHomeList(){
-  const el=$("#homeList");
-  let ts=S.threads;
-  if(S.homeType) ts=ts.filter(t=>t.type===S.homeType);
-  if(S.homeCat)  ts=ts.filter(t=>t.category===S.homeCat);
+  const el=$("#homeList");let ts=S.threads;
+  if(S.homeType)ts=ts.filter(t=>t.type===S.homeType);
+  if(S.homeCat)ts=ts.filter(t=>t.category===S.homeCat);
   ts=filterT(ts,S.search.home);
-  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.home||S.homeCat?"該当する投稿がありません":"まだ投稿がありません"}</div></div>`;return;}
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">該当する投稿がありません</div></div>`;return;}
   const pids=ts.filter(t=>t.type==="post").map(t=>t.id);
-  loadReactions(pids).then(()=>{
-    el.innerHTML=ts.map(t=>cardHtml(t,true)).join("");
-    bindCardList(el,"home",true);
-  });
+  loadReactions(pids).then(()=>{el.innerHTML=ts.map(t=>cardHtml(t,true)).join("");bindCardList(el,"home");});
 }
 
-/* ===== つぶやきタブ ===== */
+/* つぶやき */
 function renderPostTab(){
   $("#postDetail").classList.remove("show");
   $("#postListView").style.display="";
-  buildCatFilter("postCatFilter", "post", "postCat");
-  renderPostForm();
-  renderPostList();
-  const si=$("#postSearch");
-  si.oninput=()=>{S.search.post=si.value.trim();renderPostList();};
+  buildCatFilter("postCatFilter","post","postCat");
+  renderPostForm();renderPostList();
+  const si=$("#postSearch");si.oninput=()=>{S.search.post=si.value.trim();renderPostList();};
 }
-
 function renderPostList(){
   const el=$("#postList");
   let ts=S.threads.filter(t=>t.type==="post");
-  if(S.postCat) ts=ts.filter(t=>t.category===S.postCat);
+  if(S.postCat)ts=ts.filter(t=>t.category===S.postCat);
   ts=filterT(ts,S.search.post);
-  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.post||S.postCat?"該当する投稿がありません":"まだつぶやきがありません"}</div>最初のつぶやきをしてみましょう。</div>`;return;}
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">まだつぶやきがありません</div></div>`;return;}
   const ids=ts.map(t=>t.id);
-  loadReactions(ids).then(()=>{
-    el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");
-    bindCardList(el,"post",false);
-  });
+  loadReactions(ids).then(()=>{el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");bindCardList(el,"post");});
 }
-
 function renderPostForm(){
   const wrap=$("#postFormArea");
   if(!S.isStd){
-    wrap.innerHTML=`<div class="upgrade-box">投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。閲覧は無料でできます。</div>`;
-    wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});
-    return;
+    wrap.innerHTML=`<div class="upgrade-box">投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。</div>`;
+    wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});return;
   }
-  // つぶやき用カテゴリ（"すべて"を除く）
-  const postCats = CATEGORIES.filter(c => c.value && (c.types.includes("post") || c.types.includes("all")));
-  wrap.innerHTML=`
-  <div class="pform-wrap">
+  const postCats=CATEGORIES.filter(c=>c.value&&(c.types.includes("post")||c.types.includes("all")));
+  wrap.innerHTML=`<div class="pform-wrap">
     <div class="form-lbl-line">つぶやく</div>
     <div class="fg">
       <label class="flbl">カテゴリ（任意）</label>
-      <select id="ptCat" class="fsel">
-        <option value="">なし</option>
-        ${postCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}
-      </select>
+      <select id="ptCat" class="fsel"><option value="">なし</option>
+      ${postCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}</select>
     </div>
     <div class="fg">
       <textarea id="ptBody" class="fta" placeholder="いまどんな気持ち？自由につぶやいてみよう…" maxlength="500" style="min-height:90px"></textarea>
@@ -608,73 +693,55 @@ function renderPostForm(){
   $("#ptBody").addEventListener("input",e=>$("#ptCount").textContent=e.target.value.length);
   $("#btnPostSubmit").addEventListener("click",submitPost);
 }
-
 async function submitPost(){
   const body=$("#ptBody")?.value?.trim();
-  const category=$("#ptCat")?.value||null;
+  const category=$("#ptCat")?.value||"";
   const m=$("#ptMsg");
   if(!body){msg(m,"内容を入力してください。");return;}
   const btn=$("#btnPostSubmit");btn.disabled=true;
-  // categoryはNOT NULL制約のため、未選択時は空文字を渡す
-  const payload={user_id:S.user.id,type:"post",body,title:null,category:category||""};
-  const{error}=await sb.from("threads").insert(payload);
+  const{error}=await sb.from("threads").insert({user_id:S.user.id,type:"post",body,title:"",category});
   btn.disabled=false;
-  if(error){console.error("submitPost error:",error);msg(m,"投稿に失敗しました。（"+error.message+")");return;}
+  if(error){msg(m,"投稿に失敗しました。（"+error.message+")");return;}
   msg(m,"投稿しました！","ok");
   $("#ptBody").value="";$("#ptCat").value="";$("#ptCount").textContent="0";
   await loadThreads();renderPostList();
   setTimeout(()=>{if(m)m.textContent="";},2000);
 }
 
-/* ===== 相談タブ ===== */
+/* 相談 */
 function renderQuestionTab(){
   $("#questionDetail").classList.remove("show");
   $("#questionListView").style.display="";
-  buildCatFilter("questionCatFilter", "question", "qCat");
-  renderQuestionForm();
-  renderQuestionList();
-  const si=$("#questionSearch");
-  si.oninput=()=>{S.search.question=si.value.trim();renderQuestionList();};
+  buildCatFilter("questionCatFilter","question","qCat");
+  renderQuestionForm();renderQuestionList();
+  const si=$("#questionSearch");si.oninput=()=>{S.search.question=si.value.trim();renderQuestionList();};
 }
-
 function renderQuestionList(){
   const el=$("#questionList");
   let ts=S.threads.filter(t=>t.type==="question");
-  if(S.qCat) ts=ts.filter(t=>t.category===S.qCat);
+  if(S.qCat)ts=ts.filter(t=>t.category===S.qCat);
   ts=filterT(ts,S.search.question);
-  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">${S.search.question||S.qCat?"該当する投稿がありません":"まだ相談がありません"}</div>悩みを投稿してみましょう。</div>`;return;}
-  el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");
-  bindCardList(el,"question",false);
+  if(!ts.length){el.innerHTML=`<div class="empty"><div class="empty-h">まだ相談がありません</div></div>`;return;}
+  el.innerHTML=ts.map(t=>cardHtml(t,false)).join("");bindCardList(el,"question");
 }
-
 function renderQuestionForm(){
   const wrap=$("#questionFormArea");
   if(!S.isStd){
-    wrap.innerHTML=`<div class="upgrade-box">相談投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。閲覧は無料でできます。</div>`;
-    wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});
-    return;
+    wrap.innerHTML=`<div class="upgrade-box">相談投稿するには <a href="#" class="upg-link">Standardプランへのアップグレード</a>が必要です。</div>`;
+    wrap.querySelector(".upg-link")?.addEventListener("click",e=>{e.preventDefault();switchTab("account");});return;
   }
-  const qCats = CATEGORIES.filter(c => c.value && (c.types.includes("question") || c.types.includes("all")));
-  wrap.innerHTML=`
-  <div class="pform-wrap">
+  const qCats=CATEGORIES.filter(c=>c.value&&(c.types.includes("question")||c.types.includes("all")));
+  wrap.innerHTML=`<div class="pform-wrap">
     <div class="form-lbl-line">相談する</div>
-    <div class="fg">
-      <label class="flbl">カテゴリ <span style="color:var(--rust)">*</span></label>
-      <select id="qCatSel" class="fsel">
-        <option value="">選択してください</option>
-        ${qCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}
-      </select>
-    </div>
-    <div class="fg">
-      <label class="flbl">タイトル <span style="color:var(--rust)">*</span></label>
+    <div class="fg"><label class="flbl">カテゴリ <span style="color:var(--rust)">*</span></label>
+      <select id="qCatSel" class="fsel"><option value="">選択してください</option>
+      ${qCats.map(c=>`<option value="${esc(c.value)}">${esc(c.label)}</option>`).join("")}</select></div>
+    <div class="fg"><label class="flbl">タイトル <span style="color:var(--rust)">*</span></label>
       <input id="qTitle" class="fi" type="text" placeholder="例：転職するか迷っています" maxlength="60">
-      <div class="ccount"><span id="qTCount">0</span> / 60</div>
-    </div>
-    <div class="fg">
-      <label class="flbl">内容 <span style="color:var(--rust)">*</span></label>
+      <div class="ccount"><span id="qTCount">0</span> / 60</div></div>
+    <div class="fg"><label class="flbl">内容 <span style="color:var(--rust)">*</span></label>
       <textarea id="qBody" class="fta" placeholder="状況や悩みをできるだけ具体的に書いてみてください…" maxlength="2000"></textarea>
-      <div class="ccount"><span id="qBCount">0</span> / 2000</div>
-    </div>
+      <div class="ccount"><span id="qBCount">0</span> / 2000</div></div>
     <button id="btnQSubmit" class="btn-p">相談を投稿する</button>
     <p id="qMsg" class="fmsg"></p>
   </div>`;
@@ -682,11 +749,8 @@ function renderQuestionForm(){
   $("#qBody").addEventListener("input",e=>$("#qBCount").textContent=e.target.value.length);
   $("#btnQSubmit").addEventListener("click",submitQuestion);
 }
-
 async function submitQuestion(){
-  const category=$("#qCatSel")?.value;
-  const title=$("#qTitle")?.value?.trim();
-  const body=$("#qBody")?.value?.trim();
+  const category=$("#qCatSel")?.value,title=$("#qTitle")?.value?.trim(),body=$("#qBody")?.value?.trim();
   const m=$("#qMsg");
   if(!category){msg(m,"カテゴリを選択してください。");return;}
   if(!title){msg(m,"タイトルを入力してください。");return;}
@@ -694,7 +758,7 @@ async function submitQuestion(){
   const btn=$("#btnQSubmit");btn.disabled=true;
   const{error}=await sb.from("threads").insert({user_id:S.user.id,type:"question",category,title,body});
   btn.disabled=false;
-  if(error){console.error("submitQuestion error:",error);msg(m,"投稿に失敗しました。（"+error.message+")");return;}
+  if(error){msg(m,"投稿に失敗しました。（"+error.message+")");return;}
   msg(m,"投稿しました！","ok");
   $("#qCatSel").value="";$("#qTitle").value="";$("#qBody").value="";
   $("#qTCount").textContent="0";$("#qBCount").textContent="0";
@@ -702,33 +766,29 @@ async function submitQuestion(){
   setTimeout(()=>{if(m)m.textContent="";},2000);
 }
 
-/* ===== 詳細 ===== */
+/* 詳細 */
 async function openDetail(threadId,type,fromTab){
-  const listViewId = fromTab==="home"?"homeListView":fromTab==="post"?"postListView":"questionListView";
-  const detailId   = fromTab==="home"?"homeDetail":fromTab==="post"?"postDetail":"questionDetail";
-  $(`#${listViewId}`).style.display="none";
-  const dv=$(`#${detailId}`);
-  dv.classList.add("show");
-  dv.innerHTML=`<button class="back-btn" id="backBtn">← 一覧に戻る</button><div class="loading">読み込み中…</div>`;
-  $("#backBtn").addEventListener("click",()=>goBack(fromTab,listViewId,detailId));
+  const listId=fromTab==="home"?"homeListView":fromTab==="post"?"postListView":"questionListView";
+  const detId=fromTab==="home"?"homeDetail":fromTab==="post"?"postDetail":"questionDetail";
+  $(`#${listId}`).style.display="none";
+  const dv=$(`#${detId}`);dv.classList.add("show");
+  dv.innerHTML=`<button class="back-btn">← 一覧に戻る</button><div class="loading">読み込み中…</div>`;
+  dv.querySelector(".back-btn").addEventListener("click",()=>goBack(fromTab,listId,detId));
 
-  const{data:t}=await sb.from("threads").select(`*,profiles!user_id(display_name,age,work_style,marital_status,living_situation,bio)`).eq("id",threadId).single();
+  const{data:t}=await sb.from("threads").select(`*,profiles!user_id(display_name,age,work_style,marital_status,living_situation,avatar_url,bio)`).eq("id",threadId).single();
   if(!t){dv.innerHTML+=`<div class="empty">投稿が見つかりませんでした。</div>`;return;}
 
-  const isPost=t.type==="post";
-  const isOwner=S.user?.id===t.user_id;
-  const p=t.profiles,color=avc(t.user_id);
-  const displayLabel = p?.display_name || (p?.age ? `${p.age}歳` : "匿名");
-  const init = displayLabel[0] || "？";
-
+  const isPost=t.type==="post",isOwner=S.user?.id===t.user_id;
+  const p={...t.profiles,_uid:t.user_id};
+  const label=p.display_name||(p.age?`${p.age}歳`:"匿名");
   await loadReactions([t.id]);
 
   let html=`<button class="back-btn" id="backBtn2">← 一覧に戻る</button>
   <div class="dcard">
     <div class="card-meta">
-      <div class="av" style="background:${color};width:32px;height:32px">${esc(init)}</div>
+      ${avatarHtml(p,32)}
       <div class="av-info">
-        <div class="uname" style="font-size:13px">${esc(displayLabel)}</div>
+        <div class="uname" style="font-size:13px">${esc(label)}</div>
         <div class="attr-tags">${attrHtml(p)}</div>
       </div>
       ${t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
@@ -736,40 +796,33 @@ async function openDetail(threadId,type,fromTab){
     </div>
     ${!isPost?`<div class="dtitle">${esc(t.title)}</div>`:""}
     <div class="dbody">${esc(t.body)}</div>
-    <div class="dfooter">
-      <span>${rtime(t.created_at)}</span>
-      ${t.best_reply_id?`<span class="solved">✓ ベストアンサーあり</span>`:""}
-    </div>
+    <div class="dfooter"><span>${rtime(t.created_at)}</span>${t.best_reply_id?`<span class="solved">✓ ベストアンサーあり</span>`:""}</div>
     ${buildReactFull(t.id)}
   </div>`;
 
-  const{data:replies}=await sb.from("replies").select(`*,profiles!user_id(display_name,age,work_style,marital_status,living_situation)`).eq("thread_id",threadId).order("created_at",{ascending:true});
+  const{data:replies}=await sb.from("replies")
+    .select(`*,profiles!user_id(display_name,age,work_style,marital_status,living_situation,avatar_url)`)
+    .eq("thread_id",threadId).order("created_at",{ascending:true});
   const rids=(replies||[]).map(r=>r.id);
   await loadReactions(rids);
 
   html+=`<div class="replies-wrap">`;
   if(!replies?.length){
-    html+=`<div style="padding:20px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。最初の返信をしてみましょう。</div>`;
+    html+=`<div style="padding:20px 0;font-size:13px;color:var(--mist);text-align:center">まだ返信がありません。</div>`;
   }else{
     const sorted=[...replies].sort((a,b)=>{
-      if(a.id===t.best_reply_id)return-1;
-      if(b.id===t.best_reply_id)return 1;
-      return 0;
+      if(a.id===t.best_reply_id)return-1;if(b.id===t.best_reply_id)return 1;return 0;
     });
     html+=sorted.map(r=>{
-      const rp=r.profiles,rc=avc(r.user_id);
-      const rLabel = rp?.display_name || (rp?.age ? `${rp.age}歳` : "匿名");
-      const ri = rLabel[0] || "？";
+      const rp={...r.profiles,_uid:r.user_id};
+      const rl=rp.display_name||(rp.age?`${rp.age}歳`:"匿名");
       const isBest=r.id===t.best_reply_id;
       const canBest=isOwner&&!t.best_reply_id&&S.user?.id!==r.user_id;
       return`<div class="rcard${isBest?" best":""}" data-rid="${r.id}">
         ${isBest?`<div class="best-badge">✓ ベストアンサー</div>`:""}
         <div class="card-meta">
-          <div class="av" style="background:${rc}">${esc(ri)}</div>
-          <div class="av-info">
-            <div class="uname">${esc(rLabel)}</div>
-            <div class="attr-tags">${attrHtml(rp)}</div>
-          </div>
+          ${avatarHtml(rp,28)}
+          <div class="av-info"><div class="uname">${esc(rl)}</div><div class="attr-tags">${attrHtml(rp)}</div></div>
           <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
           ${canBest?`<button class="btn-best" data-rid="${r.id}">ベストアンサーに選ぶ</button>`:""}
           ${isBest&&isOwner?`<button class="btn-best on" disabled>✓ ベスト</button>`:""}
@@ -782,7 +835,6 @@ async function openDetail(threadId,type,fromTab){
   }
   html+=`</div>`;
 
-  // 返信フォーム
   if(!S.user){
     html+=`<div class="reply-form-box"><div class="upgrade-box">返信するには<a href="/">ログイン</a>が必要です。</div></div>`;
   }else if(!S.isStd){
@@ -800,111 +852,117 @@ async function openDetail(threadId,type,fromTab){
   }
 
   dv.innerHTML=html;
-
-  dv.querySelector("#backBtn2")?.addEventListener("click",()=>goBack(fromTab,listViewId,detailId));
+  dv.querySelector("#backBtn2")?.addEventListener("click",()=>goBack(fromTab,listId,detId));
   dv.querySelectorAll(".report-btn").forEach(b=>bindReport(b));
 
   dv.querySelectorAll(".btn-best:not([disabled])").forEach(b=>{
     b.addEventListener("click",async e=>{
       e.stopPropagation();
-      if(!confirm("このコメントをベストアンサーに選びますか？一度選ぶと変更できません。"))return;
+      if(!confirm("このコメントをベストアンサーに選びますか？"))return;
       b.disabled=true;
       const{error}=await sb.from("threads").update({best_reply_id:b.dataset.rid}).eq("id",threadId);
       if(error){b.disabled=false;alert("エラーが発生しました。");return;}
-      await loadThreads();
-      openDetail(threadId,type,fromTab);
+      await loadThreads();openDetail(threadId,type,fromTab);
     });
   });
 
-  dv.querySelectorAll(".react-row").forEach(row=>{
-    const tid=row.dataset.rid;
-    row.querySelectorAll(".rbtn").forEach(b=>{
-      b.addEventListener("click",e=>{
-        e.stopPropagation();
-        if(!S.user)return;
-        toggleReaction(b.dataset.tid,b.dataset.e,()=>{
-          openDetail(threadId,type,fromTab);
+  // リアクション（detail） - 切り替え式
+  function bindDetailReacts(){
+    dv.querySelectorAll(".react-row").forEach(row=>{
+      row.querySelectorAll(".rbtn").forEach(b=>{
+        b.addEventListener("click",e=>{
+          e.stopPropagation();if(!S.user)return;
+          toggleReaction(b.dataset.tid,b.dataset.e,()=>{
+            const d2=document.createElement("div");d2.innerHTML=buildReactFull(b.dataset.tid);
+            row.replaceWith(d2.firstChild);bindDetailReacts();
+          });
         });
       });
     });
-  });
+  }
+  bindDetailReacts();
 
-  dv.querySelectorAll(".upg-link2").forEach(el=>{
-    el.addEventListener("click",()=>switchTab("account"));
-  });
+  dv.querySelectorAll(".upg-link2").forEach(el2=>el2.addEventListener("click",()=>switchTab("account")));
 
   if(S.isStd){
-    const rBodyEl=dv.querySelector("#rBody");
-    const rCountEl=dv.querySelector("#rCount");
-    const rMsgEl=dv.querySelector("#rMsg");
+    const rBodyEl=dv.querySelector("#rBody"),rCountEl=dv.querySelector("#rCount"),rMsgEl=dv.querySelector("#rMsg");
     rBodyEl?.addEventListener("input",e=>{if(rCountEl)rCountEl.textContent=e.target.value.length;});
     dv.querySelector("#btnReply")?.addEventListener("click",async()=>{
       const body=rBodyEl?.value?.trim();
       if(!body){msg(rMsgEl,"返信内容を入力してください。");return;}
       const btn=dv.querySelector("#btnReply");btn.disabled=true;
-      const{error}=await sb.from("replies").insert({thread_id:threadId,user_id:S.user.id,body});
+      const{data:rd,error}=await sb.from("replies").insert({thread_id:threadId,user_id:S.user.id,body}).select().single();
       btn.disabled=false;
       if(error){msg(rMsgEl,"送信に失敗しました。");return;}
       msg(rMsgEl,"返信しました！","ok");
       rBodyEl.value="";if(rCountEl)rCountEl.textContent="0";
+      if(rd)await createNotification(threadId,rd.id);
       setTimeout(()=>openDetail(threadId,type,fromTab),800);
     });
   }
 }
 
-function goBack(fromTab,listViewId,detailId){
-  $(`#${detailId}`).classList.remove("show");
-  $(`#${listViewId}`).style.display="";
+function goBack(fromTab,listId,detId){
+  $(`#${detId}`).classList.remove("show");$(`#${listId}`).style.display="";
   if(fromTab==="home")renderHomeList();
   if(fromTab==="post")renderPostList();
   if(fromTab==="question")renderQuestionList();
 }
 
-/* ===== ACCOUNT ===== */
+/* ACCOUNT */
 function renderAccount(){
   const wrap=$("#accountWrap");
   const pr=S.profile,planTxt=S.isStd?"Standard":"Free";
   wrap.innerHTML=`
   <div class="asec">
     <div class="asec-h">プラン情報</div>
-    <div class="plan-box">
-      <div class="plan-box-lbl">現在のプラン</div>
-      <div class="plan-box-val">${planTxt}</div>
-    </div>
+    <div class="plan-box"><div class="plan-box-lbl">現在のプラン</div><div class="plan-box-val">${planTxt}</div></div>
     <div id="planActions"></div>
   </div>
   <div class="asec">
-    <div class="asec-h">プロフィール属性</div>
+    <div class="asec-h">プロフィール</div>
     <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:18px;line-height:1.7">投稿・返信時に表示される情報です。すべて任意です。</p>
+
+    <label class="flbl">アイコン画像</label>
+    <div class="av-upload-wrap">
+      <div class="av-preview" id="avPreview">
+        ${pr?.avatar_url?`<img src="${esc(pr.avatar_url)}" alt="">`:`<span>👤</span>`}
+      </div>
+      <div class="av-upload-actions">
+        <button class="btn-av" id="btnAvUpload">画像を選択</button>
+        ${pr?.avatar_url?`<button class="btn-av-del" id="btnAvDel">削除する</button>`:""}
+      </div>
+    </div>
+    <input type="file" id="avFileInput" accept="image/*" style="display:none">
+    <p id="avMsg" class="fmsg" style="margin-bottom:16px"></p>
+
     <div class="fg">
       <label class="flbl">表示名（ニックネーム）</label>
       <input id="pDisplayName" class="fi" type="text" maxlength="20" placeholder="例：ぽんこつOL、のんびり在宅勢 など" value="${esc(pr?.display_name??"")}">
-      <div class="ccount" style="text-align:right;margin-top:3px"><span id="dnCount">${(pr?.display_name||"").length}</span> / 20</div>
+      <div class="ccount"><span id="dnCount">${(pr?.display_name||"").length}</span> / 20</div>
     </div>
     <div class="pgrid">
-      <div class="fg">
-        <label class="flbl">年齢</label>
+      <div class="fg"><label class="flbl">年齢</label>
         <input id="pAge" class="fi" type="number" min="18" max="100" placeholder="27" value="${pr?.age??""}"
           oninput="this.value=this.value.replace(/[^0-9]/g,'');if(+this.value>100)this.value=100;if(this.value&&+this.value<18)this.value=18;">
-        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜100の範囲で入力</div>
+        <div style="font-size:10px;color:var(--mist);margin-top:3px">18〜100の範囲</div>
       </div>
       <div class="fg"><label class="flbl">働き方</label>
-        <select id="pWork" class="fsel">
-          <option value="">未設定</option>
-          ${["会社員","フリーランス","個人事業主","パート・アルバイト","専業主婦・主夫","求職中","その他"].map(v=>`<option${pr?.work_style===v?" selected":""}>${v}</option>`).join("")}
+        <select id="pWork" class="fsel"><option value="">未設定</option>
+        ${["会社員","フリーランス","個人事業主","パート・アルバイト","専業主婦・主夫","求職中","その他"].map(v=>`<option${pr?.work_style===v?" selected":""}>${v}</option>`).join("")}
         </select></div>
       <div class="fg"><label class="flbl">婚活・恋愛状況</label>
-        <select id="pMarital" class="fsel">
-          <option value="">未設定</option>
-          ${["婚活中","交際中","独身","既婚","離婚経験あり"].map(v=>`<option${pr?.marital_status===v?" selected":""}>${v}</option>`).join("")}
+        <select id="pMarital" class="fsel"><option value="">未設定</option>
+        ${["婚活中","交際中","独身","既婚","離婚経験あり"].map(v=>`<option${pr?.marital_status===v?" selected":""}>${v}</option>`).join("")}
         </select></div>
       <div class="fg"><label class="flbl">住まい</label>
-        <select id="pLiving" class="fsel">
-          <option value="">未設定</option>
-          ${["一人暮らし","実家暮らし","パートナーと同居","その他"].map(v=>`<option${pr?.living_situation===v?" selected":""}>${v}</option>`).join("")}
+        <select id="pLiving" class="fsel"><option value="">未設定</option>
+        ${["一人暮らし","実家暮らし","パートナーと同居","その他"].map(v=>`<option${pr?.living_situation===v?" selected":""}>${v}</option>`).join("")}
         </select></div>
     </div>
-    <div class="fg"><label class="flbl">一言（任意）</label><input id="pBio" class="fi" type="text" maxlength="50" placeholder="例：東京在住、転職検討中" value="${esc(pr?.bio??"")}"></div>
+    <div class="fg"><label class="flbl">一言（任意）</label>
+      <input id="pBio" class="fi" type="text" maxlength="50" placeholder="例：東京在住、転職検討中" value="${esc(pr?.bio??"")}">
+    </div>
     <button id="btnSaveProf" class="btn-p">保存する</button>
     <p id="profMsg" class="fmsg"></p>
   </div>
@@ -917,7 +975,7 @@ function renderAccount(){
     </div>
     <p id="emailMsg" class="fmsg"></p>
   </div>
-  <div class="asec" id="pwSec">
+  <div class="asec">
     <div class="asec-h" id="pwSecH">パスワードの設定</div>
     <p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:12px" id="pwSecD">パスワードを設定すると、次回からメール＋パスワードでログインできます。</p>
     <div class="pwf">
@@ -931,45 +989,70 @@ function renderAccount(){
     <p id="pwMsg" class="fmsg"></p>
   </div>`;
 
-  // 表示名カウンター
-  $("#pDisplayName").addEventListener("input",e=>{
-    $("#dnCount").textContent=e.target.value.length;
-  });
+  $("#pDisplayName").addEventListener("input",e=>{"#dnCount"&&($("#dnCount").textContent=e.target.value.length);});
+  if($("#dnCount"))$("#pDisplayName").dispatchEvent(new Event("input"));
+
+  // アバター
+  $("#btnAvUpload").addEventListener("click",()=>$("#avFileInput").click());
+  $("#avFileInput").addEventListener("change",uploadAvatar);
+  $("#btnAvDel")?.addEventListener("click",deleteAvatar);
 
   const pa=$("#planActions");
   if(S.isStd){
     pa.innerHTML=`<button id="btnCancel" class="btn-d">サブスクを解約する</button>`;
-    $("#btnCancel").addEventListener("click",()=>openPortal());
+    $("#btnCancel").addEventListener("click",openPortal);
   }else{
     pa.innerHTML=`<p style="font-size:13px;color:var(--mist);font-weight:300;margin-bottom:12px;line-height:1.7">Standardプランで投稿・返信が無制限に使えます。</p>
-    <button id="btnSub" class="btn-p">Standardプランに登録する（¥680/月）</button>`;
-    $("#btnSub").addEventListener("click",()=>createCheckout());
+    <button id="btnSub" class="btn-p">Standardプランに登録する（¥980/月）</button>`;
+    $("#btnSub").addEventListener("click",createCheckout);
   }
-
   if(pr?.has_password){
     $("#pwSecH").textContent="パスワードの変更";
     $("#pwSecD").textContent="現在のアカウントのパスワードを変更できます。";
     $("#btnPw").textContent="変更する";
   }
-
   $("#btnSaveProf").addEventListener("click",saveProfile);
   $("#btnEmail").addEventListener("click",changeEmail);
   $("#pwShow").addEventListener("change",e=>{const t=e.target.checked?"text":"password";$("#pwN").type=t;$("#pwN2").type=t;});
   $("#btnPw").addEventListener("click",savePassword);
 }
 
+/* アバター */
+async function uploadAvatar(e){
+  const file=e.target.files[0];if(!file)return;
+  if(file.size>2*1024*1024){msg($("#avMsg"),"2MB以下の画像を選択してください。");return;}
+  msg($("#avMsg"),"アップロード中…","ok");
+  const ext=file.name.split(".").pop()||"jpg";
+  const path=`${S.user.id}/avatar.${ext}`;
+  const{error:upErr}=await sb.storage.from(AVATAR_BUCKET).upload(path,file,{upsert:true,contentType:file.type});
+  if(upErr){msg($("#avMsg"),"アップロードに失敗しました。");return;}
+  const{data:urlData}=sb.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+  const url=urlData.publicUrl+"?t="+Date.now();
+  await sb.from("profiles").update({avatar_url:url}).eq("id",S.user.id);
+  S.profile.avatar_url=url;
+  msg($("#avMsg"),"保存しました！","ok");
+  const prev=$("#avPreview");if(prev)prev.innerHTML=`<img src="${esc(url)}" alt="">`;
+  // 削除ボタンがなければ追加
+  if(!$("#btnAvDel")){
+    const actions=document.querySelector(".av-upload-actions");
+    if(actions){const b=document.createElement("button");b.className="btn-av-del";b.id="btnAvDel";b.textContent="削除する";actions.appendChild(b);b.addEventListener("click",deleteAvatar);}
+  }
+}
+async function deleteAvatar(){
+  if(!confirm("アイコン画像を削除しますか？"))return;
+  await sb.from("profiles").update({avatar_url:null}).eq("id",S.user.id);
+  S.profile.avatar_url=null;
+  const prev=$("#avPreview");if(prev)prev.innerHTML=`<span>👤</span>`;
+  $("#btnAvDel")?.remove();
+}
+
 async function saveProfile(){
   const m=$("#profMsg");
   const ageRaw=parseInt($("#pAge").value);
   const age=(ageRaw>=18&&ageRaw<=100)?ageRaw:null;
-  const upd={
-    display_name:$("#pDisplayName").value.trim()||null,
-    age,
-    work_style:$("#pWork").value||null,
-    marital_status:$("#pMarital").value||null,
-    living_situation:$("#pLiving").value||null,
-    bio:$("#pBio").value.trim()||null
-  };
+  const upd={display_name:$("#pDisplayName").value.trim()||null,age,
+    work_style:$("#pWork").value||null,marital_status:$("#pMarital").value||null,
+    living_situation:$("#pLiving").value||null,bio:$("#pBio").value.trim()||null};
   const btn=$("#btnSaveProf");btn.disabled=true;
   const{error}=await sb.from("profiles").update(upd).eq("id",S.user.id);
   btn.disabled=false;
@@ -983,8 +1066,7 @@ async function changeEmail(){
   const{error}=await sb.auth.updateUser({email:ne},{emailRedirectTo:APP_URL});
   btn.disabled=false;
   if(error){msg(m,"変更に失敗しました。");return;}
-  msg(m,"確認メールを送信しました。メール内のリンクから変更を完了してください。","ok");
-  $("#emailNew").value="";
+  msg(m,"確認メールを送信しました。","ok");$("#emailNew").value="";
 }
 async function savePassword(){
   const m=$("#pwMsg"),p1=$("#pwN").value,p2=$("#pwN2").value;
@@ -996,12 +1078,11 @@ async function savePassword(){
   btn.disabled=false;
   if(error){msg(m,"設定に失敗しました。");return;}
   await sb.from("profiles").update({has_password:true}).eq("id",S.user.id);
-  S.profile.has_password=true;
-  msg(m,"パスワードを設定しました！","ok");
+  S.profile.has_password=true;msg(m,"パスワードを設定しました！","ok");
   $("#pwN").value="";$("#pwN2").value="";
 }
 
-/* ===== 課金 ===== */
+/* 課金 */
 async function loadBilling(){
   try{const r=await fetch(BILLING,{cache:"no-store"});S.billingCfg=await r.json();}catch(e){}
 }
@@ -1015,8 +1096,7 @@ async function createCheckout(){
 }
 async function openPortal(){
   try{
-    const{data:sess}=await sb.auth.getSession();
-    const token=sess?.session?.access_token;
+    const{data:sess}=await sb.auth.getSession();const token=sess?.session?.access_token;
     if(!token){alert("再ログインしてください。");return;}
     const r=await fetch(PORTAL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({user_id:S.user.id,return_url:APP_URL})});
     const d=await r.json();
@@ -1024,21 +1104,19 @@ async function openPortal(){
   }catch(e){alert("エラーが発生しました。");}
 }
 
-/* ===== 通報 ===== */
+/* 通報 */
 function bindReport(btn){
   btn.addEventListener("click",e=>{
     e.stopPropagation();
     S.reportTarget={type:btn.dataset.type,id:btn.dataset.id};
     $("#reportModal").classList.add("show");
-    $("#reportReason").value="";
-    msg($("#reportMsg"),"");
+    $("#reportReason").value="";msg($("#reportMsg"),"");
   });
 }
 $("#reportClose").addEventListener("click",()=>$("#reportModal").classList.remove("show"));
 $("#btnReportCancel").addEventListener("click",()=>$("#reportModal").classList.remove("show"));
 $("#btnReport").addEventListener("click",async()=>{
-  const reason=$("#reportReason").value;
-  const m=$("#reportMsg");
+  const reason=$("#reportReason").value,m=$("#reportMsg");
   if(!reason){msg(m,"理由を選択してください。");return;}
   if(!S.reportTarget||!S.user)return;
   const btn=$("#btnReport");btn.disabled=true;
@@ -1049,10 +1127,10 @@ $("#btnReport").addEventListener("click",async()=>{
   setTimeout(()=>{$("#reportModal").classList.remove("show");S.reportTarget=null;},1500);
 });
 
-/* ===== LOGOUT ===== */
+$("#btnNotif").addEventListener("click",()=>switchTab("notif"));
 $("#btnLogout").addEventListener("click",async()=>{await sb.auth.signOut();location.replace("/");});
 
-/* ===== MAIN ===== */
+/* MAIN */
 async function main(){
   await loadBilling();
   const user=await getUser();
@@ -1065,10 +1143,9 @@ async function main(){
   S.isStd=!!prof?.is_active&&tier==="standard";
   const badge=$("#planBadge");
   if(S.isStd){badge.textContent="Standard";badge.classList.add("std");}
-  await loadThreads();
+  await Promise.all([loadThreads(),loadNotifications()]);
   switchTab("home");
 }
-
 main();
 </script>
 </body>
