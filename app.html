@@ -108,6 +108,9 @@ img.av{object-fit:cover;display:block}
 .best-confirm-preview{font-size:13px;color:var(--ink);background:var(--cream);padding:12px 14px;margin:12px 0;line-height:1.7;border-left:3px solid var(--duck);font-weight:300;max-height:80px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
 .best-confirm-warn{font-size:12px;color:var(--rust);margin-bottom:18px}
 .best-confirm-btns{display:flex;gap:8px;flex-wrap:wrap}
+/* 削除ボタン */
+.del-btn{font-size:11px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0 0 0 6px;font-family:'DM Sans',sans-serif;flex-shrink:0;transition:color .2s}
+.del-btn:hover{color:var(--error)}
 .rbody{font-size:14px;line-height:1.8;color:#4a4440;font-weight:300;white-space:pre-wrap;margin-top:10px}
 .report-btn{font-size:11px;color:var(--mist);background:none;border:none;cursor:pointer;padding:0 0 0 6px;font-family:'DM Sans',sans-serif;flex-shrink:0;transition:color .2s}
 .report-btn:hover{color:var(--rust)}
@@ -583,6 +586,7 @@ function cardHtml(t,showBadge){
   const label=p.display_name||(p.age?`${p.age}歳`:"匿名");
   const rc=t.replies?.[0]?.count??0;
   const isPost=t.type==="post";
+  const isOwn=S.user?.id===t.user_id;
   return`<div class="post-card${isPost?" is-post":""}" data-id="${t.id}" data-type="${t.type}">
     <div class="card-meta">
       ${avatarHtml(p,28)}
@@ -592,6 +596,7 @@ function cardHtml(t,showBadge){
       </div>
       ${showBadge?(isPost?`<span class="tbadge-post">つぶやき</span>`:`<span class="tbadge-q">相談</span>`):""}
       ${t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
+      ${isOwn?`<button class="del-btn" data-id="${t.id}" data-type="thread" title="削除">🗑</button>`:""}
     </div>
     ${!isPost&&t.title?`<div class="card-title">${esc(t.title)}</div>`:""}
     <div class="card-preview">${esc(t.body)}</div>
@@ -606,11 +611,18 @@ function cardHtml(t,showBadge){
 function bindCardList(container,tab){
   container.querySelectorAll(".post-card").forEach(c=>{
     c.addEventListener("click",e=>{
-      if(e.target.closest(".rbtn-sm"))return;
+      if(e.target.closest(".rbtn-sm")||e.target.closest(".del-btn"))return;
       openDetail(c.dataset.id,c.dataset.type,tab);
     });
   });
   bindReactsSm(container);
+  // カード上の削除ボタン
+  container.querySelectorAll(".del-btn").forEach(b=>{
+    b.addEventListener("click",async e=>{
+      e.stopPropagation();
+      await deleteThread(b.dataset.id, tab);
+    });
+  });
 }
 
 /* ===== HOME ===== */
@@ -780,6 +792,7 @@ async function openDetail(threadId,type,fromTab){
       </div>
       ${t.category?`<span class="cat-tag">${esc(t.category)}</span>`:""}
       ${S.user&&!isOwner&&S.isStd?`<button class="report-btn" data-type="thread" data-id="${t.id}">通報</button>`:""}
+      ${isOwner?`<button class="del-btn" data-id="${t.id}" data-type="thread" title="この投稿を削除">🗑 削除</button>`:""}
     </div>
     ${!isPost?`<div class="dtitle">${esc(t.title)}</div>`:""}
     <div class="dbody">${esc(t.body)}</div>
@@ -804,16 +817,19 @@ async function openDetail(threadId,type,fromTab){
       const rp={...r.profiles,_uid:r.user_id};
       const rl=rp.display_name||(rp.age?`${rp.age}歳`:"匿名");
       const isBest=r.id===t.best_reply_id;
+      // best_reply_idが既に設定されていたらボタン出さない
       const canBest=isOwner&&!t.best_reply_id&&S.user?.id!==r.user_id;
+      const isReplyOwner=S.user?.id===r.user_id;
       return`<div class="rcard${isBest?" best":""}" data-rid="${r.id}">
-        ${isBest?`<div class="best-badge">✓ ベストアンサー</div>`:""}
+        ${isBest?`<div class="best-badge">🏆 ベストアンサー</div>`:""}
         <div class="card-meta">
           ${avatarHtml(rp,28)}
           <div class="av-info"><div class="uname">${esc(rl)}</div><div class="attr-tags">${attrHtml(rp)}</div></div>
           <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
-          ${canBest?`<button class="btn-best" data-rid="${r.id}">ベストアンサーに選ぶ</button>`:""}
-          ${isBest&&isOwner?`<button class="btn-best on" disabled>✓ ベスト</button>`:""}
-          ${S.user&&S.user.id!==r.user_id&&S.isStd?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
+          ${canBest?`<button class="btn-best" data-rid="${r.id}">🏆 ベストアンサーに選ぶ</button>`:""}
+          ${isBest?`<span class="btn-best on" style="cursor:default">🏆 ベストアンサー</span>`:""}
+          ${S.user&&!isReplyOwner&&S.isStd?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
+          ${isReplyOwner?`<button class="del-btn" data-id="${r.id}" data-type="reply" title="返信を削除">🗑</button>`:""}
         </div>
         <div class="rbody">${esc(r.body)}</div>
         ${buildReactFull(r.id)}
@@ -841,6 +857,18 @@ async function openDetail(threadId,type,fromTab){
   dv.innerHTML=html;
   dv.querySelector("#backBtn2")?.addEventListener("click",()=>goBack(fromTab,listId,detId));
   dv.querySelectorAll(".report-btn").forEach(b=>bindReport(b));
+
+  // 削除ボタン（スレッド・返信）
+  dv.querySelectorAll(".del-btn").forEach(b=>{
+    b.addEventListener("click",async e=>{
+      e.stopPropagation();
+      if(b.dataset.type==="thread"){
+        await deleteThread(b.dataset.id, fromTab, ()=>goBack(fromTab,listId,detId));
+      }else if(b.dataset.type==="reply"){
+        await deleteReply(b.dataset.id, threadId, type, fromTab);
+      }
+    });
+  });
 
   // ベストアンサー確認モーダル（カスタムUI）
   dv.querySelectorAll(".btn-best:not([disabled])").forEach(b=>{
@@ -917,6 +945,29 @@ function goBack(fromTab,listId,detId){
   if(fromTab==="home")renderHomeList();
   if(fromTab==="post")renderPostList();
   if(fromTab==="question")renderQuestionList();
+}
+
+/* ===== 削除関数 ===== */
+async function deleteThread(threadId, fromTab, onSuccess){
+  if(!confirm("この投稿を削除しますか？\n紐づく返信もすべて削除されます。"))return;
+  const{error}=await sb.from("threads").delete().eq("id",threadId).eq("user_id",S.user.id);
+  if(error){alert("削除に失敗しました。");return;}
+  await loadThreads();
+  if(onSuccess){
+    onSuccess();
+  }else{
+    if(fromTab==="home")renderHomeList();
+    if(fromTab==="post")renderPostList();
+    if(fromTab==="question")renderQuestionList();
+  }
+}
+
+async function deleteReply(replyId, threadId, type, fromTab){
+  if(!confirm("この返信を削除しますか？"))return;
+  const{error}=await sb.from("replies").delete().eq("id",replyId).eq("user_id",S.user.id);
+  if(error){alert("削除に失敗しました。");return;}
+  await loadThreads();
+  openDetail(threadId, type, fromTab);
 }
 
 /* ===== ACCOUNT ===== */
