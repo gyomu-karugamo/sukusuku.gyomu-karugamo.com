@@ -1,0 +1,10 @@
+[
+  {"label":"すべて","value":"","types":["all"]},
+  {"label":"キャリア","value":"キャリア","types":["question","all"]},
+  {"label":"結婚・ライフプラン","value":"結婚・ライフプラン","types":["question","all"]},
+  {"label":"お金・将来","value":"お金・将来","types":["question","all"]},
+  {"label":"恋愛","value":"恋愛","types":["question","all"]},
+  {"label":"仕事の悩み","value":"仕事の悩み","types":["post","question","all"]},
+  {"label":"日常・雑談","value":"日常・雑談","types":["post","all"]},
+  {"label":"その他","value":"その他","types":["post","question","all"]}
+]
