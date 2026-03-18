@@ -986,16 +986,18 @@ async function openDetail(threadId,type,fromTab){
           return;
         }
         overlay.remove();
-        // S.threadsのキャッシュも更新
-        const cached=S.threads.find(t=>t.id===threadId);
-        if(cached)cached.best_reply_id=rid;
-        // 返信者に「ベストアンサーに選ばれました」通知を送る
+        // 通知を先に送る（再描画前）
         await createBestAnswerNotification(threadId,rid);
-        // 選択したボタンを即座に非表示＋バッジ表示（再描画前に即反映）
+        // S.threadsのキャッシュ更新
+        const cached=S.threads.find(th2=>th2.id===threadId);
+        if(cached)cached.best_reply_id=rid;
+        // tのbest_reply_idも直接書き換えて再描画時に反映されるようにする
+        t.best_reply_id=rid;
+        // 全ての「ベストアンサーに選ぶ」ボタンを完全削除
         dv.querySelectorAll(".btn-best").forEach(btn=>btn.remove());
+        // 対象カードにベストバッジを付与
         const targetCard=dv.querySelector(`.rcard[data-rid="${rid}"]`);
         if(targetCard){
-          // ベストバッジを先頭に挿入
           if(!targetCard.querySelector(".best-badge")){
             const badge=document.createElement("div");
             badge.className="best-badge";
@@ -1004,8 +1006,8 @@ async function openDetail(threadId,type,fromTab){
           }
           targetCard.classList.add("best");
         }
-        // 詳細を再描画
-        openDetail(threadId,type,fromTab);
+        // HOMEタブのスレッド一覧も更新（解決済みバッジのため）
+        await loadThreads();
       });
     });
   });
