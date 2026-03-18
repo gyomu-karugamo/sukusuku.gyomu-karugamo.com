@@ -143,6 +143,7 @@ img.av{object-fit:cover;display:block}
 .btn-av-del:hover{border-color:var(--error);color:var(--error)}
 /* アイコン選択グリッド */
 .icon-picker-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}
+@media(max-width:400px){.icon-picker-grid{grid-template-columns:repeat(4,1fr)}}
 .icon-option{position:relative;cursor:pointer}
 .icon-option input[type=radio]{position:absolute;opacity:0;width:0;height:0}
 .icon-option img{width:100%;aspect-ratio:1;border-radius:50%;border:3px solid transparent;transition:all .2s;display:block;background:var(--warm)}
@@ -906,17 +907,22 @@ async function openDetail(threadId,type,fromTab){
         const okBtn=overlay.querySelector("#bestConfirmOk");
         okBtn.disabled=true;
         okBtn.textContent="保存中…";
-        const{error}=await sb.from("threads").update({best_reply_id:rid}).eq("id",threadId);
-        if(error){
+        const{data:updData,error}=await sb.from("threads")
+          .update({best_reply_id:rid})
+          .eq("id",threadId)
+          .select("best_reply_id")
+          .single();
+        if(error||!updData?.best_reply_id){
           overlay.remove();
-          alert("エラーが発生しました。");
+          console.error("best answer update error:",error,updData);
+          alert("保存に失敗しました。管理者にお問い合わせください。");
           return;
         }
         overlay.remove();
-        // スレッドキャッシュを更新してから詳細を再描画
-        await loadThreads();
-        // 少し待ってから再描画（DBの反映を確実に待つ）
-        await new Promise(r=>setTimeout(r,300));
+        // S.threadsのキャッシュも更新
+        const cached=S.threads.find(t=>t.id===threadId);
+        if(cached)cached.best_reply_id=rid;
+        // 詳細を再描画
         openDetail(threadId,type,fromTab);
       });
     });
@@ -1016,7 +1022,7 @@ function renderAccount(){
     </div>
     <div id="iconPickerArea" style="display:none">
       <div class="icon-picker-grid">
-        ${Array.from({length:10},(_,i)=>{
+        ${Array.from({length:15},(_,i)=>{
           const n=String(i+1).padStart(2,"0");
           const url=`https://app.gyomu-karugamo.com/data/icon/icon${n}.png`;
           const checked=(pr?.avatar_url===url)?" checked":"";
