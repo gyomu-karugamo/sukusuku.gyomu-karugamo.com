@@ -444,7 +444,21 @@ function switchTab(tab){
   if(tab==="home")    renderHomeTab();
   if(tab==="post")    renderPostTab();
   if(tab==="question")renderQuestionTab();
-  if(tab==="notif")   renderNotifTab();
+  if(tab==="notif"){
+    // タブを開いた瞬間に全件既読＆バッジをクリア
+    const unreadIds=S.notifications.filter(n=>!n.is_read).map(n=>n.id);
+    if(unreadIds.length){
+      sb.from("notifications").update({is_read:true}).in("id",unreadIds).then(()=>{
+        S.notifications=S.notifications.map(n=>({...n,is_read:true}));
+        S.unreadCount=0;
+        updateNotifBadge();
+      });
+    }else{
+      S.unreadCount=0;
+      updateNotifBadge();
+    }
+    renderNotifTab();
+  }
   if(tab==="account") renderAccount();
 }
 document.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>switchTab(b.dataset.tab)));
@@ -881,8 +895,8 @@ async function openDetail(threadId,type,fromTab){
       const rp={...r.profiles,_uid:r.user_id};
       const rl=rp.display_name||(rp.age?`${rp.age}歳`:"匿名");
       const isBest=r.id===t.best_reply_id;
-      // best_reply_idが既にセットされていれば絶対にボタンを出さない
       const hasBest=!!t.best_reply_id;
+      // ベストアンサーが未設定 かつ 自分のスレッド かつ 自分以外の返信 → ボタン表示
       const canBest=isOwner&&!hasBest&&S.user?.id!==r.user_id;
       const isReplyOwner=S.user?.id===r.user_id;
       return`<div class="rcard${isBest?" best":""}" data-rid="${r.id}">
@@ -892,7 +906,6 @@ async function openDetail(threadId,type,fromTab){
           <div class="av-info"><div class="uname">${esc(rl)}</div><div class="attr-tags">${attrHtml(rp)}</div></div>
           <span style="font-size:11px;color:var(--mist);margin-left:auto">${rtime(r.created_at)}</span>
           ${canBest?`<button class="btn-best" data-rid="${r.id}">🏆 ベストアンサーに選ぶ</button>`:""}
-          ${hasBest&&isBest?`<span class="btn-best on" style="cursor:default">🏆 ベストアンサー</span>`:""}
           ${S.user&&!isReplyOwner&&S.isStd?`<button class="report-btn" data-type="reply" data-id="${r.id}">通報</button>`:""}
           ${isReplyOwner?`<button class="del-btn" data-id="${r.id}" data-type="reply" title="返信を削除">🗑</button>`:""}
         </div>
@@ -936,13 +949,12 @@ async function openDetail(threadId,type,fromTab){
   });
 
   // ベストアンサー確認モーダル（カスタムUI）
-  dv.querySelectorAll(".btn-best:not([disabled])").forEach(b=>{
+  dv.querySelectorAll(".btn-best").forEach(b=>{
     b.addEventListener("click",async e=>{
       e.stopPropagation();
       const rid=b.dataset.rid;
       // 対象返信の本文を取得
       const replyBody=dv.querySelector(`.rcard[data-rid="${rid}"] .rbody`)?.textContent||"";
-      const replyName=dv.querySelector(`.rcard[data-rid="${rid}"] .uname`)?.textContent||"";
       // 確認オーバーレイを生成
       const overlay=document.createElement("div");
       overlay.className="best-confirm-overlay";
@@ -964,14 +976,12 @@ async function openDetail(threadId,type,fromTab){
         const okBtn=overlay.querySelector("#bestConfirmOk");
         okBtn.disabled=true;
         okBtn.textContent="保存中…";
-        const{data:updData,error}=await sb.from("threads")
+        const{error}=await sb.from("threads")
           .update({best_reply_id:rid})
-          .eq("id",threadId)
-          .select("best_reply_id")
-          .single();
-        if(error||!updData?.best_reply_id){
+          .eq("id",threadId);
+        if(error){
           overlay.remove();
-          console.error("best answer update error:",error,updData);
+          console.error("best answer update error:",error);
           alert("保存に失敗しました。管理者にお問い合わせください。");
           return;
         }
