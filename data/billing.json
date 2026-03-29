@@ -1,7 +1,8 @@
 {
   "stripe": {
     "standard": {
-      "payment_link_url": "https://buy.stripe.com/test_3cI9AT4H44Bu3J73t7fjG01"
+      "payment_link_url": "https://buy.stripe.com/test_3cI9AT4H44Bu3J73t7fjG01",
+      "payment_link_no_trial_url": "https://buy.stripe.com/28E00k8KHdCx4qw4G43ks03"
     }
   }
 }
