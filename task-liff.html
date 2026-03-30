@@ -191,8 +191,7 @@ body {
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<!-- LIFF SDK -->
-<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<!-- LIFF SDK 不要（URLトークン方式に変更） -->
 </head>
 <body>
 
@@ -228,10 +227,8 @@ body {
 </div>
 
 <script>
-const SUPABASE_URL     = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
+const SUPABASE_URL      = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY254dXltcWJ6a3FmcmN2cGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjAxMTUsImV4cCI6MjA5MDA5NjExNX0.2DGITsYpMg94XaVAfEma_rv71njzyCb445Kcvkj1SyQ";
-// LIFF ID（後で設定）
-const LIFF_ID = "PLACEHOLDER_LIFF_ID";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -444,40 +441,33 @@ document.getElementById('todayBtn').addEventListener('click', () => {
   loadData();
 });
 
-// 初期化
+// 初期化 — LIFFなし版
+// URLパラメータ ?token=xxx からユーザーを識別
+// トークンはアプリ側で line_connections.access_token として保存
 async function init() {
-  // LIFFを初期化
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
-    }
-    const profile = await liff.getProfile();
-    lineUserId = profile.userId;
-  } catch(e) {
-    console.warn('LIFF init failed, using URL param fallback:', e);
-    // LIFFが使えない環境（テスト用）: URLパラメータからline_user_idを取得
-    lineUserId = new URLSearchParams(location.search).get('line_uid');
-  }
+  const params = new URLSearchParams(location.search);
+  const token = params.get('token');
 
-  if (!lineUserId) {
+  if (!token) {
     document.getElementById('mainContent').innerHTML =
-      '<div class="empty"><div class="empty-icon">🔒</div>LINEからアクセスしてください</div>';
+      '<div class="empty"><div class="empty-icon">🔒</div>正しいURLからアクセスしてください</div>';
     return;
   }
 
-  // line_user_id → app user_id を取得
+  // トークンでユーザーを検索
   const { data: conn } = await sb.from('line_connections')
-    .select('user_id').eq('line_user_id', lineUserId).single();
+    .select('user_id, line_user_id')
+    .eq('access_token', token)
+    .single();
 
   if (!conn) {
     document.getElementById('mainContent').innerHTML =
-      `<div class="empty"><div class="empty-icon">🔗</div>LINE連携が見つかりません。<br>アプリから連携コードを発行してください。</div>`;
+      `<div class="empty"><div class="empty-icon">🔗</div>LINE連携情報が見つかりません。<br>アプリから「連携コードを発行」してください。</div>`;
     return;
   }
 
-  appUserId = conn.user_id;
+  appUserId   = conn.user_id;
+  lineUserId  = conn.line_user_id;
   await loadData();
 }
 
