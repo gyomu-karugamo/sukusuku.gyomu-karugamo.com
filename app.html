@@ -1,1985 +1,2043 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8"/>
-  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>業務かるがも</title>
+<link rel="icon" type="image/png" href="/assets/icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#e8632a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="業務かるがも">
+<link rel="apple-touch-icon" href="/assets/icon.png">
 
-  <!-- ===== PWA ===== -->
-  <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#75c29c" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="Moriris" />
-  <link rel="apple-touch-icon" href="/assets/favicon.png" />
-  <!-- ===== /PWA ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
-  <!-- Google tag (gtag.js)  -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWRX6Q9K3E"></script>
-  <script>
-    const isDebug = new URLSearchParams(location.search).get('debug') === '1';
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-HWRX6Q9K3E', {
-      debug_mode: isDebug,
-      linker: { domains: ['official.moriris.com', 'member.moriris.com'] }
-    });
-  </script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D74K33M791"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-D74K33M791');
+</script>
 
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>業務かるがも</title>
+<style>
+:root {
+  --cream: #faf7f2;
+  --cream-dark: #f0ece4;
+  --warm: #e8dfd0;
+  --orange: #e8632a;
+  --orange-light: #f5a06e;
+  --orange-pale: #fdeede;
+  --brown: #2d1e13;
+  --brown-mid: #7a5c4a;
+  --brown-light: #c4a882;
+  --mist: #9a8878;
+  --success: #3d9970;
+  --success-pale: #e8f5ee;
+  --error: #c0392b;
+  --error-pale: #fde8e6;
+  --line-green: #06c755;
+  --line-pale: #e8f9ef;
+  --border: rgba(61,43,30,0.1);
+  --shadow: 0 4px 24px rgba(61,43,30,0.08);
+  --shadow-lg: 0 12px 48px rgba(61,43,30,0.14);
+  --radius: 16px;
+  --radius-sm: 10px;
+}
 
-  <style>
-    :root{
-      --bg:#faf8f4;
-      --panel:#ffffff;
-      --ink:#24311c;
-      --muted:#6b6964;
-      --accent:#75c29c;
-      --accent-dark:#0b5130;
-      --radius:20px;
-      --shadow:0 10px 32px rgba(0,0,0,.18);
-    }
-    *{box-sizing:border-box;}
-    html,body{ margin:0; height:100%; }
-    body{
-      min-height:100vh;
-      background-color:#faf8f4;
-      background-image:url("/assets/hero-forest.png");
-      background-repeat:no-repeat;
-      background-size:cover;
-      background-position:center;
-      background-attachment:fixed;
-      color:var(--ink);
-      font-family:system-ui,-apple-system,"Segoe UI",Roboto;
-    }
-    .page{ max-width:1120px; margin:0 auto; padding:0 18px 32px; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .header-wrap{
-      position:sticky; top:0; z-index:100;
-      padding-bottom:10px;
-      background: linear-gradient(to bottom, rgba(250,248,244,1) 0%, rgba(250,248,244,.95) 70%, rgba(250,248,244,0) 100%);
-      backdrop-filter:blur(4px);
-    }
+html, body { min-height: 100vh; }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom:18px;
-    }
-    .brand{ display:flex; align-items:center; gap:18px; }
-    .brand img{
-      max-width:220px;
-      height:auto;
-      display:block;
-      filter:drop-shadow(0 4px 12px rgba(0,0,0,.18));
-    }
-    .brand-title{ display:flex; align-items:center; }
-    .brand-title span{
-      font-size:20px;
-      letter-spacing:.22em;
-      text-transform:none;
-      color:#666666;
-      font-weight:500;
-      white-space:nowrap;
-    }
-    @media (max-width: 860px){
-      .brand-title span{
-        white-space:normal;
-        line-height:1.2;
-        letter-spacing:0.06em;
-        font-size:18px;
-      }
-    }
+body {
+  font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
+  font-weight: 300;
+  background: var(--cream);
+  color: var(--brown);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
 
-    .lang{ display:flex; gap:8px; align-items:center; }
-    .lang button{
-      border:1px solid #ddd;
-      background:#fff;
-      border-radius:999px;
-      padding:6px 12px;
-      cursor:pointer;
-      font-size:13px;
-    }
-    .lang .active{
-      border-color:var(--accent);
-      color:var(--accent-dark);
-      font-weight:600;
-    }
+/* ========== HEADER ========== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(250,247,242,0.96);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
 
-    .pw-banner{
-      background:#ffe7e3;
-      border:1px solid #ffb3a7;
-      color:#8b1a07;
-      border-radius:12px;
-      padding:10px 14px;
-      margin-bottom:16px;
-      font-size:14px;
-      font-weight:600;
-      cursor:pointer;
-    }
+.header-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
 
-    .user-box{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-size:13px;
-      color:var(--muted);
-      justify-content:flex-end;
-    }
-    .pill{
-      border-radius:999px;
-      background:#ffffff;
-      padding:4px 10px;
-      border:1px solid rgba(0,0,0,.08);
-    }
-    .btn{
-      border-radius:999px;
-      border:1px solid #ddd;
-      background:#fff;
-      padding:7px 12px;
-      cursor:pointer;
-      font-size:13px;
-      color:var(--ink);
-      user-select:none;
-    }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; }
-    .btn-primary{
-      background:var(--accent);
-      border-color:transparent;
-      color:var(--accent-dark);
-      font-weight:600;
-    }
-    .btn-outline{ background:#fff; color:var(--ink); }
-    .btn-danger{
-      background:#ffe7e3;
-      border-color:#ffb3a7;
-      color:#8b1a07;
-      font-weight:600;
-    }
-    .input{
-      border-radius:999px;
-      border:1px solid #ddd;
-      background:#fff;
-      padding:7px 10px;
-      font-size:13px;
-      min-width:220px;
-    }
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  gap: 16px;
+}
 
-    .tabs{
-      margin-top:8px;
-      background:rgba(255,255,255,.95);
-      border-radius:999px;
-      box-shadow:0 4px 18px rgba(0,0,0,.08);
-      padding:4px;
-      display:flex;
-      gap:4px;
-      overflow:auto;
-    }
-    .tab-btn{
-      flex:1;
-      min-width:0;
-      border:none;
-      background:transparent;
-      border-radius:999px;
-      padding:10px 12px;
-      font-size:14px;
-      cursor:pointer;
-      letter-spacing:.12em;
-    }
-    .tab-btn.active{
-      background:var(--accent);
-      color:var(--accent-dark);
-      font-weight:600;
-    }
-    .add-gap { margin-bottom: 20px; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--brown);
+}
 
-    main{ margin-top:40px; }
-    .card{
-      background:var(--panel);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:20px 20px 24px;
-      margin-bottom:18px;
-    }
-    .tab-pane{display:none;}
-    .tab-pane.active{display:block;}
+.brand img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
 
-    h2{ margin:0 0 10px; font-size:20px; }
-    h3{ margin:0 0 6px; font-size:16px; }
-    p{ margin:6px 0; line-height:1.7; font-size:14px; }
-    .muted{color:var(--muted);}
+.brand-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
 
-    .home-layout{
-      display:flex;
-      flex-direction:column;
-      gap:18px;
-    }
-    .status-box{
-      background:#f5ffe9;
-      border-radius:16px;
-      padding:12px 14px;
-      font-size:13px;
-      margin-top:8px;
-      border:1px solid #d7e8c4;
-    }
-    .cta-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      margin-top:10px;
-      align-items:center;
-    }
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
-    /* ===== Videos ===== */
+.user-email {
+  font-size: 12px;
+  color: var(--mist);
+  background: var(--cream-dark);
+  padding: 4px 12px;
+  border-radius: 999px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-    .video-grid{ margin-top:12px; }
+.btn {
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--brown);
+  cursor: pointer;
+  transition: all 0.18s;
+  font-weight: 400;
+}
+.btn:hover:not(:disabled) { background: var(--cream-dark); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    .video-grid.mode-list{
-      display:flex;
-      flex-direction:column;
-      gap:22px;
-    }
-    .video-grid.mode-grid{
-      display:grid;
-      gap:14px;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-    }
-    @media (max-width: 1024px){
-      .video-grid.mode-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
-    }
-    @media (max-width: 640px){
-      .video-grid.mode-grid{ grid-template-columns:repeat(1, minmax(0, 1fr)); }
-    }
+.btn-primary {
+  background: var(--orange);
+  border-color: transparent;
+  color: white;
+  font-weight: 500;
+}
+.btn-primary:hover:not(:disabled) { background: #d4531e; }
 
-    .video-card{
-      background:var(--panel);
-      border-radius:16px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-      width:100%;
-      max-width:none;
-      margin:0;
-    }
+.btn-danger {
+  background: var(--error-pale);
+  border-color: rgba(192,57,43,0.3);
+  color: var(--error);
+  font-weight: 500;
+}
 
-    .video-title{
-      padding:10px 12px 12px;
-      font-size:14px;
-      font-weight:600;
-    }
+/* ========== TABS ========== */
+.tabs-wrap {
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
-    .video-controls{
-      margin-top:6px;
-      margin-bottom:10px;
-      font-size:13px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .video-controls .label{
-      font-size:12px;
-      color:var(--muted);
-    }
-    .video-sort-btn, .chip, .view-btn{
-      border-radius:999px;
-      border:1px solid #ccc;
-      background:#fff;
-      padding:4px 10px;
-      font-size:12px;
-      cursor:pointer;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .video-sort-btn.active,
-    .chip.active,
-    .view-btn.active{
-      background:var(--accent);
-      border-color:var(--accent);
-      color:var(--accent-dark);
-      font-weight:600;
-    }
+.tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
 
-    .video-filter{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-top:8px;
-    }
+.tab-btn {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--mist);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.18s;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab-btn .tab-icon { font-size: 14px; }
+.tab-btn:hover { color: var(--brown); }
+.tab-btn.active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+  font-weight: 500;
+}
 
-    a{color:#0d6b45;text-decoration:none;}
-    a:hover{text-decoration:underline;}
+/* ========== PAGE ========== */
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 24px 80px;
+}
 
-    footer{
-      margin-top:24px;
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .sns-row{
-      display:flex;
-      justify-content:center;
-      gap:16px;
-      margin:10px 0 6px;
-    }
-    .sns-icon{
-      width:40px;
-      height:40px;
-      border-radius:999px;
-      background:#ffffff;
-      box-shadow:0 4px 12px rgba(0,0,0,.12);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      text-decoration:none;
-    }
-    .sns-icon svg{
-      width:20px;
-      height:20px;
-      fill:#3f6f4b;
-    }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
 
-    .hidden{display:none;}
+/* ========== CARDS ========== */
+.card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
 
-    .site-header{
-      position:fixed;
-      top:0; left:0; right:0;
-      z-index:100;
-      background: linear-gradient(to bottom, rgba(250,248,244,1) 0%, rgba(250,248,244,.95) 70%, rgba(250,248,244,0) 100%);
-      backdrop-filter:blur(4px);
-    }
+.card-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-    .main-page{ padding-top:180px; }
+.card-desc {
+  font-size: 13px;
+  color: var(--mist);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
 
-    @media (max-width: 768px){
-      .topbar{ flex-direction:column; align-items:flex-start; gap:8px; }
-      .brand{ gap:10px; }
-      .brand img{ max-width:180px; }
-      .brand-title span{ font-size:16px; letter-spacing:.16em; }
-      .user-box{ justify-content:flex-start; flex-wrap:wrap; }
-      .lang{ justify-content:flex-start; }
-      .tabs{
-        border-radius:16px;
-        padding:4px 6px;
-        gap:6px;
-        -webkit-overflow-scrolling:touch;
-      }
-      .tab-btn{
-        flex:0 0 auto;
-        white-space:nowrap;
-        font-size:12px;
-        letter-spacing:.08em;
-        padding:8px 10px;
-      }
-      .main-page{ padding-top:210px; }
-    }
+/* ========== SECTION LABEL ========== */
+.sec-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
 
-    /* ===== PWA バナー ===== */
-    .pwa-banner{
-      display:none;
-      align-items:center;
-      gap:12px;
-      background:white;
-      border:1px solid rgba(117,194,156,.35);
-      border-left:4px solid var(--accent);
-      padding:14px 16px;
-      margin-bottom:20px;
-      position:relative;
-      border-radius:12px;
-      box-shadow:0 4px 16px rgba(0,0,0,.08);
-    }
-    .pwa-banner.show{ display:flex; }
-    .pwa-banner-icon{ font-size:22px; flex-shrink:0; }
-    .pwa-banner-body{ flex:1; min-width:0; }
-    .pwa-banner-title{ font-size:13px; font-weight:600; color:var(--ink); margin-bottom:2px; }
-    .pwa-banner-desc{ font-size:12px; color:var(--muted); line-height:1.5; }
-    .pwa-banner-btn{
-      background:var(--accent);
-      color:#05361f;
-      border:none;
-      border-radius:999px;
-      padding:8px 16px;
-      font-size:13px;
-      font-weight:600;
-      cursor:pointer;
-      white-space:nowrap;
-      flex-shrink:0;
-      transition:background .2s;
-    }
-    .pwa-banner-btn:hover{ background:#0b5130; color:white; }
-    .pwa-banner-close{
-      position:absolute;
-      top:8px; right:8px;
-      background:none; border:none;
-      color:var(--muted); font-size:16px;
-      cursor:pointer; padding:2px 6px; line-height:1;
-      transition:color .2s;
-    }
-    .pwa-banner-close:hover{ color:var(--ink); }
+/* ========== FORM ========== */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block;
+  font-size: 12px;
+  color: var(--mist);
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
 
-    /* ===== PWA 手順モーダル ===== */
-    .pwa-modal-overlay{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.5);
-      z-index:500;
-      display:none;
-      align-items:flex-end;
-      justify-content:center;
-      padding:0;
-    }
-    .pwa-modal-overlay.show{ display:flex; }
-    .pwa-modal{
-      background:white;
-      width:min(480px,100vw);
-      padding:28px 24px 32px;
-      border-top-left-radius:16px;
-      border-top-right-radius:16px;
-      border-top:4px solid var(--accent);
-      animation:slideUp .3s ease;
-    }
-    @keyframes slideUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
-    .pwa-modal-title{ font-size:18px; font-weight:700; color:var(--ink); margin-bottom:6px; }
-    .pwa-modal-sub{ font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.6; }
-    .pwa-steps{ display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
-    .pwa-step{ display:flex; align-items:flex-start; gap:12px; }
-    .pwa-step-num{
-      width:24px; height:24px; border-radius:50%;
-      background:var(--accent); color:#05361f;
-      font-size:12px; font-weight:700;
-      display:flex; align-items:center; justify-content:center;
-      flex-shrink:0; margin-top:1px;
-    }
-    .pwa-step-text{ font-size:13px; color:var(--ink); line-height:1.7; }
-    .pwa-step-text strong{ font-weight:700; color:var(--accent-dark); }
-    .pwa-modal-close{
-      width:100%; padding:12px;
-      background:#f0f0ec; border:none;
-      font-size:14px; color:var(--muted);
-      cursor:pointer; border-radius:8px;
-      transition:background .2s;
-    }
-    .pwa-modal-close:hover{ background:var(--ink); color:white; }
-  </style>
+input[type="text"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--brown);
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(232,99,42,0.1);
+  background: white;
+}
+input::placeholder, textarea::placeholder { color: #c4b8aa; }
+textarea { resize: vertical; min-height: 80px; }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Cloudflare Stream Player SDK（loop強制用） -->
-  <script src="https://embed.videodelivery.net/embed/sdk.latest.js"></script>
+.input-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.input-row input { flex: 1; }
+
+/* ========== BADGE ========== */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge-orange { background: var(--orange-pale); color: var(--orange); }
+.badge-green  { background: var(--success-pale); color: var(--success); }
+.badge-mist   { background: var(--cream-dark); color: var(--mist); }
+.badge-line   { background: var(--line-pale); color: #04a145; }
+
+/* ========== STATUS BOX ========== */
+.status-box {
+  background: var(--cream-dark);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 13px;
+  margin: 12px 0;
+}
+.status-box.success { background: var(--success-pale); border-color: rgba(61,153,112,0.25); }
+.status-box.warning { background: #fdf6e3; border-color: rgba(200,140,0,0.2); }
+.status-box.error   { background: var(--error-pale); border-color: rgba(192,57,43,0.2); color: var(--error); }
+
+/* ========== ALERT ========== */
+.alert {
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.alert.info { background: var(--orange-pale); border: 1px solid rgba(232,99,42,0.2); }
+.alert.info .alert-icon { color: var(--orange); font-size: 16px; flex-shrink: 0; }
+
+/* ========== HOME TAB ========== */
+.home-hero {
+  background: linear-gradient(135deg, var(--orange) 0%, #f5a06e 100%);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  color: white;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden;
+}
+.home-hero::before {
+  content: '🦆';
+  position: absolute;
+  right: 20px;
+  bottom: -8px;
+  font-size: 72px;
+  opacity: 0.18;
+}
+.home-hero-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+.home-hero-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.home-hero-name {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.stat-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--orange);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--mist);
+  letter-spacing: 0.04em;
+}
+
+/* ========== TODAY'S TASK (HOME) ========== */
+.today-section { margin-bottom: 16px; }
+.today-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.today-date {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--mist);
+}
+
+/* ========== TASK ITEM ========== */
+.task-group { margin-bottom: 20px; }
+.task-group-label {
+  font-size: 12px;
+  color: var(--mist);
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.task-group-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  background: white;
+  transition: all 0.18s;
+  cursor: pointer;
+}
+.task-item:hover { border-color: var(--brown-light); box-shadow: var(--shadow); }
+.task-item.done {
+  background: var(--cream-dark);
+  opacity: 0.7;
+}
+.task-item.done .task-name { text-decoration: line-through; color: var(--mist); }
+
+.task-check {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.18s;
+  cursor: pointer;
+}
+.task-check.checked {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: white;
+}
+.task-check.partner {
+  border-color: var(--line-green);
+}
+.task-check.partner.checked {
+  background: var(--line-green);
+  border-color: var(--line-green);
+  color: white;
+}
+
+.task-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.task-repeat-badge {
+  font-size: 10px;
+  color: var(--mist);
+  background: var(--cream-dark);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* ========== ADD TASK FORM ========== */
+.add-task-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.add-task-form input { flex: 1; }
+
+/* ========== TASKS TAB ========== */
+.tab-section { margin-bottom: 24px; }
+.tab-section-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* タスク詳細フォーム */
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.task-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.radio-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: all 0.18s;
+  user-select: none;
+}
+.radio-label input { display: none; }
+.radio-label.selected {
+  border-color: var(--orange);
+  background: var(--orange-pale);
+  color: var(--orange);
+}
+
+/* ========== REPORT TAB ========== */
+.report-month {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.report-month .month-label {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 18px;
+  font-weight: 600;
+  flex: 1;
+}
+.month-nav {
+  display: flex;
+  gap: 4px;
+}
+.month-nav button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--brown);
+  transition: all 0.18s;
+}
+.month-nav button:hover { background: var(--cream-dark); }
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.report-stat {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+}
+.report-stat-num {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--orange);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.report-stat-label { font-size: 12px; color: var(--mist); }
+.report-stat-sub { font-size: 11px; color: var(--brown-light); margin-top: 2px; }
+
+.bar-chart { margin-bottom: 16px; }
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.bar-label { font-size: 12px; color: var(--mist); width: 70px; flex-shrink: 0; }
+.bar-track {
+  flex: 1;
+  height: 10px;
+  background: var(--cream-dark);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--orange);
+  transition: width 0.6s ease;
+}
+.bar-fill.partner { background: var(--line-green); }
+.bar-val { font-size: 12px; color: var(--brown); width: 28px; text-align: right; flex-shrink: 0; }
+
+/* ========== ACCOUNT TAB ========== */
+.plan-box {
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.plan-box.standard { border-color: var(--orange); }
+.plan-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.plan-price {
+  font-size: 13px;
+  color: var(--mist);
+  margin-bottom: 12px;
+}
+.plan-price strong {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 22px;
+  color: var(--orange);
+  font-weight: 300;
+}
+
+.feature-list { list-style: none; padding: 0; }
+.feature-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 5px 0;
+  color: var(--brown-mid);
+}
+.feature-list li::before { content: '✓'; color: var(--success); font-weight: 600; flex-shrink: 0; }
+.feature-list li.disabled { color: var(--brown-light); }
+.feature-list li.disabled::before { content: '—'; color: var(--brown-light); }
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  align-items: center;
+}
+
+/* ========== LINE CONNECT ========== */
+.line-connect-box {
+  background: var(--line-pale);
+  border: 1px solid rgba(6,199,85,0.2);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.line-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--line-green);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+  font-size: 22px;
+}
+.line-connect-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.line-connect-desc  { font-size: 12px; color: var(--mist); }
+.btn-line {
+  background: var(--line-green);
+  border-color: transparent;
+  color: white;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.btn-line:hover:not(:disabled) { background: #04a145; }
+
+/* ========== NOT LOGGED ========== */
+#notLoggedAlert {
+  background: #fdf6e3;
+  border: 1px solid rgba(200,140,0,0.2);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  display: none;
+}
+#notLoggedAlert.show { display: block; }
+
+/* ========== EMPTY STATE ========== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--mist);
+}
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state .empty-text { font-size: 14px; }
+
+/* ========== DIVIDER ========== */
+hr.soft {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* ========== FOOTER ========== */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--mist);
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+footer a { color: var(--mist); text-decoration: none; }
+footer a:hover { color: var(--orange); }
+
+/* ========== MODAL ========== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(45,30,19,0.4);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white;
+  border-radius: var(--radius);
+  padding: 28px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.modal-footer { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+
+/* ========== TOAST ========== */
+.toast-wrap {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  background: var(--brown);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 13px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  animation: toastIn 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.success { background: var(--success); }
+.toast.error   { background: var(--error); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== MESSAGE ========== */
+.msg {
+  font-size: 12px;
+  margin-top: 6px;
+  line-height: 1.5;
+  min-height: 1.2em;
+}
+.msg.error   { color: var(--error); }
+.msg.success { color: var(--success); }
+
+/* ========== PWA BANNER ========== */
+.pwa-banner {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--orange);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.pwa-banner.show { display: flex; }
+.pwa-banner-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+.pwa-banner-desc  { font-size: 12px; color: var(--mist); }
+.pwa-banner-btn { background: var(--orange); border-color: transparent; color: white; font-size: 12px; flex-shrink: 0; }
+.pwa-banner-close {
+  position: absolute; top: 8px; right: 8px;
+  background: none; border: none; color: var(--mist); font-size: 14px;
+  cursor: pointer; padding: 2px 6px; line-height: 1;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 600px) {
+  .topbar { padding: 0 4px; }
+  .page { padding: 20px 16px 80px; }
+  .quick-stats { grid-template-columns: repeat(3,1fr); gap: 8px; }
+  .stat-num { font-size: 22px; }
+  .report-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .task-form-row { grid-template-columns: 1fr; }
+  .user-email { display: none; }
+  .home-hero-title { font-size: 17px; }
+}
+
+@media (max-width: 400px) {
+  .quick-stats { grid-template-columns: repeat(3,1fr); gap: 6px; }
+  .stat-card { padding: 12px 8px; }
+}
+
+/* ========== PLAN GATE ========== */
+#freeGateBanner {
+  background: var(--orange-pale);
+  border: 1px solid rgba(232,99,42,0.2);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+#freeGateBanner.show { display: flex; }
+#freeGateBanner .gate-text { flex: 1; font-size: 13px; }
+#freeGateBanner strong { color: var(--orange); }
+
+/* ========== USAGE METER ========== */
+.usage-meter {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.usage-label {
+  font-size: 12px;
+  color: var(--mist);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.usage-track {
+  height: 6px;
+  background: var(--cream-dark);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.usage-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--orange);
+  transition: width 0.4s ease;
+}
+.usage-fill.warn { background: #e8a030; }
+.usage-fill.over { background: var(--error); }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 
 <body>
-  <!-- ===== PWA 手順モーダル ===== -->
-  <div id="pwaModal" class="pwa-modal-overlay">
-    <div class="pwa-modal">
-      <div class="pwa-modal-title">📱 ホーム画面に追加</div>
-      <div class="pwa-modal-sub" id="pwaModalSub"></div>
-      <div class="pwa-steps" id="pwaSteps"></div>
-      <button class="pwa-modal-close" id="pwaModalClose">閉じる</button>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ========== HEADER ========== -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="topbar">
+      <a href="/" class="brand">
+        <img src="/assets/icon.png" alt="業務かるがも">
+        <span class="brand-name">業務かるがも</span>
+      </a>
+      <div class="user-area">
+        <span id="userEmail" class="user-email"></span>
+        <button id="logoutBtn" class="btn" style="font-size:12px;">ログアウト</button>
+      </div>
     </div>
   </div>
+  <div class="tabs-wrap">
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="home">
+        <span class="tab-icon">🏠</span>ホーム
+      </button>
+      <button class="tab-btn" data-tab="tasks">
+        <span class="tab-icon">📋</span>タスク管理
+      </button>
+      <button class="tab-btn" data-tab="report">
+        <span class="tab-icon">📊</span>月次レポート
+      </button>
+      <button class="tab-btn" data-tab="account">
+        <span class="tab-icon">⚙️</span>アカウント
+      </button>
+    </nav>
+  </div>
+</header>
 
-  <header class="site-header">
-    <div class="page header-inner">
-      <div class="topbar">
-        <div class="brand">
-          <img src="/assets/logo-moriris.png" alt="Moriris" />
-          <div class="brand-title">
-            <span data-i18n="brand_meta">Video Platform for Facilities</span>
-          </div>
-        </div>
+<!-- ========== MAIN ========== -->
+<div class="page">
 
-        <div>
-          <div class="user-box">
-            <span data-i18n="logged_in_label">ログイン中：</span>
-            <span id="userEmail" class="pill"></span>
-            <button id="logout" class="btn btn-outline" data-i18n="logout">ログアウト</button>
-          </div>
-          <div class="lang" style="margin-top:6px;justify-content:flex-end;">
-            <button id="btn-en">EN</button>
-            <button id="btn-ja" class="active">JP</button>
-          </div>
-        </div>
+  <!-- 未ログイン -->
+  <div id="notLoggedAlert">
+    <p style="margin-bottom:10px;font-size:14px;">ログインが確認できませんでした。</p>
+    <a href="/index.html" class="btn btn-primary">ログイン画面へ</a>
+  </div>
+
+  <!-- ========== HOME ========== -->
+  <section id="tab-home" class="tab-pane active">
+
+    <!-- PWAバナー -->
+    <div id="pwaBanner" class="pwa-banner">
+      <div style="font-size:22px;flex-shrink:0;">📱</div>
+      <div class="pwa-banner-body" style="flex:1;">
+        <div class="pwa-banner-title">アプリとして使う</div>
+        <div class="pwa-banner-desc">ホーム画面に追加するとアプリのように使えます</div>
       </div>
-
-      <nav class="tabs">
-        <button class="tab-btn active" data-tab="home" data-i18n="tab_home">HOME</button>
-        <button class="tab-btn" data-tab="videos" data-i18n="tab_videos">VIDEOS</button>
-        <button class="tab-btn" data-tab="account" data-i18n="tab_account">ACCOUNT</button>
-      </nav>
-    </div>
-  </header>
-
-  <div class="page main-page">
-  <main>
-    <!-- 未ログイン時に表示する案内 -->
-    <div id="notLoggedAlert" class="card hidden" style="background:#fff7e0;border:1px solid #f3d38a;">
-      <p id="notLoggedText"
-         class="muted"
-         style="font-size:14px;margin-bottom:8px;"
-         data-i18n="status_not_logged"></p>
-
-      <a id="notLoggedLink"
-         href="./"
-         style="font-size:14px;"
-         data-i18n="not_logged_back_link">
-        ログイン画面に戻る
-      </a>
+      <button class="btn pwa-banner-btn" id="pwaBannerBtn">追加する</button>
+      <button class="pwa-banner-close" id="pwaBannerClose">×</button>
     </div>
 
-    <!-- HOME -->
-    <section id="tab-home" class="tab-pane active">
-      <div class="card home-layout">
-        <!-- パスワード未設定時の案内バナー -->
-        <div id="pwBanner" class="pw-banner hidden" data-i18n="pw_banner_text">
-          パスワードが未設定です。こちらをクリックして設定してください。
-        </div>
+    <!-- LINE未連携アラート -->
+    <div id="lineAlertBanner" class="alert info" style="display:none;">
+      <span class="alert-icon">💬</span>
+      <div>
+        <strong>LINEがまだ未連携です。</strong><br>
+        パートナーのLINEと連携するとタスクを自動送信できます。
+        <a href="#" id="goLineSetup" style="color:var(--orange);font-size:12px;margin-left:6px;">設定する →</a>
+      </div>
+    </div>
 
-        <!-- ===== PWA バナー（HOME内） ===== -->
-        <div id="pwaBanner" class="pwa-banner">
-          <div class="pwa-banner-icon">📱</div>
-          <div class="pwa-banner-body">
-            <div class="pwa-banner-title">アプリとして使う</div>
-            <div class="pwa-banner-desc">ホーム画面に追加するとアプリのように使えます</div>
-          </div>
-          <button class="pwa-banner-btn" id="pwaBannerBtn">追加する</button>
-          <button class="pwa-banner-close" id="pwaBannerClose">×</button>
-        </div>
+    <!-- ヒーローカード -->
+    <div class="home-hero">
+      <div class="home-hero-label">Today's Overview</div>
+      <div class="home-hero-title" id="heroTitle">今日も一日、お疲れさまです。</div>
+      <div class="home-hero-name" id="heroName"></div>
+    </div>
 
+    <!-- 今日のクイック統計 -->
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="statMyDone">0</div>
+        <div class="stat-label">自分 完了</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statMyTotal">0</div>
+        <div class="stat-label">自分 合計</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statPartnerDone">0</div>
+        <div class="stat-label">相手 完了</div>
+      </div>
+    </div>
+
+    <!-- 今日のタスクビュー -->
+    <div class="card">
+      <div class="today-header">
         <div>
-          <h2 data-i18n="home_title">ようこそ、モリリス 法人・施設向け視聴サイトへ</h2>
-          <p class="muted" data-i18n="home_intro">
-            メンバー限定の動画を、このページからお楽しみいただけます。
-          </p>
-
-          <img
-            src="https://member.moriris.com/assets/home-img.png"
-            alt="Moriris members home illustration"
-            style="width:100%;max-width:720px;border-radius:16px;margin:16px 0;"
-          />
+          <div class="sec-label">Today</div>
+          <div class="card-title">今日のタスク</div>
         </div>
+        <div class="today-date" id="todayDateLabel"></div>
+      </div>
 
-        <div>
-          <h3 data-i18n="home_how_title">法人・施設向け視聴サイトの楽しみ方</h3>
-          <ul style="margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.7;">
-            <li data-i18n="home_how_1">VIDEOSタブから動画を視聴できます。</li>
-            <li data-i18n="home_how_2">プランの確認や変更は ACCOUNTタブからいつでも行うことができます。</li>
-          </ul>
+      <!-- 自分のタスク -->
+      <div class="task-group">
+        <div class="task-group-label">🙋 自分がやること</div>
+        <div id="myTaskList"></div>
+        <!-- クイック追加 -->
+        <div class="add-task-form">
+          <input type="text" id="quickMyTask" placeholder="タスクを追加…" maxlength="50">
+          <button class="btn btn-primary" id="quickAddMyBtn" style="flex-shrink:0;padding:10px 14px;border-radius:10px;">＋</button>
         </div>
       </div>
-    </section>
 
-    <!-- VIDEOS -->
-    <section id="tab-videos" class="tab-pane">
-      <div class="card">
-        <h2 data-i18n="videos_title">メンバー限定動画</h2>
-        <p class="muted" id="videoGateText">
-          Standardプランに登録すると、メンバー限定の動画を視聴できます。
-        </p>
-
-        <button id="btnSubscribeVideos"
-                class="btn btn-primary hidden add-gap"
-                data-i18n="btn_subscribe">
-          14日間無料で試す
-        </button>
-
-        <!-- コントロール行：並び替え + 表示形式 -->
-        <div class="video-controls" id="videoControlsRow">
-          <span class="label" data-i18n="sort_label">並び替え：</span>
-          <button type="button" class="video-sort-btn active" data-sort="newest" data-i18n="sort_newest">新しい順</button>
-          <button type="button" class="video-sort-btn" data-sort="oldest" data-i18n="sort_oldest">古い順</button>
-
-          <span class="label" style="margin-left:8px;" data-i18n="view_label">表示：</span>
-          <button type="button" class="view-btn" data-view="grid" data-i18n="view_grid">グリッド</button>
-          <button type="button" class="view-btn active" data-view="list" data-i18n="view_list">リスト</button>
+      <!-- パートナーのタスク -->
+      <div class="task-group">
+        <div class="task-group-label">👤 パートナーへのお願い</div>
+        <div id="partnerTaskList"></div>
+        <div class="add-task-form">
+          <input type="text" id="quickPartnerTask" placeholder="お願いするタスクを追加…" maxlength="50">
+          <button class="btn btn-primary" id="quickAddPartnerBtn" style="flex-shrink:0;padding:10px 14px;border-radius:10px;">＋</button>
         </div>
-
-        <!-- 複数選択フィルタ -->
-        <div class="video-filter" id="videoFilterRow" aria-label="Video filters"></div>
-
-        <!-- 動画一覧 -->
-        <div id="videos" class="video-grid mode-list"></div>
       </div>
-    </section>
 
-    <!-- ACCOUNT -->
-    <section id="tab-account" class="tab-pane">
-      <div class="card">
-        <h2 data-i18n="account_title">アカウント・プラン情報</h2>
-        <p class="muted" data-i18n="account_intro">
-          現在のプランやサブスクリプションの変更・解約は、このページから行うことができます。
-        </p>
+      <!-- Freeプランの利用件数 -->
+      <div id="usageMeterBox" class="usage-meter" style="display:none;">
+        <div class="usage-label">
+          <span>今月のLINE送信数</span>
+          <span id="usageCount">0 / 10件</span>
+        </div>
+        <div class="usage-track">
+          <div class="usage-fill" id="usageFill" style="width:0%"></div>
+        </div>
+        <div style="font-size:11px;color:var(--mist);margin-top:6px;">
+          無制限で使うには <a href="#" id="upgradeLink" style="color:var(--orange);">Standardプランへ →</a>
+        </div>
+      </div>
+    </div>
 
-        <div class="status-box">
-          <div>
-            <span data-i18n="plan_label">現在のプラン：</span>
-            <span id="planLabelText">Free</span>
-          </div>
-          <p id="statusText" class="muted" style="margin-top:6px;">ログイン状態を確認しています…</p>
+  </section>
+
+  <!-- ========== TASKS ========== -->
+  <section id="tab-tasks" class="tab-pane">
+
+    <!-- Freeプランゲート -->
+    <div id="freeGateBanner">
+      <span style="font-size:20px;flex-shrink:0;">🔒</span>
+      <div class="gate-text">月10件を超えるLINE送信は<strong>Standardプラン</strong>のみ。</div>
+      <button class="btn btn-primary" id="gateUpgradeBtn" style="flex-shrink:0;font-size:12px;">アップグレード</button>
+    </div>
+
+    <!-- タスク追加フォーム -->
+    <div class="card">
+      <div class="sec-label">Add Task</div>
+      <div class="card-title" style="margin-bottom:16px;">タスクを追加</div>
+
+      <div class="task-form">
+        <div class="field">
+          <label>タスク名</label>
+          <input type="text" id="taskName" placeholder="例：夕食の準備" maxlength="50">
         </div>
 
+        <div class="field">
+          <label>担当者</label>
+          <div class="radio-group" id="assigneeGroup">
+            <label class="radio-label selected">
+              <input type="radio" name="assignee" value="me" checked> 🙋 自分
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="assignee" value="partner"> 👤 パートナー
+            </label>
+          </div>
+        </div>
+
+        <div class="task-form-row">
+          <div class="field">
+            <label>繰り返し</label>
+            <select id="repeatType">
+              <option value="none">繰り返しなし</option>
+              <option value="daily">毎日</option>
+              <option value="weekdays">平日のみ</option>
+              <option value="weekly">毎週同じ曜日</option>
+              <option value="monthly">毎月同じ日</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>カテゴリ</label>
+            <select id="taskCategory">
+              <option value="">なし</option>
+              <option value="cooking">🍳 料理</option>
+              <option value="cleaning">🧹 掃除</option>
+              <option value="laundry">👕 洗濯</option>
+              <option value="childcare">👶 育児</option>
+              <option value="shopping">🛒 買い物</option>
+              <option value="other">📌 その他</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>メモ（任意）</label>
+          <textarea id="taskNote" placeholder="補足や詳細など" rows="2"></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="addTaskBtn">タスクを追加する</button>
+        <p id="taskAddMsg" class="msg"></p>
+      </div>
+    </div>
+
+    <!-- 全タスク一覧 -->
+    <div class="card">
+      <div class="tab-section-title">
+        <span>全タスク一覧</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn" id="filterAll" style="font-size:11px;padding:4px 10px;">すべて</button>
+          <button class="btn" id="filterMe" style="font-size:11px;padding:4px 10px;">自分</button>
+          <button class="btn" id="filterPartner" style="font-size:11px;padding:4px 10px;">相手</button>
+        </div>
+      </div>
+      <div id="allTaskList">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">タスクを追加してみましょう</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ========== REPORT ========== -->
+  <section id="tab-report" class="tab-pane">
+
+    <div class="card">
+      <div class="report-month">
+        <div>
+          <div class="sec-label">Monthly Report</div>
+          <div class="month-label" id="reportMonthLabel">2026年3月</div>
+        </div>
+        <div class="month-nav">
+          <button id="prevMonth">‹</button>
+          <button id="nextMonth">›</button>
+        </div>
+      </div>
+
+      <div class="report-grid">
+        <div class="report-stat">
+          <div class="report-stat-num" id="rptMyTotal">–</div>
+          <div class="report-stat-label">自分の完了タスク</div>
+          <div class="report-stat-sub" id="rptMyRate"></div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" id="rptPartnerTotal">–</div>
+          <div class="report-stat-label">パートナーの完了</div>
+          <div class="report-stat-sub" id="rptPartnerRate"></div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" id="rptRepeat">–</div>
+          <div class="report-stat-label">繰り返しタスク</div>
+          <div class="report-stat-sub">自動送信された回数</div>
+        </div>
+        <div class="report-stat">
+          <div class="report-stat-num" id="rptLineSent">–</div>
+          <div class="report-stat-label">LINE送信数</div>
+          <div class="report-stat-sub" id="rptLineSub"></div>
+        </div>
+      </div>
+
+      <!-- バーグラフ：カテゴリ別 -->
+      <hr class="soft">
+      <div style="margin-bottom:8px;">
+        <div class="sec-label">カテゴリ別タスク数</div>
+      </div>
+      <div class="bar-chart" id="categoryChart"></div>
+
+      <!-- 負担割合 -->
+      <hr class="soft">
+      <div style="margin-bottom:12px;">
+        <div class="sec-label">負担割合</div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-row">
+          <div class="bar-label">自分</div>
+          <div class="bar-track">
+            <div class="bar-fill" id="myLoadBar" style="width:50%"></div>
+          </div>
+          <div class="bar-val" id="myLoadPct">–</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">パートナー</div>
+          <div class="bar-track">
+            <div class="bar-fill partner" id="partnerLoadBar" style="width:50%"></div>
+          </div>
+          <div class="bar-val" id="partnerLoadPct">–</div>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ========== ACCOUNT ========== -->
+  <section id="tab-account" class="tab-pane">
+
+    <!-- LINE連携 -->
+    <div class="card">
+      <div class="sec-label">LINE連携</div>
+      <div class="card-title" style="margin-bottom:16px;">パートナーのLINEと連携する</div>
+
+      <div class="line-connect-box" id="lineStatusBox">
+        <div class="line-icon">💬</div>
+        <div>
+          <div class="line-connect-title" id="lineStatusTitle">未連携</div>
+          <div class="line-connect-desc" id="lineStatusDesc">連携するとパートナーのLINEにタスクが自動送信されます</div>
+        </div>
+        <button class="btn btn-line" id="lineConnectBtn">LINEと連携する</button>
+      </div>
+
+      <p class="msg" id="lineMsg"></p>
+
+      <div style="font-size:12px;color:var(--mist);margin-top:8px;line-height:1.7;">
+        ※ LINE連携はパートナーにLINE招待URLを送ることで設定します。<br>
+        ※ パートナーはアプリのインストール不要です。
+      </div>
+    </div>
+
+    <!-- プラン -->
+    <div class="card">
+      <div class="sec-label">Plan</div>
+      <div class="card-title" style="margin-bottom:16px;">現在のプラン</div>
+
+      <!-- Free -->
+      <div id="planFreeBox" class="plan-box" style="display:none;">
+        <div class="plan-name">Freeプラン <span class="badge badge-mist">現在のプラン</span></div>
+        <div class="plan-price">¥0 / 月</div>
+        <ul class="feature-list">
+          <li>タスク登録・LINE送信（月10件まで）</li>
+          <li>自分／パートナーのタスク分離管理</li>
+          <li>完了記録・週グラフ</li>
+          <li class="disabled">繰り返しタスクの自動送信</li>
+          <li class="disabled">月次レポート自動生成</li>
+          <li class="disabled">送信件数無制限</li>
+        </ul>
         <div class="cta-row">
-          <button id="btnSubscribe" class="btn btn-primary hidden" data-i18n="btn_subscribe">
-            14日間無料で試す
-          </button>
-          <button id="btnCancel" class="btn btn-danger hidden" data-i18n="btn_cancel">
-            サブスクを解約する
-          </button>
-          <button id="btnDeleteAccount" class="btn btn-danger hidden" data-i18n="btn_delete">
-            アカウントを削除する
-          </button>
-        </div>
-        <div id="cancelExplanation" class="hidden" style="margin-top:6px;font-size:0.78em;color:#aaa;line-height:1.7;"></div>
-
-        <div id="deleteConfirmBox"
-             class="status-box hidden"
-             style="margin-top:12px;background:#ffe7e3;border-color:#ffb3a7;color:#8b1a07;">
-          <p id="deleteConfirmText" style="margin-bottom:8px;" data-i18n="delete_confirm">
-            本当にアカウントを削除しますか？この操作は取り消せません。
-          </p>
-          <div class="cta-row">
-            <button id="btnDeleteConfirm" class="btn btn-danger" data-i18n="delete_confirm_yes">はい、削除します</button>
-            <button id="btnDeleteCancel" class="btn btn-outline" data-i18n="delete_confirm_no">キャンセル</button>
-          </div>
-          <p id="deleteStatusMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
-        </div>
-
-        <hr style="margin:18px 0;border:none;border-top:1px solid #e0e0e0;" />
-
-        <h3 data-i18n="email_change_title">メールアドレスの変更</h3>
-        <p class="muted" data-i18n="email_change_desc">
-          新しいメールアドレスを入力すると、確認メールを送信します。メール内のリンクから変更を完了してください。
-        </p>
-
-        <p style="font-size:13px;margin-top:8px;">
-          <span data-i18n="email_change_current">現在のメールアドレス：</span>
-          <strong id="currentEmailText"></strong>
-        </p>
-
-        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-          <input id="emailNew" type="email" class="input" placeholder="new-address@example.com" />
-          <button id="btnChangeEmail" class="btn btn-outline" data-i18n="email_change_btn">変更用メールを送信</button>
-        </div>
-
-        <p id="emailChangeMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
-
-        <hr style="margin:18px 0;border:none;border-top:1px solid #e0e0e0;" />
-
-        <div id="pwSection" class="hidden">
-          <h3 data-i18n="pw_setup_title">パスワードの設定</h3>
-          <p class="muted" data-i18n="pw_setup_desc"></p>
-          <small data-i18n="pw_setup_note"></small>
-
-          <form id="pwForm" novalidate style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-width:320px;">
-            <input id="pwNew"  type="password" class="input" data-i18n-placeholder="pw_placeholder_new" />
-            <input id="pwNew2" type="password" class="input" data-i18n-placeholder="pw_placeholder_confirm" />
-            <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-              <input type="checkbox" id="pwShowSetup" />
-              <label for="pwShowSetup" style="font-size:13px;" data-i18n="pw_show_label"></label>
-            </div>
-            <button id="pwSubmit" type="submit" class="btn btn-outline" data-i18n="pw_setup_btn"></button>
-          </form>
-
-          <p id="pwMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
-        </div>
-
-        <div id="pwChangeSection" class="hidden" style="margin-top:18px;">
-          <h3 data-i18n="pw_change_title">パスワードの変更</h3>
-          <p class="muted" data-i18n="pw_change_desc"></p>
-          <small data-i18n="pw_change_note"></small>
-
-          <form id="pwChangeForm" novalidate style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-width:320px;">
-            <input id="pwChangeNew"  type="password" class="input" data-i18n-placeholder="pw_placeholder_new" />
-            <input id="pwChangeNew2" type="password" class="input" data-i18n-placeholder="pw_placeholder_confirm" />
-            <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
-              <input type="checkbox" id="pwShowChange" />
-              <label for="pwShowChange" style="font-size:13px;" data-i18n="pw_show_label"></label>
-            </div>
-            <button id="pwChangeSubmit" type="submit" class="btn btn-outline" data-i18n="pw_change_btn"></button>
-          </form>
-
-          <p id="pwChangeMsg" class="muted" style="font-size:12px;margin-top:6px;"></p>
+          <button class="btn btn-primary" id="btnSubscribe">14日間無料で試す →</button>
         </div>
       </div>
-    </section>
-  </main>
 
-  <footer>
-    <div class="sns-row">
-      <a class="sns-icon" href="https://www.youtube.com/@moriris_world" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M21.6 7.2s-.2-1.5-.8-2.1c-.7-.8-1.5-.8-1.9-.9C15.6 4 12 4 12 4s-3.6 0-6.9.2c-.4.1-1.2.1-1.9.9-.6.6-.8 2.1-.8 2.1S2 9.1 2 11v1.9c0 1.9.2 3.8.2 3.8s.2 1.5.8 2.1c.7.8 1.8.8 2.3.9 1.7.2 7 .3 7 .3s3.6 0 6.9-.2c.4-.1 1.2-.1 1.9-.9.6.6.8-2.1.8-2.1s.2-1.9.2-3.8V11c0-1.9-.2-3.8-.2-3.8zM10 9.5l4.8 2.5L10 14.5V9.5z"/>
-        </svg>
-      </a>
-      <a class="sns-icon" href="https://x.com/moriris_world" target="_blank" rel="noopener noreferrer" aria-label="X">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18.9 4H16.4L12.9 8.3 10 4H5.1l5.2 7.4L5 20h2.5l3.8-4.7L14 20h4.9l-5.5-7.9L18.9 4zm-3 14-6-8.7L9.2 7h.9l6 8.7.7 1.3z"/>
-        </svg>
-      </a>
+      <!-- Standard -->
+      <div id="planStandardBox" class="plan-box standard" style="display:none;">
+        <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
+        <div class="plan-price"><strong>¥480</strong> / 月</div>
+        <ul class="feature-list">
+          <li>タスク登録・LINE送信（無制限）</li>
+          <li>自分／パートナーのタスク分離管理</li>
+          <li>完了記録・週・月グラフ</li>
+          <li>繰り返しタスクの自動送信</li>
+          <li>月次レポート自動生成</li>
+        </ul>
+        <div class="cta-row">
+          <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
+        </div>
+      </div>
     </div>
-    <div data-i18n="footer_note">最新情報は各種SNSでお知らせします。</div>
-    <div id="legalLinks" style="margin-top:4px;font-size:11px;"></div>
-  </footer>
+
+    <!-- アカウント情報 -->
+    <div class="card">
+      <div class="sec-label">Account</div>
+      <div class="card-title" style="margin-bottom:16px;">アカウント情報</div>
+
+      <div class="status-box">
+        <div style="margin-bottom:4px;font-size:12px;color:var(--mist);">メールアドレス</div>
+        <div id="currentEmail" style="font-weight:500;font-size:14px;"></div>
+      </div>
+
+      <!-- パスワード変更 -->
+      <div id="pwSection" style="margin-top:20px;">
+        <hr class="soft">
+        <div style="margin-top:16px;margin-bottom:10px;font-size:14px;font-weight:500;">パスワードを変更する</div>
+        <div class="field">
+          <input type="password" id="newPw1" placeholder="新しいパスワード（8文字以上）">
+        </div>
+        <div class="field">
+          <input type="password" id="newPw2" placeholder="確認のためもう一度">
+        </div>
+        <button class="btn" id="changePwBtn">パスワードを変更する</button>
+        <p id="pwMsg" class="msg"></p>
+      </div>
+
+      <!-- アカウント削除 -->
+      <hr class="soft" style="margin-top:24px;">
+      <div id="deleteSection" style="margin-top:16px;">
+        <div style="font-size:14px;font-weight:500;margin-bottom:8px;color:var(--error);">アカウントを削除する</div>
+        <p style="font-size:12px;color:var(--mist);margin-bottom:10px;">この操作は取り消せません。全てのデータが削除されます。</p>
+        <button class="btn btn-danger" id="deleteAccountBtn">アカウントを削除する</button>
+        <p id="deleteMsg" class="msg"></p>
+      </div>
+    </div>
+
+  </section>
+
+</div><!-- /.page -->
+
+<footer>
+  <a href="/terms.html">利用規約</a>
+  <a href="/privacy.html">プライバシーポリシー</a>
+  <a href="/legal.html">特定商取引法</a>
+  <a href="mailto:support@gyomu-karugamo.com">お問い合わせ</a>
+  <span>© 2026 業務かるがも</span>
+</footer>
+
+<!-- PWA モーダル -->
+<div id="pwaModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">📱 ホーム画面に追加</div>
+    <div id="pwaModalSub" style="font-size:13px;color:var(--mist);margin-bottom:16px;"></div>
+    <div id="pwaSteps"></div>
+    <div class="modal-footer">
+      <button class="btn" id="pwaModalClose">閉じる</button>
+    </div>
   </div>
+</div>
+
+<!-- 削除確認モーダル -->
+<div id="deleteModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-title">⚠️ アカウントを削除しますか？</div>
+    <p style="font-size:13px;color:var(--mist);margin-bottom:4px;">この操作は取り消せません。全てのタスク・レポートデータが削除されます。</p>
+    <div class="modal-footer">
+      <button class="btn" id="deleteCancelBtn">キャンセル</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn">削除する</button>
+    </div>
+  </div>
+</div>
 
 <script>
-  const SUPABASE_URL = "https://sqwyfscumunyhsvsvejv.supabase.co";
-  const SUPABASE_ANON_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxd3lmc2N1bXVueWhzdnN2ZWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0ODM4NDQsImV4cCI6MjA3NzA1OTg0NH0.P_6eP5E_Du82IEI1gzn4PKQjnqlVGoptmZZR9aIiXNU";
+// ========================================
+// SUPABASE INIT
+// ========================================
+const SUPABASE_URL = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY254dXltcWJ6a3FmcmN2cGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjAxMTUsImV4cCI6MjA5MDA5NjExNX0.2DGITsYpMg94XaVAfEma_rv71njzyCb445Kcvkj1SyQ";
 
-  const SITE_TOP_URL = "https://member.moriris.com/";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
 
-  const sb = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY,
+// ========================================
+// STATE
+// ========================================
+let currentUser = null;
+let currentProfile = null;
+let tasks = [];         // {id, name, assignee:'me'|'partner', done:bool, repeat, category, note, created_at}
+let completions = {};   // {task_id: bool} for today
+let reportMonth = new Date(); // currently displayed month
+let taskFilter = 'all'; // 'all' | 'me' | 'partner'
+let lineSentCount = 0;  // this month
+
+const FREE_LIMIT = 10;
+
+// ========================================
+// UTILS
+// ========================================
+const $ = (s) => document.querySelector(s);
+
+function showToast(msg, type = '') {
+  const w = $('#toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ` ${type}` : '');
+  t.textContent = msg;
+  w.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+function showMsg(el, text, type = '') {
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'msg' + (type ? ` ${type}` : '');
+}
+
+function getTodayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getDateLabel() {
+  const d = new Date();
+  const week = ['日','月','火','水','木','金','土'];
+  return `${d.getMonth()+1}/${d.getDate()}（${week[d.getDay()]}）`;
+}
+
+function formatMonthLabel(d) {
+  return `${d.getFullYear()}年${d.getMonth()+1}月`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+const CAT_LABEL = {
+  cooking:'🍳 料理', cleaning:'🧹 掃除', laundry:'👕 洗濯',
+  childcare:'👶 育児', shopping:'🛒 買い物', other:'📌 その他'
+};
+
+const REPEAT_LABEL = {
+  daily:'毎日', weekdays:'平日', weekly:'毎週', monthly:'毎月'
+};
+
+// ========================================
+// SUPABASE HELPERS
+// ========================================
+async function loadOrCreateProfile(userId) {
+  let { data, error } = await sb.from('profiles')
+    .select('id, tier, is_active, has_password, stripe_customer_id')
+    .eq('id', userId)
+    .single();
+
+  if (error && (error.code === 'PGRST116' || error.details?.includes('0 rows'))) {
+    await sb.from('profiles').upsert(
+      { id: userId, tier: 'free', is_active: false, has_password: false },
+      { onConflict: 'id' }
+    );
+    ({ data, error } = await sb.from('profiles')
+      .select('id, tier, is_active, has_password, stripe_customer_id')
+      .eq('id', userId).single());
+  }
+  return { data, error };
+}
+
+async function loadTasks() {
+  // tasksテーブルがまだない場合はlocalStorageフォールバック
+  try {
+    const { data, error } = await sb.from('tasks')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    if (!error && data) {
+      tasks = data;
+      return;
+    }
+  } catch(e) {}
+  // フォールバック: localStorageからロード
+  const stored = localStorage.getItem(`kamo_tasks_${currentUser.id}`);
+  tasks = stored ? JSON.parse(stored) : [];
+}
+
+async function loadCompletions() {
+  // task_completionsテーブルがまだない場合はlocalStorageフォールバック
+  const today = getTodayStr();
+  try {
+    const { data, error } = await sb.from('task_completions')
+      .select('task_id, done')
+      .eq('user_id', currentUser.id)
+      .eq('date', today);
+    if (!error && data) {
+      completions = {};
+      data.forEach(r => completions[r.task_id] = r.done);
+      return;
+    }
+  } catch(e) {}
+  const stored = localStorage.getItem(`kamo_completions_${currentUser.id}_${today}`);
+  completions = stored ? JSON.parse(stored) : {};
+}
+
+function saveTasks() {
+  // Supabaseへの保存は実装次第、まずlocalStorageに保存
+  localStorage.setItem(`kamo_tasks_${currentUser.id}`, JSON.stringify(tasks));
+  // Supabase upsert (非同期、エラーは無視)
+  tasks.forEach(t => {
+    sb.from('tasks').upsert({ ...t, user_id: currentUser.id }, { onConflict: 'id' }).catch(() => {});
+  });
+}
+
+function saveCompletion(taskId, done) {
+  const today = getTodayStr();
+  completions[taskId] = done;
+  localStorage.setItem(`kamo_completions_${currentUser.id}_${today}`, JSON.stringify(completions));
+  sb.from('task_completions')
+    .upsert({ user_id: currentUser.id, task_id: taskId, date: today, done }, { onConflict: 'user_id,task_id,date' })
+    .catch(() => {});
+}
+
+async function countLineSentThisMonth() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,'0');
+  const from = `${y}-${m}-01`;
+  const to = `${y}-${m}-31`;
+  try {
+    const { count } = await sb.from('line_sends')
+      .select('id', { count: 'exact' })
+      .eq('user_id', currentUser.id)
+      .gte('created_at', from)
+      .lte('created_at', to);
+    return count || 0;
+  } catch(e) {
+    return 0;
+  }
+}
+
+// ========================================
+// PLAN
+// ========================================
+function isPro() {
+  return currentProfile && currentProfile.is_active && currentProfile.tier === 'standard';
+}
+
+async function startCheckout() {
+  if (!currentUser) return;
+  const baseUrl = 'https://buy.stripe.com/PLACEHOLDER'; // Stripe Payment Link
+  const params = new URLSearchParams({
+    prefilled_email: currentUser.email,
+    client_reference_id: currentUser.id
+  });
+  window.location.href = `${baseUrl}?${params}`;
+}
+
+async function openPortal() {
+  const { data: sess } = await sb.auth.getSession();
+  const token = sess?.session?.access_token;
+  const res = await fetch(
+    'https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/create-portal-session',
     {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ user_id: currentUser.id, return_url: location.href })
     }
   );
+  if (!res.ok) { showToast('エラーが発生しました', 'error'); return; }
+  const d = await res.json();
+  if (d?.url) window.location.href = d.url;
+}
 
-  const BILLING_JSON_URL = "https://member.moriris.com/data/billing.json";
-  let BILLING_CONFIG = { stripe: { standard: { payment_link_url: null } } };
+// ========================================
+// UI: TABS
+// ========================================
+function initTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${btn.dataset.tab}`));
+      if (btn.dataset.tab === 'report') renderReport();
+    });
+  });
+}
 
-  const $ = (s)=>document.querySelector(s);
-  const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
-  const debugOn = isLocal && new URL(location.href).searchParams.get("debug")==="1";
-  if (debugOn) { gtag('set', 'debug_mode', true); }
-  const log = (...a)=>{ if(!debugOn) return; console.log("[debug]", ...a); };
+function goTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
+}
 
-  function gaEvent(name, params = {}) {
-    if (typeof window.gtag !== "function") return;
-    window.gtag("event", name, params);
+// ========================================
+// UI: HOME
+// ========================================
+function renderHome() {
+  $('#todayDateLabel').textContent = getDateLabel();
+  const name = currentUser?.email?.split('@')[0] || '';
+  $('#heroName').textContent = name ? `こんにちは、${name}さん` : '';
+  renderTodayTasks();
+  renderUsageMeter();
+}
+
+function renderTodayTasks() {
+  const today = getTodayStr();
+  const todayTasks = tasks; // 繰り返し展開は今後実装、まず全タスクを表示
+
+  const myTasks = todayTasks.filter(t => t.assignee === 'me');
+  const partnerTasks = todayTasks.filter(t => t.assignee === 'partner');
+
+  renderTaskList('myTaskList', myTasks, false);
+  renderTaskList('partnerTaskList', partnerTasks, true);
+
+  const myDone = myTasks.filter(t => completions[t.id]).length;
+  const partnerDone = partnerTasks.filter(t => completions[t.id]).length;
+  $('#statMyDone').textContent = myDone;
+  $('#statMyTotal').textContent = myTasks.length;
+  $('#statPartnerDone').textContent = partnerDone;
+
+  // Hero message
+  const total = myTasks.length + partnerTasks.length;
+  const done = myDone + partnerDone;
+  if (total === 0) $('#heroTitle').textContent = 'まずタスクを登録してみましょう 🦆';
+  else if (done === total) $('#heroTitle').textContent = '全タスク完了！お疲れさまです 🎉';
+  else $('#heroTitle').textContent = `${done} / ${total} 件完了。あと少し！`;
+}
+
+function renderTaskList(containerId, taskArr, isPartner) {
+  const wrap = $(`#${containerId}`);
+  if (!wrap) return;
+
+  if (taskArr.length === 0) {
+    wrap.innerHTML = `<div style="font-size:13px;color:var(--mist);padding:8px 0 4px;">まだタスクがありません</div>`;
+    return;
   }
 
-  const I18N = {
-    ja:{
-      brand_meta:"法人・施設向け映像配信サイト",
-      logged_in_label:"ログイン中：",
-      logout:"ログアウト",
-      tab_home:"HOME",
-      tab_videos:"VIDEOS",
-      tab_account:"ACCOUNT",
-      status_not_logged:"未ログインか、ブラウザが変わったためログイン情報を確認できませんでした。もう一度ログインを行ってください。",
-      not_logged_back_link:"ログイン画面に戻る",
-      pw_banner_text:"パスワードが未設定です。こちらをクリックして設定してください。",
-      home_title:"法人・施設向け映像配信サービスへようこそ",
-      home_intro:"ご契約中の法人・施設向け動画を、こちらからご視聴いただけます。",
-      home_how_title:"ご利用方法",
-      home_how_1:"VIDEOSタブから、法人・施設向け動画をご視聴いただけます。",
-      home_how_2:"プランの確認や変更は ACCOUNTタブからいつでも行うことができます。",
-      account_title:"アカウント・プラン情報",
-      account_intro:"現在のプランやサブスクリプションの変更・解約は、このページから行うことができます。",
-      plan_label:"現在のプラン：",
-      plan_free:"Free",
-      plan_standard:"Standard",
-      status_checking:"ログイン状態を確認しています…",
-      status_free:"ただいま有効なサブスクリプションがありません。",
-      status_loading:"動画を読み込み中…",
-      status_ready:"コンテンツをお楽しみください。",
-      status_error:"情報の取得に失敗しました。",
-      btn_subscribe:"14日間無料で試す",
-      btn_cancel:"サブスクを解約する",
-      cancel_explanation:"※無料期間中に解約した場合、再登録時に無料トライアルは適用されません。",
-      btn_delete:"アカウントを削除する",
-      delete_confirm:"本当にアカウントを削除しますか？この操作は取り消せません。",
-      delete_confirm_yes:"はい、削除します",
-      delete_confirm_no:"キャンセル",
-      delete_processing:"アカウントを削除しています…",
-      delete_done:"アカウントを削除しました。ご利用ありがとうございました。",
-      delete_error:"アカウント削除中にエラーが発生しました。時間をおいて再度お試しください。",
+  wrap.innerHTML = taskArr.map(t => {
+    const done = completions[t.id] || false;
+    const repeatBadge = t.repeat && t.repeat !== 'none'
+      ? `<span class="task-repeat-badge">${REPEAT_LABEL[t.repeat] || ''}</span>` : '';
+    const catBadge = t.category
+      ? `<span class="task-repeat-badge">${CAT_LABEL[t.category] || t.category}</span>` : '';
+    return `
+      <div class="task-item${done ? ' done' : ''}" data-id="${t.id}" data-partner="${isPartner}">
+        <div class="task-check${done ? ' checked' : ''}${isPartner ? ' partner' : ''}" data-id="${t.id}">
+          ${done ? '✓' : ''}
+        </div>
+        <span class="task-name">${escHtml(t.name)}</span>
+        ${repeatBadge}${catBadge}
+      </div>`;
+  }).join('');
 
-      videos_title:"法人・施設向け動画",
-      videos_gate_free:"Standard プランに登録いただくと、すべての動画が視聴可能になります。",
-      videos_gate_std:"法人・施設でのご利用を想定した動画をご視聴いただけます。",
-      videos_empty:"現在、視聴可能な動画がありません。",
+  // チェックボタンイベント
+  wrap.querySelectorAll('.task-check').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.dataset.id;
+      const newDone = !completions[id];
+      saveCompletion(id, newDone);
+      renderTodayTasks();
+      if (newDone) showToast('完了しました ✓', 'success');
+    });
+  });
+}
 
-      footer_note:"最新情報は各種SNSでお知らせします。",
-      legal_note:
-        '<a href="https://member.moriris.com/terms.html" target="_blank" rel="noopener">利用規約</a> / ' +
-        '<a href="https://member.moriris.com/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a> / '+
-        '<a href="https://member.moriris.com/legal.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a>',
+function renderUsageMeter() {
+  const box = $('#usageMeterBox');
+  if (!box) return;
+  if (isPro()) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const pct = Math.min(100, Math.round(lineSentCount / FREE_LIMIT * 100));
+  const fill = $('#usageFill');
+  fill.style.width = pct + '%';
+  fill.className = 'usage-fill' + (pct >= 100 ? ' over' : pct >= 80 ? ' warn' : '');
+  $('#usageCount').textContent = `${lineSentCount} / ${FREE_LIMIT}件`;
+}
 
-      email_change_title:"メールアドレスの変更",
-      email_change_desc:"新しいメールアドレスを入力すると、確認メールを送信します。メール内のリンクから変更を完了してください。",
-      email_change_current:"現在のメールアドレス：",
-      email_change_btn:"変更用メールを送信",
-      email_change_sent:"新しいメールアドレス宛に確認メールを送信しました。メール内のリンクから変更を完了してください。",
-      email_change_invalid:"正しいメールアドレスを入力してください。",
-      email_change_error:"メールアドレスの変更中にエラーが発生しました。時間をおいて再度お試しください。",
-      email_change_same:"現在登録されているメールアドレスと同じです。別のメールアドレスを入力してください。",
-      checkout_error:"お手続き中にエラーが発生しました。時間をおいて再度お試しください。",
-      portal_error:"サブスクリプション管理ページを開けませんでした。時間をおいて再度お試しください。",
+// ========================================
+// UI: TASKS TAB
+// ========================================
+function renderAllTasks() {
+  const filtered = tasks.filter(t =>
+    taskFilter === 'all' ? true : t.assignee === taskFilter
+  );
+  const wrap = $('#allTaskList');
+  if (!wrap) return;
 
-      pw_setup_title:"パスワードの設定",
-      pw_setup_desc:"初回登録ではメール認証のみでした。今後はメールアドレスとパスワードでログインできるよう、ここでパスワードを設定してください。",
-      pw_setup_note:"セキュリティのため、8文字以上で他サービスと使い回さないパスワードを推奨します。",
-      pw_setup_btn:"パスワードを設定する",
-      pw_setup_need_password:"パスワードを入力してください。",
-      pw_setup_need_confirm:"確認用パスワードを入力してください。",
-      pw_setup_mismatch:"パスワードが一致しません。",
-      pw_setup_short:"パスワードは8文字以上にしてください。",
-      pw_setup_success:"パスワードを設定しました。次回からはログイン画面でメールアドレスとパスワードをご利用ください。",
-      pw_setup_error:"パスワードの設定中にエラーが発生しました。時間をおいて再度お試しください。",
-      pw_placeholder_new:"新しいパスワード（8文字以上）",
-      pw_placeholder_confirm:"確認のため、同じパスワードをもう一度",
-      pw_show_label:"パスワードを表示する",
+  if (filtered.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">タスクがありません</div></div>`;
+    return;
+  }
 
-      pw_change_title:"パスワードの変更",
-      pw_change_desc:"現在ログインしているアカウントのパスワードを変更できます。古いパスワードの入力は不要です。",
-      pw_change_note:"セキュリティのため、8文字以上で他サービスと使い回さないパスワードを推奨します。",
-      pw_change_btn:"パスワードを変更する",
-      pw_change_success:"パスワードを変更しました。次回からは新しいパスワードでログインしてください。",
+  wrap.innerHTML = filtered.map(t => `
+    <div class="task-item" data-id="${t.id}" style="cursor:default;">
+      <div class="task-check${completions[t.id] ? ' checked' : ''}${t.assignee==='partner' ? ' partner' : ''}" style="cursor:default;"></div>
+      <div style="flex:1;">
+        <div class="task-name">${escHtml(t.name)}</div>
+        ${t.note ? `<div style="font-size:11px;color:var(--mist);margin-top:2px;">${escHtml(t.note)}</div>` : ''}
+      </div>
+      ${t.repeat && t.repeat!=='none' ? `<span class="task-repeat-badge">${REPEAT_LABEL[t.repeat]}</span>` : ''}
+      ${t.category ? `<span class="task-repeat-badge">${CAT_LABEL[t.category]||t.category}</span>` : ''}
+      <span class="badge ${t.assignee==='me' ? 'badge-orange' : 'badge-line'}">${t.assignee==='me' ? '自分' : '相手'}</span>
+      <button class="btn" data-del="${t.id}" style="font-size:11px;padding:4px 8px;color:var(--error);border-color:rgba(192,57,43,0.2);margin-left:4px;">削除</button>
+    </div>
+  `).join('');
 
-      sort_label:"並び替え：",
-      sort_newest:"新しい順",
-      sort_oldest:"古い順",
+  wrap.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => deleteTask(btn.dataset.del));
+  });
+}
 
-      view_label:"表示：",
-      view_list:"リスト",
-      view_grid:"グリッド",
+function deleteTask(id) {
+  tasks = tasks.filter(t => t.id !== id);
+  delete completions[id];
+  saveTasks();
+  sb.from('tasks').delete().eq('id', id).eq('user_id', currentUser.id).catch(() => {});
+  renderAllTasks();
+  renderTodayTasks();
+  showToast('タスクを削除しました');
+}
 
-      filter_title:"用途：",
-      filter_all:"全て",
-      tag_sleep:"睡眠導入",
-      tag_focus:"集中",
-      tag_quiet:"静かな空間"
-    },
-    en:{
-      brand_meta:"Video Platform for Facilities",
-      logged_in_label:"Logged in as",
-      logout:"Logout",
-      tab_home:"HOME",
-      tab_videos:"VIDEOS",
-      tab_account:"ACCOUNT",
-      status_not_logged:"You are not logged in, or we couldn't restore your login session (for example, if the link was opened in a different browser). Please log in again.",
-      not_logged_back_link:"Back to login page",
-      pw_banner_text:"You haven't set a password yet. Click here to set it.",
-      home_title:"Welcome to Moriris Video Platform for Facilities",
-      home_intro:"You can access videos licensed for your facility here.",
-      home_how_title:"How to use this site",
-      home_how_1:"Watch videos for your facility from the VIDEOS tab.",
-      home_how_2:"You can check or manage your subscription from the ACCOUNT tab.",
-      account_title:"Account & Plan",
-      account_intro:"Check your current plan, subscribe, or cancel from this page.",
-      plan_label:"Current plan:",
-      plan_free:"Free",
-      plan_standard:"Standard",
-      status_checking:"Checking your login status…",
-      status_not_logged:"You are not logged in, or we couldn't restore your login session (for example, if the link was opened in a different browser). Please log in again.",
-      status_free:"You don't have an active subscription yet.",
-      status_loading:"Loading videos…",
-      status_ready:"Enjoy the content!",
-      status_error:"Failed to load your membership information.",
-      btn_subscribe:"Try free for 14 days",
-      btn_cancel:"Cancel subscription",
-      cancel_explanation:"※If you cancel during the free trial period, the free trial will not apply upon re-registration.",
-      btn_delete:"Delete account",
-      delete_confirm:"Are you sure you want to delete your account? This action cannot be undone.",
-      delete_confirm_yes:"Yes, delete my account",
-      delete_confirm_no:"Cancel",
-      delete_processing:"Deleting your account…",
-      delete_done:"Your account has been deleted. Thank you for using Moriris.",
-      delete_error:"An error occurred while deleting your account. Please try again later.",
-
-      videos_title:"Videos for Facilities",
-      videos_gate_free:"By subscribing to the Standard plan, you can watch all videos.",
-      videos_gate_std:"You can watch videos designed for use in facilities.",
-      videos_empty:"There are no videos available yet.",
-
-      footer_note:"Follow Moriris on social media for the latest updates.",
-      legal_note:
-        '<a href="https://member.moriris.com/terms.html" target="_blank" rel="noopener">Terms of Service</a> / ' +
-        '<a href="https://member.moriris.com/privacy.html" target="_blank" rel="noopener">Privacy Policy</a> / '+
-        '<a href="https://member.moriris.com/legal.html" target="_blank" rel="noopener">Legal Notice</a>',
-
-      email_change_title:"Change Email Address",
-      email_change_desc:"Enter a new email address and we will send a confirmation email. Please use the link in that email to complete the change.",
-      email_change_current:"Current email:",
-      email_change_btn:"Send confirmation email",
-      email_change_sent:"We've sent a confirmation email to your new address. Please follow the link in the email to complete the change.",
-      email_change_invalid:"Please enter a valid email address.",
-      email_change_error:"An error occurred while changing your email. Please try again later.",
-      email_change_same:"This is the same as your current email. Please enter a different address.",
-      checkout_error:"Something went wrong while processing your request. Please try again later.",
-      portal_error:"We couldn't open the subscription management page. Please try again later.",
-
-      pw_setup_title:"Set your password",
-      pw_setup_desc:"You initially registered with email verification only. To log in with your email and password from now on, please set a password here.",
-      pw_setup_note:"For security, we recommend at least 8 characters and not reusing passwords from other services.",
-      pw_setup_btn:"Set password",
-      pw_setup_need_password:"Please enter a password.",
-      pw_setup_need_confirm:"Please enter the confirmation password.",
-      pw_setup_mismatch:"The passwords do not match.",
-      pw_setup_short:"Please use at least 8 characters for the password.",
-      pw_setup_success:"Your password has been set. Next time, log in using your email and password on the login page.",
-      pw_setup_error:"An error occurred while setting your password. Please try again later.",
-      pw_placeholder_new:"New password (8+ characters)",
-      pw_placeholder_confirm:"Re-enter the same password",
-      pw_show_label:"Show password",
-
-      pw_change_title:"Change password",
-      pw_change_desc:"You can change the password for the account you are currently logged in with. You do not need to enter your old password.",
-      pw_change_note:"For security, we recommend at least 8 characters and not reusing passwords from other services.",
-      pw_change_btn:"Change password",
-      pw_change_success:"Your password has been changed. Please use the new password the next time you log in.",
-
-      sort_label:"Sort:",
-      sort_newest:"Newest",
-      sort_oldest:"Oldest",
-
-      view_label:"View:",
-      view_list:"List",
-      view_grid:"Grid",
-
-      filter_title:"Use:",
-      filter_all:"All",
-      tag_sleep:"For Sleep",
-      tag_focus:"For Focus",
-      tag_quiet:"Quiet Space"
-    }
+function addTask(name, assignee, repeat, category, note) {
+  const id = `t_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const task = {
+    id,
+    name,
+    assignee,
+    repeat: repeat || 'none',
+    category: category || '',
+    note: note || '',
+    created_at: new Date().toISOString()
   };
+  tasks.unshift(task);
+  saveTasks();
+  renderAllTasks();
+  renderTodayTasks();
+  showToast(`タスクを追加しました`, 'success');
+}
 
-  let currentLang = "ja";
-  const langKey = "moriris_lang_members";
+// ========================================
+// UI: REPORT
+// ========================================
+function renderReport() {
+  $('#reportMonthLabel').textContent = formatMonthLabel(reportMonth);
 
-  const state = {
-    plan: "free",
-    statusCode: "checking",
-    hasPassword: false
-  };
+  const y = reportMonth.getFullYear();
+  const m = reportMonth.getMonth();
+  const from = new Date(y, m, 1);
+  const to = new Date(y, m+1, 0);
 
-  let currentUser = null;
-
-  const VIDEO_JSON_URL = "https://member.moriris.com/data/video.json";
-  let VIDEO_CONFIG = { cloudflare:null, episodes:[] };
-
-  let videoSortMode = "newest";
-  let viewMode = "list";
-  const selectedTags = new Set();
-  const FIXED_TAGS = ["sleep","focus","quiet"];
-
-  function tagLabel(tag){
-    const t = I18N[currentLang] || I18N["ja"];
-    if (tag === "__all__") return t.filter_all || "All";
-    const key = `tag_${tag}`;
-    return t[key] || tag;
-  }
-
-  function applyViewMode(mode){
-    viewMode = mode;
-    localStorage.setItem("moriris_view_mode", mode);
-
-    const wrap = document.getElementById("videos");
-    if (wrap){
-      wrap.classList.toggle("mode-list", mode === "list");
-      wrap.classList.toggle("mode-grid", mode === "grid");
-    }
-
-    document.querySelectorAll(".view-btn").forEach(b=>{
-      b.classList.toggle("active", b.dataset.view === mode);
+  // localStorageベースで集計（Supabaseテーブルが揃ったら切り替え）
+  let myDone = 0, partnerDone = 0, repeatCount = 0;
+  for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1)) {
+    const ds = d.toISOString().slice(0,10);
+    const c = JSON.parse(localStorage.getItem(`kamo_completions_${currentUser?.id}_${ds}`) || '{}');
+    tasks.forEach(t => {
+      if (c[t.id]) {
+        if (t.assignee === 'me') myDone++;
+        else partnerDone++;
+        if (t.repeat && t.repeat !== 'none') repeatCount++;
+      }
     });
   }
 
-  function getVideoKey(v){
-    return String(v?.id || v?.cf_uid || "");
+  $('#rptMyTotal').textContent = myDone;
+  $('#rptPartnerTotal').textContent = partnerDone;
+  $('#rptRepeat').textContent = repeatCount;
+  $('#rptLineSent').textContent = lineSentCount;
+  $('#rptLineSub').textContent = isPro() ? '無制限プラン' : `/ ${FREE_LIMIT}件（Free）`;
+
+  const myRate = myDone + partnerDone > 0 ? Math.round(myDone / (myDone + partnerDone) * 100) : 50;
+  const partnerRate = 100 - myRate;
+  $('#myLoadBar').style.width = myRate + '%';
+  $('#partnerLoadBar').style.width = partnerRate + '%';
+  $('#myLoadPct').textContent = myRate + '%';
+  $('#partnerLoadPct').textContent = partnerRate + '%';
+
+  // カテゴリ集計
+  const catCount = {};
+  tasks.forEach(t => {
+    if (t.category) catCount[t.category] = (catCount[t.category]||0) + 1;
+  });
+  const maxCat = Math.max(1, ...Object.values(catCount));
+  $('#categoryChart').innerHTML = Object.entries(catCount).map(([k, v]) => `
+    <div class="bar-row">
+      <div class="bar-label" style="font-size:11px;">${CAT_LABEL[k]||k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${v/maxCat*100}%"></div></div>
+      <div class="bar-val">${v}</div>
+    </div>
+  `).join('') || `<div style="font-size:13px;color:var(--mist);">データがありません</div>`;
+}
+
+// ========================================
+// UI: ACCOUNT
+// ========================================
+function renderAccount() {
+  $('#currentEmail').textContent = currentUser?.email || '';
+
+  if (isPro()) {
+    $('#planFreeBox').style.display = 'none';
+    $('#planStandardBox').style.display = 'block';
+  } else {
+    $('#planFreeBox').style.display = 'block';
+    $('#planStandardBox').style.display = 'none';
+  }
+}
+
+// ========================================
+// INIT
+// ========================================
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function main() {
+  initTabs();
+
+  // タブセット
+  $('#todayDateLabel') && ($('#todayDateLabel').textContent = getDateLabel());
+
+  // Auth
+  try {
+    await sb.auth.exchangeCodeForSession(window.location.href);
+  } catch(e) {}
+
+  let user = null;
+  for (let i = 0; i < 40; i++) {
+    const { data: { user: u } } = await sb.auth.getUser();
+    if (u) { user = u; break; }
+    await sleep(150);
   }
 
-  function refreshVideoTitlesInPlace(){
-    if (!VIDEO_CONFIG?.episodes?.length) return;
-
-    const t = I18N[currentLang] || I18N["ja"];
-
-    const emptyEl = document.querySelector('#videos [data-role="videos-empty"]');
-    if (emptyEl) emptyEl.textContent = t.videos_empty;
-
-    document.querySelectorAll("#videos .video-card").forEach(card=>{
-      const vid = card.dataset.videoId || "";
-      if (!vid) return;
-
-      const ep = VIDEO_CONFIG.episodes.find(e => getVideoKey(e) === vid);
-      if (!ep) return;
-
-      const newTitle = getTitle(ep) || "Video";
-
-      const titleEl = card.querySelector('[data-role="video-title"]');
-      if (titleEl) titleEl.textContent = newTitle;
-
-      const iframe = card.querySelector("iframe");
-      if (iframe) iframe.setAttribute("title", newTitle);
-    });
+  if (!user) {
+    $('#notLoggedAlert').classList.add('show');
+    document.querySelector('.site-header').style.display = 'none';
+    document.querySelector('.page').style.display = 'none';
+    document.querySelector('footer').style.display = 'none';
+    return;
   }
 
-  async function loadVideoConfig(){
-    try{
-      const res = await fetch(VIDEO_JSON_URL, { cache: "no-store" });
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+  currentUser = user;
+  $('#userEmail').textContent = user.email || '';
+  $('#currentEmail').textContent = user.email || '';
 
-      const cloudflare = data?.cloudflare || null;
-      const episodesRaw = Array.isArray(data?.episodes) ? data.episodes : [];
-      const episodes = episodesRaw.filter(v => v && (v.visible !== false));
+  // Profile
+  const { data: prof } = await loadOrCreateProfile(user.id);
+  currentProfile = prof;
 
-      VIDEO_CONFIG = { cloudflare, episodes };
-      log("video json loaded", VIDEO_CONFIG);
+  // Tasks & completions
+  await loadTasks();
+  await loadCompletions();
+  lineSentCount = await countLineSentThisMonth();
 
-      renderTagFilterUI();
-      refreshVideoTitlesInPlace();
-    }catch(e){
-      console.error("video json load error", e);
-      VIDEO_CONFIG = { cloudflare:null, episodes:[] };
-      renderTagFilterUI();
-      refreshVideoTitlesInPlace();
+  // Render
+  renderHome();
+  renderAllTasks();
+  renderAccount();
+
+  // LINE未連携チェック（lineパートナー設定がない場合）
+  const hasLine = localStorage.getItem(`kamo_line_${user.id}`);
+  if (!hasLine) {
+    $('#lineAlertBanner').style.display = 'flex';
+    $('#lineStatusTitle').textContent = '未連携';
+    $('#lineStatusDesc').textContent = '連携するとパートナーのLINEにタスクが自動送信されます';
+  } else {
+    $('#lineConnectBtn').textContent = '連携解除';
+    $('#lineConnectBtn').className = 'btn btn-danger';
+    $('#lineStatusTitle').textContent = '連携済み';
+    $('#lineStatusDesc').textContent = 'パートナーのLINEと連携しています';
+  }
+
+  // =========== EVENT LISTENERS ===========
+
+  // タブ内のリンク
+  $('#goLineSetup')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
+  $('#upgradeLink')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
+
+  // ログアウト
+  $('#logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.replace('/index.html');
+  });
+
+  // クイックタスク追加（自分）
+  $('#quickAddMyBtn').addEventListener('click', () => {
+    const name = $('#quickMyTask').value.trim();
+    if (!name) return;
+    addTask(name, 'me', 'none', '', '');
+    $('#quickMyTask').value = '';
+  });
+  $('#quickMyTask').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') $('#quickAddMyBtn').click();
+  });
+
+  // クイックタスク追加（パートナー）
+  $('#quickAddPartnerBtn').addEventListener('click', () => {
+    const name = $('#quickPartnerTask').value.trim();
+    if (!name) return;
+    if (!isPro() && lineSentCount >= FREE_LIMIT) {
+      showToast('今月の送信上限（10件）に達しました。Standardプランへ', 'error');
+      return;
     }
-  }
+    addTask(name, 'partner', 'none', '', '');
+    $('#quickPartnerTask').value = '';
+  });
+  $('#quickPartnerTask').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') $('#quickAddPartnerBtn').click();
+  });
 
-  async function loadBillingConfig(){
-    try{
-      const res = await fetch(BILLING_JSON_URL, { cache: "no-store" });
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-      BILLING_CONFIG = data || BILLING_CONFIG;
-      log("billing json loaded", BILLING_CONFIG);
-    }catch(e){
-      console.error("billing json load error", e);
-      BILLING_CONFIG = { stripe: { standard: { payment_link_url: null } } };
-    }
-  }
-
-  function renderTagFilterUI(){
-    const row = document.getElementById("videoFilterRow");
-    if (!row) return;
-
-    const t = I18N[currentLang] || I18N["ja"];
-    row.innerHTML = "";
-    row.classList.remove("hidden");
-
-    const title = document.createElement("span");
-    title.className = "muted";
-    title.style.fontSize = "12px";
-    title.textContent = t.filter_title || "Filter:";
-    row.appendChild(title);
-
-    const allBtn = document.createElement("button");
-    allBtn.type = "button";
-    allBtn.className = "chip";
-    allBtn.textContent = tagLabel("__all__");
-    allBtn.dataset.tag = "__all__";
-    allBtn.classList.toggle("active", selectedTags.size === 0);
-    allBtn.addEventListener("click", ()=>{
-      selectedTags.clear();
-      gaEvent("video_filter_all", { plan: state.plan, lang: currentLang });
-      renderTagFilterUI();
-      renderVideosForPlan(state.plan, videoSortMode);
-    });
-    row.appendChild(allBtn);
-
-    const makeChip = (tag)=>{
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "chip";
-      btn.textContent = tagLabel(tag);
-      btn.dataset.tag = tag;
-      btn.classList.toggle("active", selectedTags.has(tag));
-      btn.addEventListener("click", ()=>{
-        if (selectedTags.has(tag)) selectedTags.delete(tag);
-        else selectedTags.add(tag);
-
-        gaEvent("video_filter_toggle", {
-          tag,
-          active: selectedTags.has(tag) ? 1 : 0,
-          plan: state.plan,
-          lang: currentLang
-        });
-
-        renderTagFilterUI();
-        renderVideosForPlan(state.plan, videoSortMode);
-      });
-      return btn;
-    };
-
-    FIXED_TAGS.forEach(tag => row.appendChild(makeChip(tag)));
-  }
-
-  function getTitle(v){
-    if (v?.title && typeof v.title === "object"){
-      return (v.title[currentLang] || v.title["en"] || v.title["ja"] || "").trim();
-    }
-    return String(v?.title || "").trim();
-  }
-
-  function toTime(v){
-    const s = v?.published_at;
-    const n = Date.parse(s);
-    return Number.isFinite(n) ? n : 0;
-  }
-
-  function matchSelectedTags(v){
-    if (selectedTags.size === 0) return true;
-    const tags = Array.isArray(v.tags) ? v.tags : [];
-    for (const t of selectedTags){
-      if (tags.includes(t)) return true;
-    }
-    return false;
-  }
-
-  function buildCloudflareIframeSrc(cf, uid){
-    const customer = cf?.customer_code;
-    if (!customer || !uid) return null;
-
-    const baseParams = new URLSearchParams(cf?.iframe_params || "");
-    if (!baseParams.has("loop")) baseParams.set("loop", "true");
-    if (!baseParams.has("controls")) baseParams.set("controls", "true");
-    baseParams.set("autoplay", "false");
-
-    const qp = baseParams.toString() ? `?${baseParams.toString()}` : "";
-    return `https://${customer}/${encodeURIComponent(uid)}/iframe${qp}`;
-  }
-
-  function applyLang(lang){
-    currentLang = lang;
-    localStorage.setItem(langKey, lang);
-    document.documentElement.lang = lang;
-
-    const t = I18N[lang];
-
-    document.querySelectorAll("[data-i18n]").forEach(el=>{
-      const key = el.getAttribute("data-i18n");
-      if (t[key]) el.textContent = t[key];
-    });
-
-    document.querySelectorAll("[data-i18n-placeholder]").forEach(el=>{
-      const key = el.getAttribute("data-i18n-placeholder");
-      if (t[key]) el.placeholder = t[key];
-    });
-
-    const legal = document.getElementById("legalLinks");
-    if (legal && t.legal_note){
-      legal.innerHTML = t.legal_note;
-    }
-
-    const cancelExp = document.getElementById("cancelExplanation");
-    if (cancelExp && t.cancel_explanation){
-      cancelExp.innerHTML = t.cancel_explanation;
-    }
-
-    const planLabelText = $("#planLabelText");
-    if (planLabelText){
-      const planKey = state.plan === "standard" ? "plan_standard" : "plan_free";
-      planLabelText.textContent = t[planKey];
-    }
-
-    const statusEl = $("#statusText");
-    if (statusEl){
-      const map = {
-        checking:"status_checking",
-        not_logged:"status_not_logged",
-        free:"status_free",
-        loading:"status_loading",
-        ready:"status_ready",
-        error:"status_error"
-      };
-      const k = map[state.statusCode] || "status_error";
-      statusEl.textContent = t[k];
-    }
-
-    const gate = $("#videoGateText");
-    if (gate){
-      gate.textContent = state.plan === "standard"
-        ? t.videos_gate_std
-        : t.videos_gate_free;
-    }
-
-    $("#btn-ja").classList.toggle("active", lang==="ja");
-    $("#btn-en").classList.toggle("active", lang==="en");
-
-    renderTagFilterUI();
-    refreshVideoTitlesInPlace();
-  }
-
-  $("#btn-ja").onclick = ()=>applyLang("ja");
-  $("#btn-en").onclick = ()=>applyLang("en");
-
-  document.querySelectorAll(".tab-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const tab = btn.dataset.tab;
-      document.querySelectorAll(".tab-btn").forEach(b=>b.classList.toggle("active", b===btn));
-      document.querySelectorAll(".tab-pane").forEach(p=>{
-        p.classList.toggle("active", p.id === "tab-"+tab);
-      });
+  // タスク追加フォーム (tasksタブ)
+  document.querySelectorAll('.radio-label').forEach(label => {
+    label.addEventListener('click', () => {
+      document.querySelectorAll('.radio-label').forEach(l => l.classList.remove('selected'));
+      label.classList.add('selected');
     });
   });
 
-  document.addEventListener("click", (e)=>{
-    const sortBtn = e.target.closest(".video-sort-btn");
-    if (sortBtn){
-      const mode = sortBtn.dataset.sort || "newest";
-      document.querySelectorAll(".video-sort-btn").forEach(b=>{
-        b.classList.toggle("active", b===sortBtn);
-      });
-      videoSortMode = mode;
+  $('#addTaskBtn').addEventListener('click', () => {
+    const name = $('#taskName').value.trim();
+    const assignee = document.querySelector('input[name="assignee"]:checked')?.value || 'me';
+    const repeat = $('#repeatType').value;
+    const category = $('#taskCategory').value;
+    const note = $('#taskNote').value.trim();
 
-      gaEvent("video_sort_change", { mode, plan: state.plan, lang: currentLang });
+    if (!name) { showMsg($('#taskAddMsg'), 'タスク名を入力してください', 'error'); return; }
 
-      renderVideosForPlan(state.plan, videoSortMode);
+    if (assignee === 'partner' && !isPro() && lineSentCount >= FREE_LIMIT) {
+      showMsg($('#taskAddMsg'), '今月のLINE送信上限に達しました（Standardプランで無制限）', 'error');
       return;
     }
 
-    const viewBtn = e.target.closest(".view-btn");
-    if (viewBtn){
-      const mode = viewBtn.dataset.view || "list";
-      applyViewMode(mode);
-
-      gaEvent("video_view_change", { mode, plan: state.plan, lang: currentLang });
-
-      return;
-    }
+    addTask(name, assignee, repeat, category, note);
+    $('#taskName').value = '';
+    $('#taskNote').value = '';
+    showMsg($('#taskAddMsg'), 'タスクを追加しました', 'success');
+    setTimeout(() => showMsg($('#taskAddMsg'), ''), 2000);
   });
 
-  const sleep = ms => new Promise(r=>setTimeout(r,ms));
-
-  async function getUserWithRetry({tries=40, interval=150}={}){
-    try{ await sb.auth.exchangeCodeForSession(window.location.href); }
-    catch(e){ log("exchange_err", String(e)); }
-
-    for(let i=0;i<tries;i++){
-      const { data:{ user } } = await sb.auth.getUser();
-      if (user) return user;
-      await sleep(interval);
-    }
-    return null;
-  }
-
-  async function loadProfileOrCreate(userId){
-    let { data:prof, error } = await sb
-      .from("profiles")
-      .select("id,tier,is_active,has_password,stripe_customer_id")
-      .eq("id", userId)
-      .single();
-
-    const notFound = error && (error.code==="PGRST116" || error.details?.includes("0 rows"));
-    if (notFound){
-      const up = await sb.from("profiles").upsert(
-        { id:userId, tier:"free", is_active:false, has_password:false },
-        { onConflict:"id" }
-      );
-      if (up.error){
-        log("profiles upsert failed", up.error);
-        return { data:null, error:up.error };
-      }
-
-      ({ data:prof, error } = await sb
-        .from("profiles")
-        .select("id,tier,is_active,has_password")
-        .eq("id", userId)
-        .single());
-    }
-    return { data:prof, error };
-  }
-
-  async function createCheckout(userId){
-    const i18n = I18N[currentLang] || I18N["ja"] || {};
-  
-    const baseUrl = BILLING_CONFIG?.stripe?.standard?.payment_link_url;
-    if (!baseUrl){
-      console.error("missing payment_link_url in billing.json", BILLING_CONFIG);
-      alert("課金設定の読み込みに失敗しました（billing.json の payment_link_url を確認してください）");
-      return;
-    }
-  
-    const u = currentUser?.email ? String(currentUser.email) : "";
-    const params = new URLSearchParams();
-  
-    if (u) params.set("prefilled_email", u);
-    if (userId) params.set("client_reference_id", String(userId));
-  
-    const sep = baseUrl.includes("?") ? "&" : "?";
-    const url = params.toString() ? (baseUrl + sep + params.toString()) : baseUrl;
-  
-    gaEvent("begin_checkout", {
-      plan: "standard",
-      lang: currentLang,
-      method: "stripe_payment_link"
-    });
-  
-    location.href = url;
-  }
-
-  async function openPortal(userId){
-    const { data:sess } = await sb.auth.getSession();
-    const token = sess?.session?.access_token;
-    const i18n = I18N[currentLang] || I18N["ja"] || {};
-
-    const res = await fetch(
-      "https://sqwyfscumunyhsvsvejv.functions.supabase.co/create-portal-session",
-      {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${token}`
-        },
-        body:JSON.stringify({
-          user_id:userId,
-          return_url:location.href
-        })
-      }
-    );
-
-    if (!res.ok){
-      const bodyText = await res.text().catch(()=> "");
-      console.error("openPortal failed:", res.status, bodyText);
-      alert(i18n.portal_error || "現在この操作を完了できません。時間をおいて再度お試しください。");
-      return;
-    }
-    const data = await res.json();
-    if (!data?.url){
-      console.error("openPortal: url missing", data);
-      alert(i18n.portal_error || "現在この操作を完了できません。時間をおいて再度お試しください。");
-      return;
-    }
-    location.href = data.url;
-  }
-
-  async function updateStripeEmail(userId, newEmail){
-    try{
-      const { data:sess } = await sb.auth.getSession();
-      const token = sess?.session?.access_token;
-
-      const res = await fetch(
-        "https://sqwyfscumunyhsvsvejv.functions.supabase.co/update-stripe-email",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({ user_id: userId, new_email: newEmail })
-        }
-      );
-
-      if (!res.ok){
-        const t = await res.text().catch(()=> "");
-        console.error("updateStripeEmail failed:", res.status, t);
-        return;
-      }
-      const data = await res.json();
-      console.log("updateStripeEmail result:", data);
-    }catch(e){
-      console.error("updateStripeEmail error:", e);
-    }
-  }
-
-  async function handleDeleteAccount() {
-    if (!currentUser) return;
-
-    const i18n = I18N[currentLang] || I18N["ja"] || {};
-    const statusEl = document.getElementById("deleteStatusMsg");
-
-    if (statusEl){
-      statusEl.style.color = "#6b6964";
-      statusEl.textContent = i18n.delete_processing || "アカウントを削除しています…";
-    }
-
-    try {
-      const { data: sess } = await sb.auth.getSession();
-      const token = sess?.session?.access_token;
-      if (!token) throw new Error("no access token");
-
-      const res = await fetch(
-        "https://sqwyfscumunyhsvsvejv.functions.supabase.co/delete-account",
-        { method: "POST", headers: { Authorization: `Bearer ${token}` } },
-      );
-
-      if (!res.ok) {
-        const bodyText = await res.text().catch(() => "");
-        console.error("delete-account failed:", res.status, bodyText);
-
-        const baseMsg = i18n.delete_error || "アカウント削除中にエラーが発生しました。時間をおいて再度お試しください。";
-        if (statusEl){
-          statusEl.textContent = baseMsg;
-          statusEl.style.color = "#b00020";
-        }
-        return;
-      }
-
-      const doneMsg = i18n.delete_done || "アカウントを削除しました。トップページに戻ります。";
-      if (statusEl){
-        statusEl.textContent = doneMsg;
-        statusEl.style.color = "#6b6964";
-      }
-      await sb.auth.signOut();
-      location.href = "./";
-    } catch (e) {
-      console.error("handleDeleteAccount error:", e);
-      const baseMsg = i18n.delete_error || "アカウント削除中にエラーが発生しました。時間をおいて再度お試しください。";
-      if (statusEl){
-        statusEl.textContent = baseMsg;
-        statusEl.style.color = "#b00020";
-      }
-    }
-  }
-
-  function forceLoopOnIframe(iframeEl){
-    try{
-      if (!iframeEl || typeof window.Stream !== "function") return;
-      const player = window.Stream(iframeEl);
-
-      const apply = ()=>{
-        try{
-          player.loop = true;
-          player.autoplay = false;
-        }catch{}
-      };
-      apply();
-      setTimeout(apply, 200);
-      setTimeout(apply, 800);
-
-    }catch(e){
-      console.warn("forceLoopOnIframe error:", e);
-    }
-  }
-
-  function renderVideosForPlan(plan, mode = videoSortMode){
-    videoSortMode = mode;
-
-    const wrap = $("#videos");
-    if (!wrap) return;
-    wrap.innerHTML = "";
-
-    const t = I18N[currentLang] || I18N["ja"];
-    const cf = VIDEO_CONFIG.cloudflare;
-
-    let episodes = VIDEO_CONFIG.episodes.filter(v => (plan === "standard") ? true : v.tier === "free");
-    episodes = episodes.filter(matchSelectedTags);
-
-    episodes.sort((a,b)=>{
-      const ta = toTime(a), tb = toTime(b);
-      if (videoSortMode === "oldest") return ta - tb;
-      return tb - ta;
-    });
-
-    if (!episodes.length){
-      const p = document.createElement("p");
-      p.className = "muted";
-      p.dataset.role = "videos-empty";
-      p.textContent = t.videos_empty;
-      wrap.appendChild(p);
-      return;
-    }
-
-    for (const v of episodes){
-      const card = document.createElement("div");
-      card.className = "video-card";
-
-      const vidKey = getVideoKey(v);
-      card.dataset.videoId = vidKey;
-
-      const title = getTitle(v) || "Video";
-      const uid = v.cf_uid;
-      const src = buildCloudflareIframeSrc(cf, uid);
-      const iframeId = `cf_${v.id || uid}`;
-
-      const playerHtml = src
-        ? `
-          <div style="position:relative;background:#000;aspect-ratio:16/9;">
-            <iframe
-              id="${iframeId}"
-              src="${src}"
-              title="${title}"
-              frameborder="0"
-              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-              allowfullscreen
-              loading="lazy"
-              style="width:100%;height:100%;position:absolute;inset:0;">
-            </iframe>
-          </div>
-        `
-        : `
-          <div style="padding:14px;color:#fff;background:#111;">
-            <div style="font-size:13px;opacity:.85;">Player config is missing.</div>
-          </div>
-        `;
-
-      card.innerHTML = `
-        ${playerHtml}
-        <div class="video-title" data-role="video-title">${title}</div>
-      `;
-      wrap.appendChild(card);
-
-      if (src){
-        const iframeEl = card.querySelector("iframe");
-        forceLoopOnIframe(iframeEl);
-      }
-    }
-  }
-
-  async function main(){
-    const urlLang = new URL(location.href).searchParams.get("lang");
-    const storedLang = localStorage.getItem(langKey);
-    const navLang = (navigator.language || "ja").startsWith("ja") ? "ja" : "en";
-    applyLang(urlLang || storedLang || navLang);
-
-    const storedView = localStorage.getItem("moriris_view_mode");
-    applyViewMode(storedView === "grid" ? "grid" : "list");
-
-    document.querySelectorAll(".view-btn").forEach(b=>{
-      b.classList.toggle("active", b.dataset.view === viewMode);
-    });
-
-    await loadBillingConfig();
-    await loadVideoConfig();
-
-    state.statusCode = "checking";
-    applyLang(currentLang);
-
-    const user = await getUserWithRetry();
-    if (!user){
-      state.statusCode = "not_logged";
-      applyLang(currentLang);
-      $("#userEmail").textContent = "-";
-      const alertBox = $("#notLoggedAlert");
-      if (alertBox) alertBox.classList.remove("hidden");
-      return;
-    }
-
-    currentUser = user;
-    $("#userEmail").textContent = user.email || "";
-
-    const loginEventKey = "ga_login_success_sent";
-    if (!sessionStorage.getItem(loginEventKey)) {
-      gtag('event', 'login_success', {
-        method: 'session_restored',
-        funnel_step: 'login_complete',
-        lang: currentLang
+  // フィルターボタン
+  ['filterAll','filterMe','filterPartner'].forEach(id => {
+    $(`#${id}`)?.addEventListener('click', () => {
+      taskFilter = id === 'filterAll' ? 'all' : id === 'filterMe' ? 'me' : 'partner';
+      ['filterAll','filterMe','filterPartner'].forEach(i => {
+        $(`#${i}`)?.style.setProperty('background', i === id ? 'var(--orange-pale)' : '');
+        $(`#${i}`)?.style.setProperty('border-color', i === id ? 'var(--orange)' : '');
+        $(`#${i}`)?.style.setProperty('color', i === id ? 'var(--orange)' : '');
       });
-      sessionStorage.setItem(loginEventKey, "1");
-    }
+      renderAllTasks();
+    });
+  });
 
-    const currentEmailEl = $("#currentEmailText");
-    if (currentEmailEl) currentEmailEl.textContent = user.email || "";
+  // レポート月移動
+  $('#prevMonth').addEventListener('click', () => {
+    reportMonth = new Date(reportMonth.getFullYear(), reportMonth.getMonth()-1, 1);
+    renderReport();
+  });
+  $('#nextMonth').addEventListener('click', () => {
+    reportMonth = new Date(reportMonth.getFullYear(), reportMonth.getMonth()+1, 1);
+    renderReport();
+  });
 
-    const btnChangeEmail = $("#btnChangeEmail");
-    if (btnChangeEmail){
-      btnChangeEmail.onclick = async ()=>{
-        const input = $("#emailNew");
-        const msgEl = $("#emailChangeMsg");
-        if (!input || !msgEl) return;
+  // 購読
+  $('#btnSubscribe')?.addEventListener('click', startCheckout);
+  $('#btnCancel')?.addEventListener('click', openPortal);
+  $('#gateUpgradeBtn')?.addEventListener('click', () => { goTab('account'); });
 
-        msgEl.style.color = "#6b6964";
-        const t = I18N[currentLang] || I18N["ja"];
-
-        const newEmail = input.value.trim();
-        const currentEmail = currentUser?.email || "";
-
-        if (!newEmail){
-          msgEl.textContent = t.email_change_invalid;
-          msgEl.style.color = "#b00020";
-          return;
-        }
-
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(newEmail)){
-          msgEl.textContent = t.email_change_invalid;
-          msgEl.style.color = "#b00020";
-          return;
-        }
-
-        if (newEmail.toLowerCase() === currentEmail.toLowerCase()){
-          msgEl.textContent = t.email_change_same;
-          msgEl.style.color = "#b00020";
-          return;
-        }
-
-        btnChangeEmail.disabled = true;
-        msgEl.textContent = "";
-
-        try{
-          const { error } = await sb.auth.updateUser(
-            { email: newEmail },
-            { emailRedirectTo: SITE_TOP_URL }
-          );
-
-          if (error){
-            console.error("updateUser ERROR:", error);
-            msgEl.textContent = t.email_change_error;
-            msgEl.style.color = "#b00020";
-            return;
-          }
-
-          updateStripeEmail(currentUser.id, newEmail);
-
-          msgEl.textContent = t.email_change_sent;
-          msgEl.style.color = "#6b6964";
-          input.value = "";
-        }catch(e){
-          console.error("updateUser exception:", e);
-          msgEl.textContent = t.email_change_error;
-          msgEl.style.color = "#b00020";
-        }finally{
-          btnChangeEmail.disabled = false;
-        }
-      };
-    }
-
-    const profRes = await loadProfileOrCreate(user.id);
-    if (profRes.error || !profRes.data){
-      state.statusCode = "error";
-      applyLang(currentLang);
-      return;
-    }
-
-    const prof = profRes.data;
-    log("profile", prof);
-
-    state.hasPassword = !!prof.has_password;
-
-    const pwSection       = document.getElementById("pwSection");
-    const pwChangeSection = document.getElementById("pwChangeSection");
-    const pwBanner        = document.getElementById("pwBanner");
-
-    if (pwSection){
-      pwSection.classList.toggle("hidden", state.hasPassword);
-    }
-    if (pwChangeSection){
-      pwChangeSection.classList.toggle("hidden", !state.hasPassword);
-    }
-
-    if (!state.hasPassword) {
-      if (pwBanner) {
-        pwBanner.classList.remove("hidden");
-        pwBanner.onclick = ()=>{
-          document.querySelectorAll(".tab-btn").forEach(btn=>{
-            btn.classList.toggle("active", btn.dataset.tab === "account");
-          });
-          document.querySelectorAll(".tab-pane").forEach(pane=>{
-            pane.classList.toggle("active", pane.id === "tab-account");
-          });
-          const target = document.getElementById("pwSection");
-          if (target) target.scrollIntoView({ behavior:"smooth", block:"center" });
-        };
-      }
+  // LINE連携（仮）
+  $('#lineConnectBtn')?.addEventListener('click', () => {
+    if (localStorage.getItem(`kamo_line_${user.id}`)) {
+      localStorage.removeItem(`kamo_line_${user.id}`);
+      showToast('LINE連携を解除しました');
+      location.reload();
     } else {
-      if (pwBanner) pwBanner.classList.add("hidden");
+      // LINE Messaging API の認可URL（要設定）
+      const lineAuthUrl = `https://notify-bot.line.me/oauth/authorize?response_type=code&client_id=PLACEHOLDER_LINE_CLIENT_ID&redirect_uri=${encodeURIComponent(location.origin+'/line-callback.html')}&scope=notify&state=${user.id}`;
+      window.location.href = lineAuthUrl;
     }
+  });
 
-    const pwForm = document.getElementById("pwForm");
-    const pwMsg  = document.getElementById("pwMsg");
-    if (pwForm){
-      pwForm.onsubmit = async (e)=>{
-        e.preventDefault();
-        if (!currentUser) return;
+  // パスワード変更
+  $('#changePwBtn')?.addEventListener('click', async () => {
+    const p1 = $('#newPw1').value.trim();
+    const p2 = $('#newPw2').value.trim();
+    const msgEl = $('#pwMsg');
+    if (!p1) { showMsg(msgEl, 'パスワードを入力してください', 'error'); return; }
+    if (p1.length < 8) { showMsg(msgEl, '8文字以上にしてください', 'error'); return; }
+    if (p1 !== p2) { showMsg(msgEl, 'パスワードが一致しません', 'error'); return; }
+    const { error } = await sb.auth.updateUser({ password: p1 });
+    if (error) { showMsg(msgEl, 'エラーが発生しました', 'error'); return; }
+    showMsg(msgEl, 'パスワードを変更しました', 'success');
+    $('#newPw1').value = ''; $('#newPw2').value = '';
+  });
 
-        const t = I18N[currentLang] || I18N["ja"];
-        if (pwMsg){ pwMsg.textContent = ""; pwMsg.style.color = "#6b6964"; }
-
-        const p1 = (document.getElementById("pwNew")?.value || "").trim();
-        const p2 = (document.getElementById("pwNew2")?.value || "").trim();
-
-        if (!p1){ if (pwMsg){ pwMsg.textContent = t.pw_setup_need_password; pwMsg.style.color = "#b00020"; } return; }
-        if (!p2){ if (pwMsg){ pwMsg.textContent = t.pw_setup_need_confirm; pwMsg.style.color = "#b00020"; } return; }
-        if (p1.length < 8){ if (pwMsg){ pwMsg.textContent = t.pw_setup_short; pwMsg.style.color = "#b00020"; } return; }
-        if (p1 !== p2){ if (pwMsg){ pwMsg.textContent = t.pw_setup_mismatch; pwMsg.style.color = "#b00020"; } return; }
-
-        const btn = document.getElementById("pwSubmit");
-        if (btn) btn.disabled = true;
-
-        try{
-          const { error:updateErr } = await sb.auth.updateUser({ password:p1 });
-          if (updateErr){
-            console.error("updateUser(set password) error:", updateErr);
-            if (pwMsg){ pwMsg.textContent = t.pw_setup_error; pwMsg.style.color = "#b00020"; }
-            return;
-          }
-
-          try{
-            await sb.from("profiles").update({ has_password:true }).eq("id", currentUser.id);
-          }catch(e2){
-            console.warn("profiles.has_password update error:", e2);
-          }
-
-          state.hasPassword = true;
-          if (pwSection) pwSection.classList.add("hidden");
-          if (pwChangeSection) pwChangeSection.classList.remove("hidden");
-          if (pwBanner) pwBanner.classList.add("hidden");
-
-          if (pwMsg){ pwMsg.textContent = t.pw_setup_success; pwMsg.style.color = "#6b6964"; }
-
-          const input1 = document.getElementById("pwNew");
-          const input2 = document.getElementById("pwNew2");
-          if (input1) input1.value = "";
-          if (input2) input2.value = "";
-        }catch(e){
-          console.error("pw setup exception:", e);
-          if (pwMsg){ pwMsg.textContent = t.pw_setup_error; pwMsg.style.color = "#b00020"; }
-        }finally{
-          if (btn) btn.disabled = false;
-        }
-      };
+  // アカウント削除
+  $('#deleteAccountBtn')?.addEventListener('click', () => {
+    $('#deleteModal').classList.add('show');
+  });
+  $('#deleteCancelBtn')?.addEventListener('click', () => {
+    $('#deleteModal').classList.remove('show');
+  });
+  $('#deleteConfirmBtn')?.addEventListener('click', async () => {
+    const { data: sess } = await sb.auth.getSession();
+    const token = sess?.session?.access_token;
+    const res = await fetch(
+      'https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/delete-account',
+      { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.ok) {
+      await sb.auth.signOut();
+      location.replace('/');
+    } else {
+      showToast('エラーが発生しました。時間をおいて再度お試しください。', 'error');
+      $('#deleteModal').classList.remove('show');
     }
+  });
 
-    const pwChangeForm = document.getElementById("pwChangeForm");
-    const pwChangeMsg  = document.getElementById("pwChangeMsg");
-    if (pwChangeForm){
-      pwChangeForm.onsubmit = async (e)=>{
-        e.preventDefault();
-        if (!currentUser) return;
-
-        const t = I18N[currentLang] || I18N["ja"];
-        if (pwChangeMsg){ pwChangeMsg.textContent = ""; pwChangeMsg.style.color = "#6b6964"; }
-
-        const p1 = (document.getElementById("pwChangeNew")?.value || "").trim();
-        const p2 = (document.getElementById("pwChangeNew2")?.value || "").trim();
-
-        if (!p1){ if (pwChangeMsg){ pwChangeMsg.textContent = t.pw_setup_need_password; pwChangeMsg.style.color = "#b00020"; } return; }
-        if (!p2){ if (pwChangeMsg){ pwChangeMsg.textContent = t.pw_setup_need_confirm; pwChangeMsg.style.color = "#b00020"; } return; }
-        if (p1.length < 8){ if (pwChangeMsg){ pwChangeMsg.textContent = t.pw_setup_short; pwChangeMsg.style.color = "#b00020"; } return; }
-        if (p1 !== p2){ if (pwChangeMsg){ pwChangeMsg.textContent = t.pw_setup_mismatch; pwChangeMsg.style.color = "#b00020"; } return; }
-
-        const btn = document.getElementById("pwChangeSubmit");
-        if (btn) btn.disabled = true;
-
-        try{
-          const { error:updateErr } = await sb.auth.updateUser({ password:p1 });
-          if (updateErr){
-            console.error("updateUser(change password) error:", updateErr);
-            if (pwChangeMsg){ pwChangeMsg.textContent = t.pw_setup_error; pwChangeMsg.style.color = "#b00020"; }
-            return;
-          }
-
-          if (pwChangeMsg){
-            pwChangeMsg.textContent = t.pw_change_success || t.pw_setup_success;
-            pwChangeMsg.style.color = "#6b6964";
-          }
-
-          const input1 = document.getElementById("pwChangeNew");
-          const input2 = document.getElementById("pwChangeNew2");
-          if (input1) input1.value = "";
-          if (input2) input2.value = "";
-        }catch(e){
-          console.error("pw change exception:", e);
-          if (pwChangeMsg){ pwChangeMsg.textContent = t.pw_setup_error; pwChangeMsg.style.color = "#b00020"; }
-        }finally{
-          if (btn) btn.disabled = false;
-        }
-      };
-    }
-
-    const pwShowSetup = document.getElementById("pwShowSetup");
-    if (pwShowSetup){
-      pwShowSetup.addEventListener("change", ()=>{
-        const type = pwShowSetup.checked ? "text" : "password";
-        const f1 = document.getElementById("pwNew");
-        const f2 = document.getElementById("pwNew2");
-        if (f1) f1.type = type;
-        if (f2) f2.type = type;
-      });
-    }
-
-    const pwShowChange = document.getElementById("pwShowChange");
-    if (pwShowChange){
-      pwShowChange.addEventListener("change", ()=>{
-        const type = pwShowChange.checked ? "text" : "password";
-        const f1 = document.getElementById("pwChangeNew");
-        const f2 = document.getElementById("pwChangeNew2");
-        if (f1) f1.type = type;
-        if (f2) f2.type = type;
-      });
-    }
-
-    const tier = (prof.tier || "free").toLowerCase();
-    const isActive = !!prof.is_active;
-
-    const deleteBox = document.getElementById("deleteConfirmBox");
-    const deleteStatusMsg = document.getElementById("deleteStatusMsg");
-    const btnDeleteConfirm = document.getElementById("btnDeleteConfirm");
-    const btnDeleteCancel  = document.getElementById("btnDeleteCancel");
-
-    if (btnDeleteConfirm) btnDeleteConfirm.onclick = ()=>handleDeleteAccount();
-    if (btnDeleteCancel){
-      btnDeleteCancel.onclick = ()=>{
-        if (deleteBox) deleteBox.classList.add("hidden");
-        if (deleteStatusMsg) deleteStatusMsg.textContent = "";
-      };
-    }
-
-    if (!isActive || tier==="free"){
-      state.plan = "free";
-      state.statusCode = "free";
-      applyLang(currentLang);
-
-      const btnSubMain   = $("#btnSubscribe");
-      const btnSubVideos = $("#btnSubscribeVideos");
-      const btnCancel    = $("#btnCancel");
-      const btnDelete    = $("#btnDeleteAccount");
-
-      [btnSubMain, btnSubVideos].forEach(b => {
-        if (!b) return;
-        b.classList.remove("hidden");
-      
-        if (prof.stripe_customer_id) {
-          b.textContent = currentLang === "ja" ? "Standardプラン登録" : "Subscribe to Standard";
-          b.onclick = () => {
-            const baseUrl = BILLING_CONFIG?.stripe?.standard?.payment_link_no_trial_url;
-            if (!baseUrl) return;
-            const params = new URLSearchParams();
-            if (currentUser?.email) params.set("prefilled_email", currentUser.email);
-            params.set("client_reference_id", user.id);
-            location.href = baseUrl + "?" + params.toString();
-          };
-        } else {
-          b.textContent = I18N[currentLang].btn_subscribe;
-          b.onclick = () => {
-            gaEvent("membership_cta_click", {
-              cta_name: "standard_start",
-              plan: "standard",
-              page: "members",
-              lang: currentLang,
-              destination: "stripe_checkout",
-              outbound: 1
-            });
-            createCheckout(user.id);
-          };
-        }
-      });
-
-      if (btnCancel){ btnCancel.classList.add("hidden"); btnCancel.onclick = null; }
-      const cancelExp1 = $("#cancelExplanation");
-      if (cancelExp1) cancelExp1.classList.add("hidden");
-      if (btnDelete){
-        btnDelete.classList.remove("hidden");
-        btnDelete.onclick = ()=>{
-          if (deleteBox) deleteBox.classList.remove("hidden");
-          if (deleteStatusMsg){
-            deleteStatusMsg.textContent = "";
-            deleteStatusMsg.style.color = "#6b6964";
-          }
-        };
-      }
-
-      renderVideosForPlan("free", videoSortMode);
-    }else{
-      state.plan = "standard";
-
-      const key = `ga_standard_started_${user.id}`;
-      if (!localStorage.getItem(key)) {
-        gaEvent("standard_started", { plan: "standard", page: "members", lang: currentLang });
-        localStorage.setItem(key, "1");
-      }
-
-      state.statusCode = "loading";
-      applyLang(currentLang);
-
-      const btnSubMain   = $("#btnSubscribe");
-      const btnSubVideos = $("#btnSubscribeVideos");
-      const btnCancel    = $("#btnCancel");
-      const btnDelete    = $("#btnDeleteAccount");
-
-      [btnSubMain, btnSubVideos].forEach(b=>{
-        if (!b) return;
-        b.classList.add("hidden");
-        b.onclick = null;
-      });
-
-      if (btnCancel){
-        btnCancel.classList.remove("hidden");
-        btnCancel.onclick = ()=>openPortal(user.id);
-      }
-      const cancelExp2 = $("#cancelExplanation");
-      if (cancelExp2){
-        cancelExp2.classList.remove("hidden");
-        cancelExp2.innerHTML = I18N[currentLang].cancel_explanation;
-      }
-      if (btnDelete){ btnDelete.classList.add("hidden"); btnDelete.onclick = null; }
-      if (deleteBox) deleteBox.classList.add("hidden");
-      if (deleteStatusMsg) deleteStatusMsg.textContent = "";
-
-      renderVideosForPlan("standard", videoSortMode);
-
-      state.statusCode = "ready";
-      applyLang(currentLang);
-    }
-
-    $("#logout").onclick = async ()=>{
-      try{ await sb.auth.signOut(); }catch{}
-      location.replace("./");
-    };
-  }
-
-  main();
-</script>
-
-<!-- ===== Service Worker 登録 + PWA バナー制御 ===== -->
-<script>
-  // Service Worker 登録
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('SW registered:', reg.scope))
-        .catch(err => console.warn('SW registration failed:', err));
-    });
-  }
-
-  // PWA バナー制御
+  // PWA
   let deferredPrompt = null;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isInStandaloneMode =
-    window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone;
-  const pwaBannerDismissed = sessionStorage.getItem('pwaBannerDismissed');
-
-  if (!isInStandaloneMode && !pwaBannerDismissed) {
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (!standalone && !sessionStorage.getItem('pwaBannerDismissed')) {
     window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('pwaBanner').classList.add('show');
+      e.preventDefault(); deferredPrompt = e;
+      $('#pwaBanner').classList.add('show');
     });
-    if (isIOS) {
-      document.getElementById('pwaBanner').classList.add('show');
-    }
+    if (isIOS) $('#pwaBanner').classList.add('show');
   }
 
-  document.getElementById('pwaBannerBtn').addEventListener('click', () => {
+  $('#pwaBannerBtn')?.addEventListener('click', () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
     } else {
-      document.getElementById('pwaModalSub').textContent = isIOS
-        ? 'Safariで以下の手順でホーム画面に追加できます。'
-        : 'ブラウザの手順でホーム画面に追加できます。';
-      document.getElementById('pwaSteps').innerHTML = isIOS ? `
-        <div class="pwa-step"><div class="pwa-step-num">1</div><div class="pwa-step-text">画面下の<strong>共有ボタン（□↑）</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">2</div><div class="pwa-step-text">メニューをスクロールして<strong>「ホーム画面に追加」</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">3</div><div class="pwa-step-text"><strong>「追加」</strong>をタップして完了！</div></div>
-      ` : `
-        <div class="pwa-step"><div class="pwa-step-num">1</div><div class="pwa-step-text">ブラウザ右上の<strong>メニュー（⋮）</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">2</div><div class="pwa-step-text"><strong>「アプリをインストール」</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">3</div><div class="pwa-step-text"><strong>「インストール」</strong>をタップして完了！</div></div>
-      `;
-      document.getElementById('pwaModal').classList.add('show');
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      $('#pwaModalSub').textContent = isIOS ? 'Safariで以下の手順でホーム画面に追加できます。' : 'ブラウザの手順でホーム画面に追加できます。';
+      $('#pwaSteps').innerHTML = isIOS ? `
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">1</div><div style="font-size:13px;">画面下の<strong>共有ボタン（□↑）</strong>をタップ</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">2</div><div style="font-size:13px;"><strong>「ホーム画面に追加」</strong>をタップ</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">3</div><div style="font-size:13px;"><strong>「追加」</strong>をタップして完了！</div></div>
+        </div>` : `
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">1</div><div style="font-size:13px;">ブラウザ右上の<strong>メニュー（⋮）</strong>をタップ</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">2</div><div style="font-size:13px;"><strong>「アプリをインストール」</strong>をタップ</div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start;"><div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">3</div><div style="font-size:13px;"><strong>「インストール」</strong>をタップして完了！</div></div>
+        </div>`;
+      $('#pwaModal').classList.add('show');
     }
   });
-
-  document.getElementById('pwaBannerClose').addEventListener('click', () => {
-    document.getElementById('pwaBanner').classList.remove('show');
+  $('#pwaBannerClose')?.addEventListener('click', () => {
+    $('#pwaBanner').classList.remove('show');
     sessionStorage.setItem('pwaBannerDismissed', '1');
   });
+  $('#pwaModalClose')?.addEventListener('click', () => $('#pwaModal').classList.remove('show'));
+  $('#pwaModal')?.addEventListener('click', (e) => { if (e.target === $('#pwaModal')) $('#pwaModal').classList.remove('show'); });
+}
 
-  document.getElementById('pwaModalClose').addEventListener('click', () => {
-    document.getElementById('pwaModal').classList.remove('show');
-  });
-  document.getElementById('pwaModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('pwaModal')) {
-      document.getElementById('pwaModal').classList.remove('show');
-    }
-  });
+main();
 </script>
-<!-- ===== /PWA ===== -->
+
+<!-- Service Worker -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
 
 </body>
 </html>
