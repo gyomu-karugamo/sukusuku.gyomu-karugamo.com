@@ -1223,9 +1223,9 @@ footer a:hover { color: var(--orange); }
     <div class="card">
       <div class="sec-label">LINE連携</div>
       <div class="card-title" style="margin-bottom:4px;">パートナーのLINEと連携する</div>
-      <p class="card-desc">業務かるがも公式LINEをパートナーに友だち追加してもらうことで、タスクを自動送信できます。</p>
+      <p class="card-desc">業務かるがも公式LINEをパートナーに友だち追加してもらい、4桁コードを入力してもらうだけで設定完了です。</p>
 
-      <!-- 連携ステータス -->
+      <!-- ステータスバッジ -->
       <div class="line-connect-box" id="lineStatusBox">
         <div class="line-icon">
           <svg viewBox="0 0 48 48" width="26" height="26" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -1233,57 +1233,64 @@ footer a:hover { color: var(--orange); }
           </svg>
         </div>
         <div>
-          <div class="line-connect-title" id="lineStatusTitle">未連携</div>
-          <div class="line-connect-desc" id="lineStatusDesc">パートナーに友だち追加URLを送って設定します</div>
+          <div class="line-connect-title" id="lineStatusTitle">確認中…</div>
+          <div class="line-connect-desc" id="lineStatusDesc">LINE連携状況を確認しています</div>
         </div>
       </div>
 
-      <!-- 手順ガイド（未連携時） -->
-      <div id="lineSetupGuide" style="margin-top:16px;">
+      <!-- 未連携: 手順ガイド + コード発行 -->
+      <div id="lineSetupGuide" style="display:none;margin-top:16px;">
         <div style="font-size:12px;font-weight:500;color:var(--brown);margin-bottom:10px;letter-spacing:0.04em;">📋 設定の流れ</div>
-        <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px;">
           <div style="display:flex;gap:12px;align-items:flex-start;">
             <div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
-            <div style="font-size:13px;line-height:1.6;">下のボタンからパートナーに<strong>友だち追加URL</strong>をコピーして送る</div>
+            <div style="font-size:13px;line-height:1.6;">パートナーに<strong>業務かるがも公式LINE</strong>を友だち追加してもらう<br><span style="color:var(--mist);font-size:11px;">※アプリ不要・LINEだけでOK</span></div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start;">
             <div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
-            <div style="font-size:13px;line-height:1.6;">パートナーが<strong>業務かるがも公式LINE</strong>を友だち追加する<br><span style="color:var(--mist);font-size:11px;">※アプリのインストール不要、LINEだけでOK</span></div>
+            <div style="font-size:13px;line-height:1.6;">下の「コードを発行」ボタンで<strong>4桁の連携コード</strong>を生成する</div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start;">
             <div style="width:22px;height:22px;border-radius:50%;background:var(--orange);color:white;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div>
-            <div style="font-size:13px;line-height:1.6;">友だち追加後、自動でメッセージが届き<strong>連携完了</strong></div>
+            <div style="font-size:13px;line-height:1.6;">パートナーが公式LINEに<strong>4桁コードを送信</strong>して連携完了</div>
           </div>
         </div>
 
-        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-line" id="copyLineUrlBtn">
-            <svg viewBox="0 0 20 20" width="14" height="14" fill="currentColor" style="margin-right:4px;vertical-align:-2px;"><path d="M8 2a2 2 0 00-2 2v1H4a2 2 0 00-2 2v9a2 2 0 002 2h8a2 2 0 002-2v-1h2a2 2 0 002-2V7l-4-4H8zm0 1h5l3 3v7h-2V7a2 2 0 00-2-2H8V3zM4 7h8v9H4V7z"/></svg>
-            友だち追加URLをコピー
-          </button>
-          <button class="btn" id="openLineUrlBtn" style="font-size:13px;">
-            QRコードを表示
-          </button>
+        <!-- 友だち追加URL -->
+        <div style="background:var(--line-pale);border:1px solid rgba(6,199,85,0.2);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:500;margin-bottom:6px;">① まずパートナーにこのURLを送る</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="lineFriendUrlInput" type="text" value="https://line.me/R/ti/p/@885sfhyp" readonly
+              style="flex:1;font-size:12px;background:white;border-color:rgba(6,199,85,0.3);color:var(--brown-mid);cursor:text;">
+            <button class="btn btn-line" id="copyLineUrlBtn" style="flex-shrink:0;font-size:12px;padding:8px 12px;">コピー</button>
+          </div>
         </div>
-        <p class="msg" id="lineMsg" style="margin-top:8px;"></p>
+
+        <!-- コード発行エリア -->
+        <div style="background:var(--orange-pale);border:1px solid rgba(232,99,42,0.2);border-radius:var(--radius-sm);padding:14px;">
+          <div style="font-size:12px;font-weight:500;margin-bottom:10px;">② 連携コードを発行する（10分有効）</div>
+          <div id="pairingCodeDisplay" style="display:none;text-align:center;margin-bottom:12px;">
+            <div style="font-family:'DM Sans',sans-serif;font-size:42px;font-weight:300;letter-spacing:0.2em;color:var(--orange);" id="pairingCodeText">----</div>
+            <div style="font-size:11px;color:var(--mist);margin-top:4px;" id="pairingCodeExpiry">有効期限: --:--まで</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" id="generateCodeBtn" style="font-size:13px;">コードを発行する</button>
+            <button class="btn" id="checkConnectionBtn" style="font-size:13px;display:none;">連携を確認する</button>
+          </div>
+          <p class="msg" id="lineMsg" style="margin-top:8px;"></p>
+        </div>
       </div>
 
       <!-- 連携済み表示 -->
-      <div id="lineConnectedGuide" style="display:none;margin-top:12px;">
-        <div class="status-box success" style="display:flex;align-items:center;gap:10px;">
-          <span style="font-size:20px;">✅</span>
+      <div id="lineConnectedGuide" style="display:none;margin-top:14px;">
+        <div class="status-box success" style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:22px;">✅</span>
           <div>
-            <div style="font-size:13px;font-weight:500;color:var(--success);">LINE連携済み</div>
-            <div style="font-size:12px;color:var(--mist);" id="linePartnerName">パートナーが友だち追加済みです</div>
+            <div style="font-size:14px;font-weight:500;color:var(--success);">LINE連携済み</div>
+            <div style="font-size:12px;color:var(--mist);margin-top:2px;">パートナーのLINEにタスクが自動送信されます</div>
           </div>
         </div>
         <button class="btn" id="lineDisconnectBtn" style="margin-top:10px;font-size:12px;color:var(--error);border-color:rgba(192,57,43,0.2);">連携を解除する</button>
-      </div>
-
-      <div style="margin-top:14px;padding:12px 14px;background:var(--cream-dark);border-radius:var(--radius-sm);font-size:12px;color:var(--mist);line-height:1.7;">
-        💡 LINE連携はSupabase Edge Function + LINE Messaging APIで動作します。<br>
-        設定にはLINE公式アカウントのチャネルアクセストークンが必要です。<br>
-        <a href="https://developers.line.biz/console/" target="_blank" rel="noopener" style="color:var(--orange);">LINE Developersコンソール →</a>
       </div>
     </div>
 
@@ -1486,75 +1493,111 @@ async function loadOrCreateProfile(userId) {
   return { data, error };
 }
 
+// ========== DB: tasks ==========
 async function loadTasks() {
-  // tasksテーブルがまだない場合はlocalStorageフォールバック
-  try {
-    const { data, error } = await sb.from('tasks')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('created_at', { ascending: false });
-    if (!error && data) {
-      tasks = data;
-      return;
-    }
-  } catch(e) {}
-  // フォールバック: localStorageからロード
-  const stored = localStorage.getItem(`kamo_tasks_${currentUser.id}`);
-  tasks = stored ? JSON.parse(stored) : [];
+  const { data, error } = await sb.from('tasks')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('loadTasks', error); tasks = []; return; }
+  tasks = data || [];
 }
 
+async function saveTask(task) {
+  const { error } = await sb.from('tasks')
+    .upsert({ ...task, user_id: currentUser.id }, { onConflict: 'id' });
+  if (error) console.error('saveTask', error);
+}
+
+async function deleteTaskDB(id) {
+  const { error } = await sb.from('tasks')
+    .delete().eq('id', id).eq('user_id', currentUser.id);
+  if (error) console.error('deleteTaskDB', error);
+}
+
+// ========== DB: completions ==========
 async function loadCompletions() {
-  // task_completionsテーブルがまだない場合はlocalStorageフォールバック
   const today = getTodayStr();
-  try {
-    const { data, error } = await sb.from('task_completions')
-      .select('task_id, done')
-      .eq('user_id', currentUser.id)
-      .eq('date', today);
-    if (!error && data) {
-      completions = {};
-      data.forEach(r => completions[r.task_id] = r.done);
-      return;
-    }
-  } catch(e) {}
-  const stored = localStorage.getItem(`kamo_completions_${currentUser.id}_${today}`);
-  completions = stored ? JSON.parse(stored) : {};
+  const { data, error } = await sb.from('task_completions')
+    .select('task_id, done')
+    .eq('user_id', currentUser.id)
+    .eq('date', today);
+  if (error) { console.error('loadCompletions', error); completions = {}; return; }
+  completions = {};
+  (data || []).forEach(r => completions[r.task_id] = r.done);
 }
 
-function saveTasks() {
-  // Supabaseへの保存は実装次第、まずlocalStorageに保存
-  localStorage.setItem(`kamo_tasks_${currentUser.id}`, JSON.stringify(tasks));
-  // Supabase upsert (非同期、エラーは無視)
-  tasks.forEach(t => {
-    sb.from('tasks').upsert({ ...t, user_id: currentUser.id }, { onConflict: 'id' }).catch(() => {});
-  });
-}
-
-function saveCompletion(taskId, done) {
+async function saveCompletion(taskId, done) {
   const today = getTodayStr();
   completions[taskId] = done;
-  localStorage.setItem(`kamo_completions_${currentUser.id}_${today}`, JSON.stringify(completions));
-  sb.from('task_completions')
-    .upsert({ user_id: currentUser.id, task_id: taskId, date: today, done }, { onConflict: 'user_id,task_id,date' })
-    .catch(() => {});
+  const { error } = await sb.from('task_completions')
+    .upsert({ user_id: currentUser.id, task_id: taskId, date: today, done },
+            { onConflict: 'user_id,task_id,date' });
+  if (error) console.error('saveCompletion', error);
 }
 
+// ========== DB: LINE送信数 ==========
 async function countLineSentThisMonth() {
   const now = new Date();
   const y = now.getFullYear();
   const m = String(now.getMonth()+1).padStart(2,'0');
-  const from = `${y}-${m}-01`;
-  const to = `${y}-${m}-31`;
+  const { count, error } = await sb.from('line_sends')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id)
+    .gte('created_at', `${y}-${m}-01`)
+    .lt('created_at', `${y}-${String(now.getMonth()+2).padStart(2,'0')}-01`);
+  if (error) return 0;
+  return count || 0;
+}
+
+// ========== DB: LINE連携状況 ==========
+async function loadLineConnection() {
+  const { data, error } = await sb.from('line_connections')
+    .select('id, line_user_id')
+    .eq('user_id', currentUser.id)
+    .single();
+  if (error) return null;
+  return data;
+}
+
+async function generatePairingCode() {
+  // 4桁コード生成
+  const code = String(Math.floor(1000 + Math.random() * 9000));
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10分
+
+  // 既存コードを削除してから新規作成
+  await sb.from('line_pairing_codes')
+    .delete().eq('user_id', currentUser.id);
+
+  const { error } = await sb.from('line_pairing_codes')
+    .insert({ user_id: currentUser.id, code, expires_at: expiresAt });
+  if (error) { console.error('generatePairingCode', error); return null; }
+  return { code, expiresAt };
+}
+
+async function disconnectLine() {
+  const { error } = await sb.from('line_connections')
+    .delete().eq('user_id', currentUser.id);
+  if (error) console.error('disconnectLine', error);
+}
+
+// ========== LINE: タスク送信 ==========
+async function sendTaskToLine(task) {
+  if (!isPro() && lineSentCount >= FREE_LIMIT) return false;
+  const { data: sess } = await sb.auth.getSession();
+  const token = sess?.session?.access_token;
   try {
-    const { count } = await sb.from('line_sends')
-      .select('id', { count: 'exact' })
-      .eq('user_id', currentUser.id)
-      .gte('created_at', from)
-      .lte('created_at', to);
-    return count || 0;
-  } catch(e) {
-    return 0;
-  }
+    const res = await fetch(
+      'https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/send-line-task',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ task_id: task.id, user_id: currentUser.id })
+      }
+    );
+    if (res.ok) { lineSentCount++; return true; }
+  } catch(e) { console.error('sendTaskToLine', e); }
+  return false;
 }
 
 // ========================================
@@ -1670,11 +1713,11 @@ function renderTaskList(containerId, taskArr, isPartner) {
 
   // チェックボタンイベント
   wrap.querySelectorAll('.task-check').forEach(el => {
-    el.addEventListener('click', (e) => {
+    el.addEventListener('click', async (e) => {
       e.stopPropagation();
       const id = el.dataset.id;
       const newDone = !completions[id];
-      saveCompletion(id, newDone);
+      await saveCompletion(id, newDone);
       renderTodayTasks();
       if (newDone) showToast('完了しました ✓', 'success');
     });
@@ -1727,17 +1770,16 @@ function renderAllTasks() {
   });
 }
 
-function deleteTask(id) {
+async function deleteTask(id) {
   tasks = tasks.filter(t => t.id !== id);
   delete completions[id];
-  saveTasks();
-  sb.from('tasks').delete().eq('id', id).eq('user_id', currentUser.id).catch(() => {});
+  await deleteTaskDB(id);
   renderAllTasks();
   renderTodayTasks();
   showToast('タスクを削除しました');
 }
 
-function addTask(name, assignee, repeat, category, note) {
+async function addTask(name, assignee, repeat, category, note) {
   const id = `t_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const task = {
     id,
@@ -1749,10 +1791,17 @@ function addTask(name, assignee, repeat, category, note) {
     created_at: new Date().toISOString()
   };
   tasks.unshift(task);
-  saveTasks();
+  await saveTask(task);
   renderAllTasks();
   renderTodayTasks();
-  showToast(`タスクを追加しました`, 'success');
+  // パートナー担当ならLINE送信
+  if (assignee === 'partner') {
+    const sent = await sendTaskToLine(task);
+    if (sent) showToast('タスクを追加してLINEに送信しました 💬', 'success');
+    else showToast('タスクを追加しました', 'success');
+  } else {
+    showToast('タスクを追加しました', 'success');
+  }
 }
 
 // ========================================
@@ -1875,7 +1924,7 @@ async function main() {
   renderAccount();
 
   // LINE連携チェック
-  refreshLineStatus();
+  await refreshLineStatus();
 
   // =========== EVENT LISTENERS ===========
 
@@ -1890,10 +1939,10 @@ async function main() {
   });
 
   // クイックタスク追加（自分）
-  $('#quickAddMyBtn').addEventListener('click', () => {
+  $('#quickAddMyBtn').addEventListener('click', async () => {
     const name = $('#quickMyTask').value.trim();
     if (!name) return;
-    addTask(name, 'me', 'none', '', '');
+    await addTask(name, 'me', 'none', '', '');
     $('#quickMyTask').value = '';
   });
   $('#quickMyTask').addEventListener('keydown', (e) => {
@@ -1901,14 +1950,14 @@ async function main() {
   });
 
   // クイックタスク追加（パートナー）
-  $('#quickAddPartnerBtn').addEventListener('click', () => {
+  $('#quickAddPartnerBtn').addEventListener('click', async () => {
     const name = $('#quickPartnerTask').value.trim();
     if (!name) return;
     if (!isPro() && lineSentCount >= FREE_LIMIT) {
       showToast('今月の送信上限（10件）に達しました。Standardプランへ', 'error');
       return;
     }
-    addTask(name, 'partner', 'none', '', '');
+    await addTask(name, 'partner', 'none', '', '');
     $('#quickPartnerTask').value = '';
   });
   $('#quickPartnerTask').addEventListener('keydown', (e) => {
@@ -1923,7 +1972,7 @@ async function main() {
     });
   });
 
-  $('#addTaskBtn').addEventListener('click', () => {
+  $('#addTaskBtn').addEventListener('click', async () => {
     const name = $('#taskName').value.trim();
     const assignee = document.querySelector('input[name="assignee"]:checked')?.value || 'me';
     const repeat = $('#repeatType').value;
@@ -1937,7 +1986,7 @@ async function main() {
       return;
     }
 
-    addTask(name, assignee, repeat, category, note);
+    await addTask(name, assignee, repeat, category, note);
     $('#taskName').value = '';
     $('#taskNote').value = '';
     showMsg($('#taskAddMsg'), 'タスクを追加しました', 'success');
@@ -1972,17 +2021,104 @@ async function main() {
   $('#btnCancel')?.addEventListener('click', openPortal);
   $('#gateUpgradeBtn')?.addEventListener('click', () => { goTab('account'); });
 
-  // LINE連携（仮）
-  $('#lineConnectBtn')?.addEventListener('click', () => {
-    if (localStorage.getItem(`kamo_line_${user.id}`)) {
-      localStorage.removeItem(`kamo_line_${user.id}`);
-      showToast('LINE連携を解除しました');
-      location.reload();
+  // ===== LINE連携（本実装・4桁コード方式） =====
+  let lineConnected = false;
+  let pairingTimer = null;
+
+  async function refreshLineStatus() {
+    const conn = await loadLineConnection();
+    lineConnected = !!conn;
+    const guide = document.getElementById('lineSetupGuide');
+    const connectedGuide = document.getElementById('lineConnectedGuide');
+    const alert = document.getElementById('lineAlertBanner');
+
+    if (lineConnected) {
+      document.getElementById('lineStatusTitle').textContent = '連携済み';
+      document.getElementById('lineStatusDesc').textContent = 'パートナーのLINEに自動送信されます';
+      if (guide) guide.style.display = 'none';
+      if (connectedGuide) connectedGuide.style.display = 'block';
+      if (alert) alert.style.display = 'none';
     } else {
-      // LINE Messaging API の認可URL（要設定）
-      const lineAuthUrl = `https://notify-bot.line.me/oauth/authorize?response_type=code&client_id=PLACEHOLDER_LINE_CLIENT_ID&redirect_uri=${encodeURIComponent(location.origin+'/line-callback.html')}&scope=notify&state=${user.id}`;
-      window.location.href = lineAuthUrl;
+      document.getElementById('lineStatusTitle').textContent = '未連携';
+      document.getElementById('lineStatusDesc').textContent = 'パートナーに友だち追加してもらいましょう';
+      if (guide) guide.style.display = 'block';
+      if (connectedGuide) connectedGuide.style.display = 'none';
+      if (alert) alert.style.display = 'flex';
     }
+  }
+
+  // 友だち追加URLコピー
+  document.getElementById('copyLineUrlBtn')?.addEventListener('click', async () => {
+    const url = 'https://line.me/R/ti/p/@885sfhyp';
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('友だち追加URLをコピーしました！', 'success');
+    } catch(e) {
+      document.getElementById('lineFriendUrlInput')?.select();
+    }
+  });
+
+  // 連携コード発行
+  document.getElementById('generateCodeBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('generateCodeBtn');
+    btn.disabled = true;
+    btn.textContent = '発行中…';
+    const result = await generatePairingCode();
+    btn.disabled = false;
+    btn.textContent = 'コードを再発行する';
+
+    if (!result) {
+      showMsg(document.getElementById('lineMsg'), 'エラーが発生しました。再度お試しください。', 'error');
+      return;
+    }
+
+    const { code, expiresAt } = result;
+    const displayEl = document.getElementById('pairingCodeDisplay');
+    const codeEl = document.getElementById('pairingCodeText');
+    const expiryEl = document.getElementById('pairingCodeExpiry');
+    const checkBtn = document.getElementById('checkConnectionBtn');
+
+    if (displayEl) displayEl.style.display = 'block';
+    if (codeEl) codeEl.textContent = code;
+    if (checkBtn) checkBtn.style.display = 'inline-block';
+
+    // 残り時間カウントダウン
+    if (pairingTimer) clearInterval(pairingTimer);
+    pairingTimer = setInterval(() => {
+      const left = Math.max(0, Math.floor((new Date(expiresAt) - Date.now()) / 1000));
+      const min = Math.floor(left / 60);
+      const sec = String(left % 60).padStart(2, '0');
+      if (expiryEl) expiryEl.textContent = left > 0 ? `有効期限: ${min}:${sec}` : '期限切れ';
+      if (left === 0) { clearInterval(pairingTimer); if (codeEl) codeEl.style.opacity = '0.4'; }
+    }, 1000);
+
+    showMsg(document.getElementById('lineMsg'),
+      `コード ${code} をパートナーのLINEに送ってもらってください`, 'success');
+  });
+
+  // 連携確認（ポーリング）
+  document.getElementById('checkConnectionBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('checkConnectionBtn');
+    btn.disabled = true;
+    btn.textContent = '確認中…';
+    const conn = await loadLineConnection();
+    btn.disabled = false;
+    btn.textContent = '連携を確認する';
+    if (conn) {
+      if (pairingTimer) clearInterval(pairingTimer);
+      showToast('LINE連携が完了しました！ 🎉', 'success');
+      await refreshLineStatus();
+    } else {
+      showMsg(document.getElementById('lineMsg'),
+        'まだ連携されていません。パートナーにコードを送ってもらってください。', 'error');
+    }
+  });
+
+  // 連携解除
+  document.getElementById('lineDisconnectBtn')?.addEventListener('click', async () => {
+    await disconnectLine();
+    showToast('LINE連携を解除しました');
+    await refreshLineStatus();
   });
 
   // パスワード変更
