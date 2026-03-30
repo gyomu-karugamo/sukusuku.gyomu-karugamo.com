@@ -1328,6 +1328,18 @@ footer a:hover { color: var(--orange); }
             <div style="font-size:12px;color:var(--mist);margin-top:2px;">パートナーのLINEにタスクが自動送信されます</div>
           </div>
         </div>
+
+        <!-- タスクページURL（リッチメニューのリンク先） -->
+        <div style="margin-top:12px;padding:12px 14px;background:var(--cream-dark);border-radius:var(--radius-sm);">
+          <div style="font-size:12px;font-weight:500;margin-bottom:6px;">📋 リッチメニュー用タスクページURL</div>
+          <div style="font-size:11px;color:var(--mist);margin-bottom:8px;">LINE Official Account Managerのリッチメニューで、このURLをリンク先に設定してください</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="liffUrlInput" type="text" readonly
+              style="flex:1;font-size:11px;background:white;color:var(--brown-mid);cursor:text;padding:6px 10px;">
+            <button class="btn btn-primary" id="copyLiffUrlBtn" style="flex-shrink:0;font-size:12px;padding:8px 12px;">コピー</button>
+          </div>
+        </div>
+
         <button class="btn" id="lineDisconnectBtn" style="margin-top:10px;font-size:12px;color:var(--error);border-color:rgba(192,57,43,0.2);">連携を解除する</button>
       </div>
     </div>
@@ -1728,6 +1740,11 @@ async function refreshLineStatus() {
     if (guide)         guide.style.display = 'none';
     if (connectedGuide) connectedGuide.style.display = 'block';
     if (alertBanner)   alertBanner.style.display = 'none';
+    // タスクページURLを表示
+    if (conn?.access_token) {
+      const urlInput = document.getElementById('liffUrlInput');
+      if (urlInput) urlInput.value = getTaskPageUrl(conn.access_token);
+    }
   } else {
     if (statusBox)     statusBox.style.display = 'flex';
     const titleEl = document.getElementById('lineStatusTitle');
@@ -1757,11 +1774,16 @@ async function countLineSentThisMonth() {
 // ========== DB: LINE連携状況 ==========
 async function loadLineConnection() {
   const { data, error } = await sb.from('line_connections')
-    .select('id, line_user_id')
+    .select('id, line_user_id, access_token')
     .eq('user_id', currentUser.id)
     .single();
   if (error) return null;
   return data;
+}
+
+// タスクページURL（トークン付き）を生成
+function getTaskPageUrl(token) {
+  return `https://app.gyomu-karugamo.com/task-liff.html?token=${token}`;
 }
 
 async function generatePairingCode() {
@@ -2427,6 +2449,18 @@ async function main() {
     await disconnectLine();
     showToast('LINE連携を解除しました');
     await refreshLineStatus();
+  });
+
+  document.getElementById('copyLiffUrlBtn')?.addEventListener('click', async () => {
+    const urlInput = document.getElementById('liffUrlInput');
+    const url = urlInput?.value;
+    if (!url) return;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('URLをコピーしました！リッチメニューのリンク先に設定してください', 'success');
+    } catch(e) {
+      urlInput?.select();
+    }
   });
 
   // ① 通知設定カード表示制御（LINE連携済み時のみ）
