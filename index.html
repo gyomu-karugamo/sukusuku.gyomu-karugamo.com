@@ -7,7 +7,7 @@
 <link rel="icon" type="image/png" href="/assets/icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
 
-  <!-- ===== PWA ===== -->
+<!-- ===== PWA ===== -->
 <link rel="manifest" href="/manifest.json" />
 <meta name="theme-color" content="#75c29c" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -91,6 +91,16 @@
     pointer-events: none;
     z-index: 0;
     opacity: 0.3;
+  }
+
+  /* ===== .wrap ===== */
+  .wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   .container {
@@ -299,6 +309,71 @@
     transform: none;
   }
 
+  /* ===== OR 区切り ===== */
+  .divider-or {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    font-size: 12px;
+    color: var(--mist);
+    letter-spacing: 0.06em;
+  }
+
+  .divider-or::before,
+  .divider-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(26,23,20,0.1);
+  }
+
+  /* ===== .row（Googleボタン行） ===== */
+  .row {
+    margin-bottom: 4px;
+  }
+
+  /* ===== Googleログインボタン ===== */
+  .btn-google {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: white;
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    border: 1px solid rgba(26,23,20,0.18);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  }
+
+  .btn-google:hover {
+    background: var(--cream);
+    border-color: rgba(26,23,20,0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-google svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  /* フォームメッセージ（.form-message） */
+  .form-message {
+    font-size: 13px;
+    line-height: 1.5;
+    min-height: 1.3em;
+    margin-top: 8px;
+    font-weight: 300;
+    color: var(--error);
+  }
+
   /* メッセージ */
   .msg {
     font-size: 13px;
@@ -344,6 +419,178 @@
 
   .foot-links a:hover { color: var(--duck); }
 
+  /* ===== PWA バナー ===== */
+  .pwa-banner {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 440px;
+    background: white;
+    border: 1px solid rgba(26,23,20,0.1);
+    box-shadow: 0 4px 24px rgba(26,23,20,0.12);
+    padding: 14px 16px;
+    z-index: 200;
+    animation: slideUp 0.3s ease forwards;
+  }
+
+  .pwa-banner.show {
+    display: flex;
+  }
+
+  .pwa-banner-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .pwa-banner-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pwa-banner-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+
+  .pwa-banner-desc {
+    font-size: 11px;
+    color: var(--mist);
+    line-height: 1.5;
+  }
+
+  .pwa-banner-btn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    background: var(--duck);
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .pwa-banner-btn:hover {
+    background: var(--ink);
+  }
+
+  .pwa-banner-close {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--mist);
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .pwa-banner-close:hover {
+    color: var(--ink);
+  }
+
+  /* ===== PWA モーダル ===== */
+  .pwa-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,23,20,0.4);
+    z-index: 300;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0 20px;
+  }
+
+  .pwa-modal-overlay.show {
+    display: flex;
+  }
+
+  .pwa-modal {
+    background: white;
+    width: calc(100% - 32px);
+    max-width: 440px;
+    padding: 28px 28px 24px;
+    animation: slideUp 0.3s ease forwards;
+  }
+
+  .pwa-modal-title {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .pwa-modal-sub {
+    font-size: 13px;
+    color: var(--mist);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .pwa-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .pwa-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pwa-step-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--duck);
+    color: white;
+    font-size: 12px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .pwa-step-text {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .pwa-modal-close {
+    width: 100%;
+    padding: 12px;
+    background: var(--cream);
+    border: 1px solid rgba(26,23,20,0.12);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .pwa-modal-close:hover {
+    background: var(--warm);
+  }
+
   /* アニメーション */
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-16px); }
@@ -355,10 +602,16 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   @media (max-width: 480px) {
     body { padding: 32px 16px; }
     .card { padding: 28px 24px 28px; }
     .logo { margin-bottom: 32px; }
+    .pwa-banner { bottom: 12px; }
   }
 </style>
 
@@ -388,87 +641,90 @@
       <button class="pwa-banner-close" id="pwaBannerClose">×</button>
     </div>
 
-<div class="noise"></div>
+    <div class="noise"></div>
 
-<div class="container">
+    <div class="container">
 
-  <!-- ロゴ -->
-  <a href="/" class="logo">
-    <img src="/assets/icon.png" alt="業務かるがも">
-    <span class="logo-name">業務かるがも</span>
-  </a>
+      <!-- ロゴ -->
+      <a href="/" class="logo">
+        <img src="/assets/icon.png" alt="業務かるがも">
+        <span class="logo-name">業務かるがも</span>
+      </a>
 
-  <div class="card">
+      <div class="card">
 
-    <!-- パスワードログイン -->
-    <div class="card-section">
-      <div class="section-label">Login</div>
-      <h2 class="section-title">ログイン</h2>
-      <p class="section-desc">パスワードを設定済みの方はこちら。</p>
+        <!-- パスワードログイン -->
+        <div class="card-section">
+          <div class="section-label">Login</div>
+          <h2 class="section-title">ログイン</h2>
+          <p class="section-desc">パスワードを設定済みの方はこちら。</p>
 
-      <div class="field">
-        <input id="pw-email" type="email" placeholder="メールアドレス" autocomplete="email">
-        <input id="pw-password" type="password" placeholder="パスワード" autocomplete="current-password">
-        <label class="show-pw">
-          <input type="checkbox" id="show-password">
-          パスワードを表示
-        </label>
+          <div class="field">
+            <input id="pw-email" type="email" placeholder="メールアドレス" autocomplete="email">
+            <input id="pw-password" type="password" placeholder="パスワード" autocomplete="current-password">
+            <label class="show-pw">
+              <input type="checkbox" id="show-password">
+              パスワードを表示
+            </label>
+          </div>
+
+          <button id="btn-login-pw" class="btn-primary">ログイン</button>
+          <p id="pw-message" class="msg" aria-live="polite"></p>
+        </div>
+
+        <!-- OR 区切り -->
+        <div class="divider-or">または</div>
+
+        <!-- Google ログイン -->
+        <div class="row">
+          <button id="btn-google" class="btn-google">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.73 1.22 9.23 3.61l6.9-6.9C35.68 2.2 30.2 0 24 0 14.6 0 6.48 5.48 2.56 13.44l8.04 6.24C12.6 13.28 17.8 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.5 24c0-1.64-.14-3.21-.41-4.73H24v9h12.7c-.55 2.9-2.18 5.36-4.66 7.02l7.2 5.6C43.98 36.2 46.5 30.6 46.5 24z"/>
+              <path fill="#FBBC05" d="M10.6 28.68a14.5 14.5 0 010-9.36l-8.04-6.24A24 24 0 000 24c0 3.9.94 7.6 2.56 10.92l8.04-6.24z"/>
+              <path fill="#34A853" d="M24 48c6.2 0 11.4-2.05 15.2-5.6l-7.2-5.6c-2 1.35-4.56 2.15-8 2.15-6.2 0-11.4-3.78-13.4-9.18l-8.04 6.24C6.48 42.52 14.6 48 24 48z"/>
+            </svg>
+            <span id="t_google_btn">Googleでログイン</span>
+          </button>
+          <p id="google-message" class="form-message" aria-live="polite"></p>
+        </div>
+
+        <!-- 新規登録 / パスワード再設定 -->
+        <div class="card-section">
+          <div class="section-label">Register / Reset</div>
+          <h2 class="section-title">新規登録 / パスワード再設定</h2>
+          <p class="section-desc">メールアドレスを認証してアカウントを作成します。すでにアカウントがある場合、同じ手順でパスワード再設定へ進めます。</p>
+
+          <label class="agree">
+            <input type="checkbox" id="agree">
+            <span>
+              <a href="/terms.html" target="_blank" rel="noopener">利用規約</a>および
+              <a href="/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>を読んで同意しました。また、本サービスは女性を対象としており、女性であることに同意します。
+            </span>
+          </label>
+
+          <div class="field">
+            <input id="magic-email" type="email" placeholder="メールアドレス" autocomplete="email">
+          </div>
+
+          <button id="btn-magic" class="btn-primary" disabled>認証メールを送る</button>
+          <p id="magic-message" class="msg" aria-live="polite"></p>
+        </div>
+
       </div>
 
-      <button id="btn-login-pw" class="btn-primary">ログイン</button>
-      <p id="pw-message" class="msg" aria-live="polite"></p>
-    </div>
-
-    <!-- Google ログイン -->
-    <div class="divider-or" id="t_or_divider">または</div>
-    <div class="row">
-      <button id="btn-google" class="btn-google">
-        <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.73 1.22 9.23 3.61l6.9-6.9C35.68 2.2 30.2 0 24 0 14.6 0 6.48 5.48 2.56 13.44l8.04 6.24C12.6 13.28 17.8 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.5 24c0-1.64-.14-3.21-.41-4.73H24v9h12.7c-.55 2.9-2.18 5.36-4.66 7.02l7.2 5.6C43.98 36.2 46.5 30.6 46.5 24z"/>
-          <path fill="#FBBC05" d="M10.6 28.68a14.5 14.5 0 010-9.36l-8.04-6.24A24 24 0 000 24c0 3.9.94 7.6 2.56 10.92l8.04-6.24z"/>
-          <path fill="#34A853" d="M24 48c6.2 0 11.4-2.05 15.2-5.6l-7.2-5.6c-2 1.35-4.56 2.15-8 2.15-6.2 0-11.4-3.78-13.4-9.18l-8.04 6.24C6.48 42.52 14.6 48 24 48z"/>
-        </svg>
-        <span id="t_google_btn">Googleでログイン</span>
-      </button>
-      <p id="google-message" class="form-message" aria-live="polite"></p>
-    </div>
-
-    <!-- 新規登録 / パスワード再設定 -->
-    <div class="card-section">
-      <div class="section-label">Register / Reset</div>
-      <h2 class="section-title">新規登録 / パスワード再設定</h2>
-      <p class="section-desc">メールアドレスを認証してアカウントを作成します。すでにアカウントがある場合、同じ手順でパスワード再設定へ進めます。</p>
-
-      <label class="agree">
-        <input type="checkbox" id="agree">
-        <span>
-          <a href="/terms.html" target="_blank" rel="noopener">利用規約</a>および
-          <a href="/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>を読んで同意しました。また、本サービスは女性を対象としており、女性であることに同意します。
-        </span>
-      </label>
-
-      <div class="field">
-        <input id="magic-email" type="email" placeholder="メールアドレス" autocomplete="email">
+      <div class="foot">
+        <p>メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
+        <div class="foot-links">
+          <a href="/terms.html" target="_blank" rel="noopener">利用規約</a>
+          <a href="/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>
+          <a href="/legal.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a>
+          <a href="/contact.html" target="_blank" rel="noopener">お問い合わせ</a>
+        </div>
       </div>
 
-      <button id="btn-magic" class="btn-primary" disabled>認証メールを送る</button>
-      <p id="magic-message" class="msg" aria-live="polite"></p>
-    </div>
-
-  </div>
-
-  <div class="foot">
-    <p>メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
-    <div class="foot-links">
-      <a href="/terms.html" target="_blank" rel="noopener">利用規約</a>
-      <a href="/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>
-      <a href="/legal.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a>
-      <a href="/contact.html" target="_blank" rel="noopener">お問い合わせ</a>
-    </div>
-  </div>
-
-</div>
+    </div><!-- /.container -->
+  </div><!-- /.wrap -->
 
 <script>
   const SUPABASE_URL = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
@@ -544,6 +800,19 @@
     } catch(e) {}
 
     window.location.href = `/app.html`;
+  };
+
+  // Googleログイン
+  $("#btn-google").onclick = async () => {
+    const googleMsg = $("#google-message");
+    showMsg(googleMsg, "");
+    const { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `https://app.gyomu-karugamo.com/app.html` }
+    });
+    if (error) {
+      showMsg(googleMsg, TXT.errorPrefix + error.message);
+    }
   };
 
   magicBtn.onclick = async () => {
@@ -630,6 +899,7 @@
   document.getElementById('pwaModalClose').addEventListener('click', () => {
     document.getElementById('pwaModal').classList.remove('show');
   });
+
   document.getElementById('pwaModal').addEventListener('click', (e) => {
     if (e.target === document.getElementById('pwaModal')) {
       document.getElementById('pwaModal').classList.remove('show');
@@ -637,5 +907,6 @@
   });
 </script>
 <!-- ===== /PWA ===== -->
+
 </body>
 </html>
