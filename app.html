@@ -1009,39 +1009,43 @@ footer a:hover { color: var(--orange); }
       </div>
     </div>
 
-    <!-- 今日のタスクビュー -->
+    <!-- 日付ナビ + タスクビュー -->
     <div class="card">
-      <div class="today-header">
-        <div>
-          <div class="sec-label">Today</div>
-          <div class="card-title">今日のタスク</div>
+      <!-- 日付ナビゲーション -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <button class="btn" id="homePrevDay" style="padding:6px 12px;font-size:16px;">‹</button>
+        <div style="text-align:center;">
+          <div class="sec-label" id="homeViewLabel">Today</div>
+          <div class="card-title" id="todayDateLabel" style="cursor:pointer;" title="今日に戻る">今日のタスク</div>
         </div>
-        <div class="today-date" id="todayDateLabel"></div>
+        <button class="btn" id="homeNextDay" style="padding:6px 12px;font-size:16px;">›</button>
+      </div>
+
+      <!-- LINE通知ボタン（連携済み時のみ表示） -->
+      <div id="lineSendBanner" style="display:none;margin-bottom:14px;">
+        <button class="btn btn-line" id="sendTodayLineBtn" style="width:100%;justify-content:center;gap:8px;">
+          💬 今日のパートナータスクをLINEに送信する
+        </button>
+        <p class="msg" id="lineSendMsg" style="text-align:center;margin-top:4px;"></p>
       </div>
 
       <!-- 自分のタスク -->
       <div class="task-group">
         <div class="task-group-label">🙋 自分がやること</div>
         <div id="myTaskList"></div>
-        <!-- クイック追加 -->
-        <div class="add-task-form">
-          <input type="text" id="quickMyTask" placeholder="タスクを追加…" maxlength="50">
-          <button class="btn btn-primary" id="quickAddMyBtn" style="flex-shrink:0;padding:10px 14px;border-radius:10px;">＋</button>
+        <div style="margin-top:8px;">
+          <a href="#" id="goAddTask" style="font-size:12px;color:var(--orange);text-decoration:none;">＋ タスクを追加する（タスク管理タブ）→</a>
         </div>
       </div>
 
       <!-- パートナーのタスク -->
-      <div class="task-group">
+      <div class="task-group" style="margin-top:4px;">
         <div class="task-group-label">👤 パートナーへのお願い</div>
         <div id="partnerTaskList"></div>
-        <div class="add-task-form">
-          <input type="text" id="quickPartnerTask" placeholder="お願いするタスクを追加…" maxlength="50">
-          <button class="btn btn-primary" id="quickAddPartnerBtn" style="flex-shrink:0;padding:10px 14px;border-radius:10px;">＋</button>
-        </div>
       </div>
 
       <!-- Freeプランの利用件数 -->
-      <div id="usageMeterBox" class="usage-meter" style="display:none;">
+      <div id="usageMeterBox" class="usage-meter" style="display:none;margin-top:12px;">
         <div class="usage-label">
           <span>今月のLINE送信数</span>
           <span id="usageCount">0 / 10件</span>
@@ -1102,7 +1106,7 @@ footer a:hover { color: var(--orange); }
             </select>
           </div>
           <div class="field">
-            <label>カテゴリ</label>
+            <label>カテゴリ <a href="#" id="manageCategoriesLink" style="font-size:11px;color:var(--orange);margin-left:6px;">＋カスタム</a></label>
             <select id="taskCategory">
               <option value="">なし</option>
               <option value="cooking">🍳 料理</option>
@@ -1115,6 +1119,24 @@ footer a:hover { color: var(--orange); }
           </div>
         </div>
 
+        <!-- 繰り返しなし: 実行日指定 -->
+        <div id="singleDateRow" class="field">
+          <label>実行日</label>
+          <input type="date" id="taskDate">
+        </div>
+
+        <!-- 繰り返しあり: 開始日・終了日 -->
+        <div id="repeatDateRow" class="task-form-row" style="display:none;">
+          <div class="field">
+            <label>繰り返し開始日</label>
+            <input type="date" id="repeatStartDate">
+          </div>
+          <div class="field">
+            <label>繰り返し終了日（任意）</label>
+            <input type="date" id="repeatEndDate">
+          </div>
+        </div>
+
         <div class="field">
           <label>メモ（任意）</label>
           <textarea id="taskNote" placeholder="補足や詳細など" rows="2"></textarea>
@@ -1122,6 +1144,17 @@ footer a:hover { color: var(--orange); }
 
         <button class="btn btn-primary" id="addTaskBtn">タスクを追加する</button>
         <p id="taskAddMsg" class="msg"></p>
+      </div>
+
+      <!-- カスタムカテゴリ管理 -->
+      <div id="customCategoryBox" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:500;margin-bottom:8px;">カスタムカテゴリを追加</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <input type="text" id="newCategoryEmoji" placeholder="🏃" style="width:60px;text-align:center;">
+          <input type="text" id="newCategoryName" placeholder="カテゴリ名" style="flex:1;" maxlength="10">
+          <button class="btn btn-primary" id="addCategoryBtn" style="flex-shrink:0;font-size:12px;">追加</button>
+        </div>
+        <div id="customCategoryList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
       </div>
     </div>
 
@@ -1316,13 +1349,6 @@ footer a:hover { color: var(--orange); }
       <div id="planStandardBox" class="plan-box standard" style="display:none;">
         <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
         <div class="plan-price"><strong>¥480</strong> / 月</div>
-        <ul class="feature-list">
-          <li>タスク登録・LINE送信（無制限）</li>
-          <li>自分／パートナーのタスク分離管理</li>
-          <li>繰り返しタスクの自動送信</li>
-          <li>月次レポート自動生成</li>
-          <li>完了記録・グラフ機能</li>
-        </ul>
         <div class="cta-row">
           <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
         </div>
@@ -1427,13 +1453,78 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 // ========================================
 let currentUser = null;
 let currentProfile = null;
-let tasks = [];         // {id, name, assignee:'me'|'partner', done:bool, repeat, category, note, created_at}
-let completions = {};   // {task_id: bool} for today
-let reportMonth = new Date(); // currently displayed month
-let taskFilter = 'all'; // 'all' | 'me' | 'partner'
-let lineSentCount = 0;  // this month
+let tasks = [];
+let completions = {};
+let reportMonth = new Date();
+let taskFilter = 'all';
+let lineSentCount = 0;
+let homeViewDate = new Date(); // ホームで表示している日付
+let customCategories = []; // [{emoji, name}]
 
 const FREE_LIMIT = 10;
+
+// カスタムカテゴリをlocalStorageから読み込む
+function loadCustomCategories() {
+  const stored = localStorage.getItem('kamo_categories_' + (currentUser?.id || 'guest'));
+  customCategories = stored ? JSON.parse(stored) : [];
+}
+
+function saveCustomCategories() {
+  localStorage.setItem('kamo_categories_' + currentUser.id, JSON.stringify(customCategories));
+}
+
+// 全カテゴリ（固定＋カスタム）を返す
+function getAllCategories() {
+  const fixed = [
+    { value: 'cooking',   label: '🍳 料理' },
+    { value: 'cleaning',  label: '🧹 掃除' },
+    { value: 'laundry',   label: '👕 洗濯' },
+    { value: 'childcare', label: '👶 育児' },
+    { value: 'shopping',  label: '🛒 買い物' },
+    { value: 'other',     label: '📌 その他' },
+  ];
+  const custom = customCategories.map(c => ({
+    value: 'custom_' + c.name,
+    label: c.emoji + ' ' + c.name
+  }));
+  return [...fixed, ...custom];
+}
+
+function getCategoryLabel(value) {
+  return getAllCategories().find(c => c.value === value)?.label || value;
+}
+
+// カテゴリselectを再描画
+function refreshCategorySelect() {
+  const sel = document.getElementById('taskCategory');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">なし</option>' +
+    getAllCategories().map(c => `<option value="${c.value}">${c.label}</option>`).join('');
+  sel.value = current;
+}
+
+// カスタムカテゴリ一覧表示
+function renderCustomCategoryList() {
+  const wrap = document.getElementById('customCategoryList');
+  if (!wrap) return;
+  if (customCategories.length === 0) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--mist);">まだカスタムカテゴリはありません</span>';
+    return;
+  }
+  wrap.innerHTML = customCategories.map((c, i) => `
+    <div style="display:flex;align-items:center;gap:6px;background:var(--cream-dark);padding:4px 10px;border-radius:999px;font-size:12px;">
+      ${escHtml(c.emoji)} ${escHtml(c.name)}
+      <button onclick="removeCustomCategory(${i})" style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:13px;padding:0 0 0 4px;">×</button>
+    </div>`).join('');
+}
+
+function removeCustomCategory(idx) {
+  customCategories.splice(idx, 1);
+  saveCustomCategories();
+  renderCustomCategoryList();
+  refreshCategorySelect();
+}
 
 // ========================================
 // UTILS
@@ -1550,19 +1641,19 @@ let lineConnected = false;
 async function refreshLineStatus() {
   const conn = await loadLineConnection();
   lineConnected = !!conn;
-  const guide = document.getElementById('lineSetupGuide');
+  const statusBox    = document.getElementById('lineStatusBox');
+  const guide        = document.getElementById('lineSetupGuide');
   const connectedGuide = document.getElementById('lineConnectedGuide');
-  const alertBanner = document.getElementById('lineAlertBanner');
+  const alertBanner  = document.getElementById('lineAlertBanner');
 
   if (lineConnected) {
-    const titleEl = document.getElementById('lineStatusTitle');
-    const descEl  = document.getElementById('lineStatusDesc');
-    if (titleEl) titleEl.textContent = '連携済み';
-    if (descEl)  descEl.textContent  = 'パートナーのLINEに自動送信されます';
+    // 上のステータスバッジは不要なので非表示
+    if (statusBox)     statusBox.style.display = 'none';
     if (guide)         guide.style.display = 'none';
     if (connectedGuide) connectedGuide.style.display = 'block';
     if (alertBanner)   alertBanner.style.display = 'none';
   } else {
+    if (statusBox)     statusBox.style.display = 'flex';
     const titleEl = document.getElementById('lineStatusTitle');
     const descEl  = document.getElementById('lineStatusDesc');
     if (titleEl) titleEl.textContent = '未連携';
@@ -1691,56 +1782,117 @@ function goTab(name) {
 // ========================================
 // UI: HOME
 // ========================================
-function renderHome() {
-  $('#todayDateLabel').textContent = getDateLabel();
-  const name = currentUser?.email?.split('@')[0] || '';
-  $('#heroName').textContent = name ? `こんにちは、${name}さん` : '';
-  renderTodayTasks();
-  renderUsageMeter();
+function getViewDateStr(d) {
+  return d.toISOString().slice(0, 10);
 }
 
-function renderTodayTasks() {
-  const today = getTodayStr();
-  const todayTasks = tasks; // 繰り返し展開は今後実装、まず全タスクを表示
+function renderHome() {
+  const viewStr = getViewDateStr(homeViewDate);
+  const todayStr = getTodayStr();
+  const isToday = viewStr === todayStr;
 
-  const myTasks = todayTasks.filter(t => t.assignee === 'me');
-  const partnerTasks = todayTasks.filter(t => t.assignee === 'partner');
+  // 日付ラベル更新
+  const week = ['日','月','火','水','木','金','土'];
+  const d = homeViewDate;
+  const label = `${d.getMonth()+1}/${d.getDate()}（${week[d.getDay()]}）`;
+  const viewLabelEl = $('#homeViewLabel');
+  if (viewLabelEl) viewLabelEl.textContent = isToday ? 'Today' : viewStr < todayStr ? 'Past' : 'Future';
+  $('#todayDateLabel').textContent = label + (isToday ? ' — 今日' : '');
 
-  renderTaskList('myTaskList', myTasks, false);
-  renderTaskList('partnerTaskList', partnerTasks, true);
+  const name = currentUser?.email?.split('@')[0] || '';
+  $('#heroName').textContent = name ? `こんにちは、${name}さん` : '';
 
-  const myDone = myTasks.filter(t => completions[t.id]).length;
-  const partnerDone = partnerTasks.filter(t => completions[t.id]).length;
+  renderDateTasks(viewStr);
+  renderUsageMeter();
+
+  // LINE通知ボタン表示制御
+  const lineBanner = $('#lineSendBanner');
+  if (lineBanner) lineBanner.style.display = lineConnected ? 'block' : 'none';
+}
+
+async function renderDateTasks(dateStr) {
+  // その日付に該当するタスクを取得
+  // （task.task_date が dateStr か、繰り返しタスクで該当日）
+  const dayTasks = getTasksForDate(dateStr);
+
+  // その日の完了状況をDBから取得
+  const { data: compData } = await sb.from('task_completions')
+    .select('task_id, done')
+    .eq('user_id', currentUser.id)
+    .eq('date', dateStr);
+
+  const dayCompletions = {};
+  (compData || []).forEach(r => dayCompletions[r.task_id] = r.done);
+
+  // 今日なら completions も更新
+  if (dateStr === getTodayStr()) completions = dayCompletions;
+
+  const myTasks = dayTasks.filter(t => t.assignee === 'me');
+  const partnerTasks = dayTasks.filter(t => t.assignee === 'partner');
+
+  renderTaskList('myTaskList', myTasks, false, dayCompletions, dateStr);
+  renderTaskList('partnerTaskList', partnerTasks, true, dayCompletions, dateStr);
+
+  const myDone = myTasks.filter(t => dayCompletions[t.id]).length;
+  const partnerDone = partnerTasks.filter(t => dayCompletions[t.id]).length;
   $('#statMyDone').textContent = myDone;
   $('#statMyTotal').textContent = myTasks.length;
   $('#statPartnerDone').textContent = partnerDone;
 
-  // Hero message
   const total = myTasks.length + partnerTasks.length;
   const done = myDone + partnerDone;
-  if (total === 0) $('#heroTitle').textContent = 'まずタスクを登録してみましょう 🦆';
+  if (total === 0) $('#heroTitle').textContent = 'この日のタスクはありません 🦆';
   else if (done === total) $('#heroTitle').textContent = '全タスク完了！お疲れさまです 🎉';
-  else $('#heroTitle').textContent = `${done} / ${total} 件完了。あと少し！`;
+  else $('#heroTitle').textContent = `${done} / ${total} 件完了`;
 }
 
-function renderTaskList(containerId, taskArr, isPartner) {
+// 指定日に表示すべきタスクを返す
+function getTasksForDate(dateStr) {
+  return tasks.filter(t => {
+    // 繰り返しなし: task_date が一致
+    if (!t.repeat || t.repeat === 'none') {
+      return (t.task_date || t.created_at?.slice(0,10)) === dateStr;
+    }
+    // 繰り返しあり: 開始日〜終了日の範囲内 かつ 曜日/日付が一致
+    const start = t.repeat_start || t.created_at?.slice(0,10);
+    const end   = t.repeat_end || '2099-12-31';
+    if (dateStr < start || dateStr > end) return false;
+
+    const d = new Date(dateStr + 'T00:00:00');
+    if (t.repeat === 'daily')    return true;
+    if (t.repeat === 'weekdays') return d.getDay() >= 1 && d.getDay() <= 5;
+    if (t.repeat === 'weekly') {
+      const orig = new Date((t.repeat_start || t.created_at?.slice(0,10)) + 'T00:00:00');
+      return d.getDay() === orig.getDay();
+    }
+    if (t.repeat === 'monthly') {
+      const orig = new Date((t.repeat_start || t.created_at?.slice(0,10)) + 'T00:00:00');
+      return d.getDate() === orig.getDate();
+    }
+    return false;
+  });
+}
+
+function renderTaskList(containerId, taskArr, isPartner, dayComp, dateStr) {
   const wrap = $(`#${containerId}`);
   if (!wrap) return;
+  const comp = dayComp || completions;
+  const ds   = dateStr || getTodayStr();
 
   if (taskArr.length === 0) {
-    wrap.innerHTML = `<div style="font-size:13px;color:var(--mist);padding:8px 0 4px;">まだタスクがありません</div>`;
+    wrap.innerHTML = `<div style="font-size:13px;color:var(--mist);padding:8px 0 4px;">タスクはありません</div>`;
     return;
   }
 
   wrap.innerHTML = taskArr.map(t => {
-    const done = completions[t.id] || false;
+    const done = comp[t.id] || false;
     const repeatBadge = t.repeat && t.repeat !== 'none'
       ? `<span class="task-repeat-badge">${REPEAT_LABEL[t.repeat] || ''}</span>` : '';
     const catBadge = t.category
-      ? `<span class="task-repeat-badge">${CAT_LABEL[t.category] || t.category}</span>` : '';
+      ? `<span class="task-repeat-badge">${getCategoryLabel(t.category)}</span>` : '';
     return `
-      <div class="task-item${done ? ' done' : ''}" data-id="${t.id}" data-partner="${isPartner}">
-        <div class="task-check${done ? ' checked' : ''}${isPartner ? ' partner' : ''}" data-id="${t.id}">
+      <div class="task-item${done ? ' done' : ''}" data-id="${t.id}">
+        <div class="task-check${done ? ' checked' : ''}${isPartner ? ' partner' : ''}" data-id="${t.id}" data-date="${ds}">
           ${done ? '✓' : ''}
         </div>
         <span class="task-name">${escHtml(t.name)}</span>
@@ -1748,14 +1900,20 @@ function renderTaskList(containerId, taskArr, isPartner) {
       </div>`;
   }).join('');
 
-  // チェックボタンイベント
   wrap.querySelectorAll('.task-check').forEach(el => {
     el.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const id = el.dataset.id;
-      const newDone = !completions[id];
-      await saveCompletion(id, newDone);
-      renderTodayTasks();
+      const id   = el.dataset.id;
+      const date = el.dataset.date || getTodayStr();
+      const newDone = !(comp[id]);
+      comp[id] = newDone;
+      // DB保存
+      await sb.from('task_completions').upsert(
+        { user_id: currentUser.id, task_id: id, date, done: newDone },
+        { onConflict: 'user_id,task_id,date' }
+      );
+      if (date === getTodayStr()) completions = comp;
+      renderDateTasks(date);
       if (newDone) showToast('完了しました ✓', 'success');
     });
   });
@@ -1816,7 +1974,7 @@ async function deleteTask(id) {
   showToast('タスクを削除しました');
 }
 
-async function addTask(name, assignee, repeat, category, note) {
+async function addTask(name, assignee, repeat, category, note, taskDate, repeatStart, repeatEnd) {
   const id = `t_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   const task = {
     id,
@@ -1825,20 +1983,16 @@ async function addTask(name, assignee, repeat, category, note) {
     repeat: repeat || 'none',
     category: category || '',
     note: note || '',
+    task_date: taskDate || getTodayStr(),
+    repeat_start: repeatStart || getTodayStr(),
+    repeat_end: repeatEnd || null,
     created_at: new Date().toISOString()
   };
   tasks.unshift(task);
   await saveTask(task);
   renderAllTasks();
-  renderTodayTasks();
-  // パートナー担当ならLINE送信
-  if (assignee === 'partner') {
-    const sent = await sendTaskToLine(task);
-    if (sent) showToast('タスクを追加してLINEに送信しました 💬', 'success');
-    else showToast('タスクを追加しました', 'success');
-  } else {
-    showToast('タスクを追加しました', 'success');
-  }
+  renderHome();
+  showToast('タスクを追加しました ✓', 'success');
 }
 
 // ========================================
@@ -1969,6 +2123,10 @@ async function main() {
   renderAllTasks();
   renderAccount();
 
+  // カスタムカテゴリ読み込み
+  loadCustomCategories();
+  refreshCategorySelect();
+
   // LINE連携チェック
   await refreshLineStatus();
 
@@ -1977,6 +2135,75 @@ async function main() {
   // タブ内のリンク
   $('#goLineSetup')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
   $('#upgradeLink')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
+  $('#goAddTask')?.addEventListener('click', (e) => { e.preventDefault(); goTab('tasks'); });
+
+  // 日付ナビ（ホーム）
+  $('#homePrevDay')?.addEventListener('click', () => {
+    homeViewDate = new Date(homeViewDate.getTime() - 86400000);
+    renderHome();
+  });
+  $('#homeNextDay')?.addEventListener('click', () => {
+    homeViewDate = new Date(homeViewDate.getTime() + 86400000);
+    renderHome();
+  });
+  $('#todayDateLabel')?.addEventListener('click', () => {
+    homeViewDate = new Date();
+    renderHome();
+  });
+
+  // 今日のパートナータスクをLINEで一括送信
+  $('#sendTodayLineBtn')?.addEventListener('click', async () => {
+    const dateStr = getViewDateStr(homeViewDate);
+    const partnerTasks = getTasksForDate(dateStr).filter(t => t.assignee === 'partner');
+    if (partnerTasks.length === 0) {
+      showMsg($('#lineSendMsg'), 'この日のパートナータスクはありません', 'error');
+      return;
+    }
+    const btn = $('#sendTodayLineBtn');
+    btn.disabled = true;
+    let sent = 0;
+    for (const t of partnerTasks) {
+      const ok = await sendTaskToLine(t);
+      if (ok) sent++;
+    }
+    btn.disabled = false;
+    if (sent > 0) showMsg($('#lineSendMsg'), `${sent}件をLINEに送信しました 💬`, 'success');
+    else showMsg($('#lineSendMsg'), 'LINE送信に失敗しました', 'error');
+    setTimeout(() => showMsg($('#lineSendMsg'), ''), 3000);
+  });
+
+  // 繰り返し選択で日付フィールド切り替え
+  $('#repeatType')?.addEventListener('change', () => {
+    const v = $('#repeatType').value;
+    const single = $('#singleDateRow');
+    const rep = $('#repeatDateRow');
+    if (single) single.style.display = v === 'none' ? 'block' : 'none';
+    if (rep)    rep.style.display    = v !== 'none' ? 'grid' : 'none';
+  });
+
+  // 実行日の初期値を今日に設定
+  if ($('#taskDate')) $('#taskDate').value = getTodayStr();
+  if ($('#repeatStartDate')) $('#repeatStartDate').value = getTodayStr();
+
+  // カスタムカテゴリ管理ボタン
+  $('#manageCategoriesLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const box = $('#customCategoryBox');
+    if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    renderCustomCategoryList();
+  });
+
+  $('#addCategoryBtn')?.addEventListener('click', () => {
+    const emoji = ($('#newCategoryEmoji')?.value || '📌').trim();
+    const name  = ($('#newCategoryName')?.value || '').trim();
+    if (!name) return;
+    customCategories.push({ emoji, name });
+    saveCustomCategories();
+    renderCustomCategoryList();
+    refreshCategorySelect();
+    if ($('#newCategoryEmoji')) $('#newCategoryEmoji').value = '';
+    if ($('#newCategoryName')) $('#newCategoryName').value = '';
+  });
 
   // ログアウト
   $('#logoutBtn').addEventListener('click', async () => {
@@ -1984,31 +2211,7 @@ async function main() {
     location.replace('/index.html');
   });
 
-  // クイックタスク追加（自分）
-  $('#quickAddMyBtn').addEventListener('click', async () => {
-    const name = $('#quickMyTask').value.trim();
-    if (!name) return;
-    await addTask(name, 'me', 'none', '', '');
-    $('#quickMyTask').value = '';
-  });
-  $('#quickMyTask').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') $('#quickAddMyBtn').click();
-  });
-
-  // クイックタスク追加（パートナー）
-  $('#quickAddPartnerBtn').addEventListener('click', async () => {
-    const name = $('#quickPartnerTask').value.trim();
-    if (!name) return;
-    if (!isPro() && lineSentCount >= FREE_LIMIT) {
-      showToast('今月の送信上限（10件）に達しました。Standardプランへ', 'error');
-      return;
-    }
-    await addTask(name, 'partner', 'none', '', '');
-    $('#quickPartnerTask').value = '';
-  });
-  $('#quickPartnerTask').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') $('#quickAddPartnerBtn').click();
-  });
+  // クイック追加ボタンはタスク管理タブに統合済み
 
   // タスク追加フォーム (tasksタブ)
   document.querySelectorAll('.radio-label').forEach(label => {
@@ -2032,9 +2235,15 @@ async function main() {
       return;
     }
 
-    await addTask(name, assignee, repeat, category, note);
+    const taskDate    = $('#taskDate')?.value || getTodayStr();
+    const repeatStart = $('#repeatStartDate')?.value || getTodayStr();
+    const repeatEnd   = $('#repeatEndDate')?.value || null;
+    await addTask(name, assignee, repeat, category, note, taskDate, repeatStart, repeatEnd);
     $('#taskName').value = '';
     $('#taskNote').value = '';
+    if ($('#taskDate')) $('#taskDate').value = getTodayStr();
+    if ($('#repeatStartDate')) $('#repeatStartDate').value = getTodayStr();
+    if ($('#repeatEndDate')) $('#repeatEndDate').value = '';
     showMsg($('#taskAddMsg'), 'タスクを追加しました', 'success');
     setTimeout(() => showMsg($('#taskAddMsg'), ''), 2000);
   });
