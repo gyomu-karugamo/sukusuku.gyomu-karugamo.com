@@ -1227,11 +1227,7 @@ footer a:hover { color: var(--orange); }
 
       <!-- ステータスバッジ -->
       <div class="line-connect-box" id="lineStatusBox">
-        <div class="line-icon">
-          <svg viewBox="0 0 48 48" width="26" height="26" fill="white" xmlns="http://www.w3.org/2000/svg">
-            <path d="M24 4C12.95 4 4 11.86 4 21.5c0 5.9 3.3 11.1 8.4 14.4-.3 1.1-1.1 3.9-1.3 4.5-.2.8.3 1.6 1.1 1.3.6-.2 9.4-6.2 11.3-7.5.8.1 1.7.1 2.5.1 11.05 0 20-7.86 20-17.5S35.05 4 24 4z"/>
-          </svg>
-        </div>
+        <div class="line-icon" style="font-size:24px;letter-spacing:0;">💬</div>
         <div>
           <div class="line-connect-title" id="lineStatusTitle">確認中…</div>
           <div class="line-connect-desc" id="lineStatusDesc">LINE連携状況を確認しています</div>
@@ -1323,9 +1319,9 @@ footer a:hover { color: var(--orange); }
         <ul class="feature-list">
           <li>タスク登録・LINE送信（無制限）</li>
           <li>自分／パートナーのタスク分離管理</li>
-          <li>完了記録・週・月グラフ</li>
           <li>繰り返しタスクの自動送信</li>
           <li>月次レポート自動生成</li>
+          <li>完了記録・グラフ機能</li>
         </ul>
         <div class="cta-row">
           <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
@@ -1339,13 +1335,25 @@ footer a:hover { color: var(--orange); }
       <div class="card-title" style="margin-bottom:16px;">アカウント情報</div>
 
       <div class="status-box">
-        <div style="margin-bottom:4px;font-size:12px;color:var(--mist);">メールアドレス</div>
+        <div style="margin-bottom:4px;font-size:12px;color:var(--mist);">現在のメールアドレス</div>
         <div id="currentEmail" style="font-weight:500;font-size:14px;"></div>
       </div>
 
-      <!-- パスワード変更 -->
-      <div id="pwSection" style="margin-top:20px;">
+      <!-- メールアドレス変更 -->
+      <div id="emailChangeSection" style="margin-top:20px;">
         <hr class="soft">
+        <div style="margin-top:16px;margin-bottom:6px;font-size:14px;font-weight:500;">メールアドレスを変更する</div>
+        <p style="font-size:12px;color:var(--mist);margin-bottom:10px;line-height:1.6;">新しいアドレスを入力すると確認メールを送信します。メール内のリンクをクリックして変更完了です。</p>
+        <div class="field">
+          <input type="email" id="newEmailInput" placeholder="新しいメールアドレス">
+        </div>
+        <button class="btn" id="changeEmailBtn">確認メールを送信する</button>
+        <p id="emailChangeMsg" class="msg"></p>
+      </div>
+
+      <!-- パスワード変更（Googleログイン以外） -->
+      <div id="pwSection" style="margin-top:4px;">
+        <hr class="soft" style="margin-top:20px;">
         <div style="margin-top:16px;margin-bottom:10px;font-size:14px;font-weight:500;">パスワードを変更する</div>
         <div class="field">
           <input type="password" id="newPw1" placeholder="新しいパスワード（8文字以上）">
@@ -1534,6 +1542,35 @@ async function saveCompletion(taskId, done) {
     .upsert({ user_id: currentUser.id, task_id: taskId, date: today, done },
             { onConflict: 'user_id,task_id,date' });
   if (error) console.error('saveCompletion', error);
+}
+
+// ========== LINE連携ステータスUI更新 ==========
+let lineConnected = false;
+
+async function refreshLineStatus() {
+  const conn = await loadLineConnection();
+  lineConnected = !!conn;
+  const guide = document.getElementById('lineSetupGuide');
+  const connectedGuide = document.getElementById('lineConnectedGuide');
+  const alertBanner = document.getElementById('lineAlertBanner');
+
+  if (lineConnected) {
+    const titleEl = document.getElementById('lineStatusTitle');
+    const descEl  = document.getElementById('lineStatusDesc');
+    if (titleEl) titleEl.textContent = '連携済み';
+    if (descEl)  descEl.textContent  = 'パートナーのLINEに自動送信されます';
+    if (guide)         guide.style.display = 'none';
+    if (connectedGuide) connectedGuide.style.display = 'block';
+    if (alertBanner)   alertBanner.style.display = 'none';
+  } else {
+    const titleEl = document.getElementById('lineStatusTitle');
+    const descEl  = document.getElementById('lineStatusDesc');
+    if (titleEl) titleEl.textContent = '未連携';
+    if (descEl)  descEl.textContent  = 'パートナーに友だち追加してもらいましょう';
+    if (guide)         guide.style.display = 'block';
+    if (connectedGuide) connectedGuide.style.display = 'none';
+    if (alertBanner)   alertBanner.style.display = 'flex';
+  }
 }
 
 // ========== DB: LINE送信数 ==========
@@ -1870,6 +1907,15 @@ function renderAccount() {
     $('#planFreeBox').style.display = 'block';
     $('#planStandardBox').style.display = 'none';
   }
+
+  // Googleログインユーザーはメール変更・PW変更を非表示
+  const isGoogle = (currentUser?.identities || []).some(id => id.provider === 'google');
+  if (isGoogle) {
+    const emailSec = $('#emailChangeSection');
+    const pwSec = $('#pwSection');
+    if (emailSec) emailSec.style.display = 'none';
+    if (pwSec) pwSec.style.display = 'none';
+  }
 }
 
 // ========================================
@@ -2022,30 +2068,7 @@ async function main() {
   $('#gateUpgradeBtn')?.addEventListener('click', () => { goTab('account'); });
 
   // ===== LINE連携（本実装・4桁コード方式） =====
-  let lineConnected = false;
   let pairingTimer = null;
-
-  async function refreshLineStatus() {
-    const conn = await loadLineConnection();
-    lineConnected = !!conn;
-    const guide = document.getElementById('lineSetupGuide');
-    const connectedGuide = document.getElementById('lineConnectedGuide');
-    const alert = document.getElementById('lineAlertBanner');
-
-    if (lineConnected) {
-      document.getElementById('lineStatusTitle').textContent = '連携済み';
-      document.getElementById('lineStatusDesc').textContent = 'パートナーのLINEに自動送信されます';
-      if (guide) guide.style.display = 'none';
-      if (connectedGuide) connectedGuide.style.display = 'block';
-      if (alert) alert.style.display = 'none';
-    } else {
-      document.getElementById('lineStatusTitle').textContent = '未連携';
-      document.getElementById('lineStatusDesc').textContent = 'パートナーに友だち追加してもらいましょう';
-      if (guide) guide.style.display = 'block';
-      if (connectedGuide) connectedGuide.style.display = 'none';
-      if (alert) alert.style.display = 'flex';
-    }
-  }
 
   // 友だち追加URLコピー
   document.getElementById('copyLineUrlBtn')?.addEventListener('click', async () => {
@@ -2119,6 +2142,32 @@ async function main() {
     await disconnectLine();
     showToast('LINE連携を解除しました');
     await refreshLineStatus();
+  });
+
+  // メールアドレス変更
+  $('#changeEmailBtn')?.addEventListener('click', async () => {
+    const newEmail = $('#newEmailInput')?.value.trim();
+    const msgEl = $('#emailChangeMsg');
+    if (!newEmail) { showMsg(msgEl, 'メールアドレスを入力してください', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      showMsg(msgEl, '正しいメールアドレスを入力してください', 'error'); return;
+    }
+    if (newEmail.toLowerCase() === (currentUser?.email || '').toLowerCase()) {
+      showMsg(msgEl, '現在と同じメールアドレスです', 'error'); return;
+    }
+    const btn = $('#changeEmailBtn');
+    btn.disabled = true;
+    const { error } = await sb.auth.updateUser(
+      { email: newEmail },
+      { emailRedirectTo: 'https://app.gyomu-karugamo.com/app.html' }
+    );
+    btn.disabled = false;
+    if (error) {
+      showMsg(msgEl, 'エラーが発生しました: ' + error.message, 'error');
+    } else {
+      showMsg(msgEl, '確認メールを送信しました。メール内のリンクをクリックして変更を完了してください。', 'success');
+      $('#newEmailInput').value = '';
+    }
   });
 
   // パスワード変更
