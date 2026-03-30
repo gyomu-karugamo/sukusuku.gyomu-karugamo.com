@@ -1034,7 +1034,7 @@ footer a:hover { color: var(--orange); }
         <div class="task-group-label">🙋 自分がやること</div>
         <div id="myTaskList"></div>
         <div style="margin-top:8px;">
-          <a href="#" id="goAddTask" style="font-size:12px;color:var(--orange);text-decoration:none;">＋ タスクを追加する（タスク管理タブ）→</a>
+          <a href="#" id="goAddTask" style="font-size:12px;color:var(--orange);text-decoration:none;">＋ タスクを追加する</a>
         </div>
       </div>
 
@@ -1109,12 +1109,12 @@ footer a:hover { color: var(--orange); }
             <label>カテゴリ <a href="#" id="manageCategoriesLink" style="font-size:11px;color:var(--orange);margin-left:6px;">＋カスタム</a></label>
             <select id="taskCategory">
               <option value="">なし</option>
-              <option value="cooking">🍳 料理</option>
-              <option value="cleaning">🧹 掃除</option>
-              <option value="laundry">👕 洗濯</option>
-              <option value="childcare">👶 育児</option>
-              <option value="shopping">🛒 買い物</option>
-              <option value="other">📌 その他</option>
+              <option value="cooking">料理</option>
+              <option value="cleaning">掃除</option>
+              <option value="laundry">洗濯</option>
+              <option value="childcare">育児</option>
+              <option value="shopping">買い物</option>
+              <option value="other">その他</option>
             </select>
           </div>
         </div>
@@ -1126,14 +1126,17 @@ footer a:hover { color: var(--orange); }
         </div>
 
         <!-- 繰り返しあり: 開始日・終了日 -->
-        <div id="repeatDateRow" class="task-form-row" style="display:none;">
-          <div class="field">
-            <label>繰り返し開始日</label>
-            <input type="date" id="repeatStartDate">
-          </div>
-          <div class="field">
-            <label>繰り返し終了日（任意）</label>
-            <input type="date" id="repeatEndDate">
+        <div id="repeatDateRow" style="display:none;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div class="field" style="flex:1;min-width:140px;margin-bottom:0;">
+              <label>開始日</label>
+              <input type="date" id="repeatStartDate">
+            </div>
+            <div style="padding-bottom:10px;color:var(--mist);font-size:13px;flex-shrink:0;">〜</div>
+            <div class="field" style="flex:1;min-width:140px;margin-bottom:0;">
+              <label>終了日（任意）</label>
+              <input type="date" id="repeatEndDate">
+            </div>
           </div>
         </div>
 
@@ -1146,12 +1149,18 @@ footer a:hover { color: var(--orange); }
         <p id="taskAddMsg" class="msg"></p>
       </div>
 
-      <!-- カスタムカテゴリ管理 -->
+      <!-- カテゴリ管理 -->
       <div id="customCategoryBox" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
-        <div style="font-size:13px;font-weight:500;margin-bottom:8px;">カスタムカテゴリを追加</div>
+        <div style="font-size:13px;font-weight:500;margin-bottom:10px;">カテゴリを管理</div>
+        
+        <!-- デフォルトカテゴリ編集 -->
+        <div style="font-size:11px;color:var(--mist);margin-bottom:6px;letter-spacing:0.04em;">デフォルトカテゴリ</div>
+        <div id="defaultCategoryList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;"></div>
+
+        <!-- カスタムカテゴリ追加 -->
+        <div style="font-size:11px;color:var(--mist);margin-bottom:6px;letter-spacing:0.04em;">カスタムカテゴリを追加</div>
         <div style="display:flex;gap:8px;margin-bottom:8px;">
-          <input type="text" id="newCategoryEmoji" placeholder="🏃" style="width:60px;text-align:center;">
-          <input type="text" id="newCategoryName" placeholder="カテゴリ名" style="flex:1;" maxlength="10">
+          <input type="text" id="newCategoryName" placeholder="カテゴリ名（例：趣味）" style="flex:1;" maxlength="15">
           <button class="btn btn-primary" id="addCategoryBtn" style="flex-shrink:0;font-size:12px;">追加</button>
         </div>
         <div id="customCategoryList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
@@ -1323,6 +1332,32 @@ footer a:hover { color: var(--orange); }
       </div>
     </div>
 
+    <!-- 通知設定 -->
+    <div class="card" id="notifySettingCard" style="display:none;">
+      <div class="sec-label">通知設定</div>
+      <div class="card-title" style="margin-bottom:4px;">毎朝の定時通知</div>
+      <p class="card-desc">毎朝、その日のタスクをパートナーのLINEに自動送信します。</p>
+
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="field" style="flex:1;min-width:120px;">
+          <label>通知時刻（パートナーのLINEに送信）</label>
+          <input type="time" id="notifyTime" value="07:00" style="width:100%;">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding-top:18px;">
+          <input type="checkbox" id="notifyEnabled" checked style="width:16px;height:16px;accent-color:var(--orange);">
+          <label for="notifyEnabled" style="font-size:13px;cursor:pointer;">有効</label>
+        </div>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn btn-primary" id="saveNotifyBtn" style="font-size:13px;">保存する</button>
+        <p class="msg" id="notifyMsg" style="margin-top:6px;"></p>
+      </div>
+      <div style="font-size:11px;color:var(--mist);margin-top:10px;line-height:1.7;">
+        ※ Supabase Cron Jobs の設定が必要です（設定方法はREADMEを参照）<br>
+        ※ 時刻はJST（日本標準時）です
+      </div>
+    </div>
+
     <!-- プラン -->
     <div class="card">
       <div class="sec-label">Plan</div>
@@ -1348,7 +1383,6 @@ footer a:hover { color: var(--orange); }
       <!-- Standard -->
       <div id="planStandardBox" class="plan-box standard" style="display:none;">
         <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
-        <div class="plan-price"><strong>¥480</strong> / 月</div>
         <div class="cta-row">
           <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
         </div>
@@ -1473,21 +1507,33 @@ function saveCustomCategories() {
   localStorage.setItem('kamo_categories_' + currentUser.id, JSON.stringify(customCategories));
 }
 
-// 全カテゴリ（固定＋カスタム）を返す
+// デフォルトカテゴリ（編集可能）
+const DEFAULT_CATEGORIES_BASE = [
+  { value: 'cooking',   label: '料理' },
+  { value: 'cleaning',  label: '掃除' },
+  { value: 'laundry',   label: '洗濯' },
+  { value: 'childcare', label: '育児' },
+  { value: 'shopping',  label: '買い物' },
+  { value: 'other',     label: 'その他' },
+];
+
+function loadDefaultCategories() {
+  const stored = localStorage.getItem('kamo_default_cats_' + (currentUser?.id || 'guest'));
+  return stored ? JSON.parse(stored) : DEFAULT_CATEGORIES_BASE.map(c => ({ ...c }));
+}
+let defaultCategories = DEFAULT_CATEGORIES_BASE.map(c => ({ ...c }));
+
+function saveDefaultCategories() {
+  localStorage.setItem('kamo_default_cats_' + currentUser.id, JSON.stringify(defaultCategories));
+}
+
+// 全カテゴリ（デフォルト＋カスタム）
 function getAllCategories() {
-  const fixed = [
-    { value: 'cooking',   label: '🍳 料理' },
-    { value: 'cleaning',  label: '🧹 掃除' },
-    { value: 'laundry',   label: '👕 洗濯' },
-    { value: 'childcare', label: '👶 育児' },
-    { value: 'shopping',  label: '🛒 買い物' },
-    { value: 'other',     label: '📌 その他' },
-  ];
   const custom = customCategories.map(c => ({
     value: 'custom_' + c.name,
-    label: c.emoji + ' ' + c.name
+    label: c.name
   }));
-  return [...fixed, ...custom];
+  return [...defaultCategories, ...custom];
 }
 
 function getCategoryLabel(value) {
@@ -1500,8 +1546,38 @@ function refreshCategorySelect() {
   if (!sel) return;
   const current = sel.value;
   sel.innerHTML = '<option value="">なし</option>' +
-    getAllCategories().map(c => `<option value="${c.value}">${c.label}</option>`).join('');
+    getAllCategories().map(c => `<option value="${escHtml(c.value)}">${escHtml(c.label)}</option>`).join('');
   sel.value = current;
+}
+
+// デフォルトカテゴリ一覧表示（名前編集可能）
+function renderDefaultCategoryList() {
+  const wrap = document.getElementById('defaultCategoryList');
+  if (!wrap) return;
+  wrap.innerHTML = defaultCategories.map((c, i) => `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="text" value="${escHtml(c.label)}" data-idx="${i}"
+        style="flex:1;font-size:13px;padding:6px 10px;"
+        placeholder="カテゴリ名"
+        onchange="renameDefaultCategory(${i}, this.value)">
+      <button onclick="resetDefaultCategory(${i})" 
+        style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:11px;padding:0 4px;"
+        title="初期値に戻す">↩</button>
+    </div>`).join('');
+}
+
+function renameDefaultCategory(idx, newLabel) {
+  if (!newLabel.trim()) return;
+  defaultCategories[idx].label = newLabel.trim();
+  saveDefaultCategories();
+  refreshCategorySelect();
+}
+
+function resetDefaultCategory(idx) {
+  defaultCategories[idx].label = DEFAULT_CATEGORIES_BASE[idx].label;
+  saveDefaultCategories();
+  renderDefaultCategoryList();
+  refreshCategorySelect();
 }
 
 // カスタムカテゴリ一覧表示
@@ -1514,7 +1590,7 @@ function renderCustomCategoryList() {
   }
   wrap.innerHTML = customCategories.map((c, i) => `
     <div style="display:flex;align-items:center;gap:6px;background:var(--cream-dark);padding:4px 10px;border-radius:999px;font-size:12px;">
-      ${escHtml(c.emoji)} ${escHtml(c.name)}
+      ${escHtml(c.name)}
       <button onclick="removeCustomCategory(${i})" style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:13px;padding:0 0 0 4px;">×</button>
     </div>`).join('');
 }
@@ -2123,7 +2199,8 @@ async function main() {
   renderAllTasks();
   renderAccount();
 
-  // カスタムカテゴリ読み込み
+  // カテゴリ読み込み
+  defaultCategories = loadDefaultCategories();
   loadCustomCategories();
   refreshCategorySelect();
 
@@ -2190,18 +2267,17 @@ async function main() {
     e.preventDefault();
     const box = $('#customCategoryBox');
     if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    renderDefaultCategoryList();
     renderCustomCategoryList();
   });
 
   $('#addCategoryBtn')?.addEventListener('click', () => {
-    const emoji = ($('#newCategoryEmoji')?.value || '📌').trim();
-    const name  = ($('#newCategoryName')?.value || '').trim();
+    const name = ($('#newCategoryName')?.value || '').trim();
     if (!name) return;
-    customCategories.push({ emoji, name });
+    customCategories.push({ name });
     saveCustomCategories();
     renderCustomCategoryList();
     refreshCategorySelect();
-    if ($('#newCategoryEmoji')) $('#newCategoryEmoji').value = '';
     if ($('#newCategoryName')) $('#newCategoryName').value = '';
   });
 
@@ -2351,6 +2427,33 @@ async function main() {
     await disconnectLine();
     showToast('LINE連携を解除しました');
     await refreshLineStatus();
+  });
+
+  // ① 通知設定カード表示制御（LINE連携済み時のみ）
+  if (lineConnected) {
+    const notifyCard = $('#notifySettingCard');
+    if (notifyCard) notifyCard.style.display = 'block';
+
+    // 保存済み設定を読み込む
+    const { data: prof } = await sb.from('profiles')
+      .select('notify_time, notify_enabled')
+      .eq('id', currentUser.id).single();
+    if (prof) {
+      if ($('#notifyTime') && prof.notify_time) $('#notifyTime').value = prof.notify_time;
+      if ($('#notifyEnabled')) $('#notifyEnabled').checked = prof.notify_enabled !== false;
+    }
+  }
+
+  $('#saveNotifyBtn')?.addEventListener('click', async () => {
+    const time    = $('#notifyTime')?.value || '07:00';
+    const enabled = $('#notifyEnabled')?.checked !== false;
+    const { error } = await sb.from('profiles')
+      .update({ notify_time: time, notify_enabled: enabled })
+      .eq('id', currentUser.id);
+    const msgEl = $('#notifyMsg');
+    if (error) { showMsg(msgEl, 'エラーが発生しました', 'error'); }
+    else        { showMsg(msgEl, `保存しました（毎朝 ${time} に送信）`, 'success'); }
+    setTimeout(() => showMsg(msgEl, ''), 3000);
   });
 
   // メールアドレス変更
