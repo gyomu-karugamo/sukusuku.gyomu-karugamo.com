@@ -189,7 +189,6 @@ body {
   align-items: center;
   gap: 6px;
 }
-.tab-btn .tab-icon { font-size: 14px; }
 .tab-btn:hover { color: var(--brown); }
 .tab-btn.active {
   color: var(--orange);
@@ -951,19 +950,19 @@ footer a:hover { color: var(--orange); }
   <div class="tabs-wrap">
     <nav class="tabs">
       <button class="tab-btn active" data-tab="home">
-        <span class="tab-icon">🏠</span>ホーム
+        ホーム
       </button>
       <button class="tab-btn" data-tab="tasks">
-        <span class="tab-icon">📋</span>タスク管理
+        タスク管理
       </button>
       <button class="tab-btn" data-tab="report">
-        <span class="tab-icon">📊</span>月次レポート
+        月次レポート
       </button>
       <button class="tab-btn" data-tab="settings">
-        <span class="tab-icon">🔧</span>設定
+        設定
       </button>
       <button class="tab-btn" data-tab="account">
-        <span class="tab-icon">👤</span>アカウント
+        アカウント
       </button>
     </nav>
   </div>
@@ -1031,7 +1030,15 @@ footer a:hover { color: var(--orange); }
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <button class="btn" id="homePrevDay" style="padding:6px 12px;font-size:16px;">‹</button>
         <div style="text-align:center;">
-          <div class="sec-label" id="homeViewLabel">Today</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div class="sec-label" id="homeViewLabel" style="margin-bottom:0;">Today</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button id="goTodayHomeBtn" style="display:none;font-size:11px;color:var(--orange);background:none;border:1px solid rgba(232,99,42,0.3);border-radius:6px;padding:3px 10px;cursor:pointer;">今日に戻る</button>
+              <button id="reloadBtn" style="display:none;background:none;border:none;cursor:pointer;padding:4px;opacity:0.7;" title="リロード">
+                <img src="/assets/reload.png" style="width:18px;height:18px;object-fit:contain;" alt="reload">
+              </button>
+            </div>
+          </div>
           <div class="card-title" id="todayDateLabel" style="cursor:pointer;" title="今日に戻る">今日のタスク</div>
         </div>
         <button class="btn" id="homeNextDay" style="padding:6px 12px;font-size:16px;">›</button>
@@ -2276,15 +2283,15 @@ async function main() {
   // 日付ナビ（ホーム）
   $('#homePrevDay')?.addEventListener('click', () => {
     homeViewDate = new Date(homeViewDate.getTime() - 86400000);
-    renderHome();
+    renderHome(); updateGoTodayBtn?.();
   });
   $('#homeNextDay')?.addEventListener('click', () => {
     homeViewDate = new Date(homeViewDate.getTime() + 86400000);
-    renderHome();
+    renderHome(); updateGoTodayBtn?.();
   });
   $('#todayDateLabel')?.addEventListener('click', () => {
     homeViewDate = new Date();
-    renderHome();
+    renderHome(); updateGoTodayBtn?.();
   });
 
   // 今日のパートナータスクをLINEで一括送信
@@ -2688,6 +2695,47 @@ async function main() {
       $('#deleteModal').classList.remove('show');
     }
   });
+
+  // 今日に戻るボタン制御（ホームタブの日付が今日以外のとき表示）
+  const goTodayHomeBtn = document.getElementById('goTodayHomeBtn');
+  function updateGoTodayBtn() {
+    if (!goTodayHomeBtn) return;
+    const today = getTodayStr();
+    goTodayHomeBtn.style.display = getDateStr(homeViewDate) !== today ? 'inline-block' : 'none';
+  }
+  goTodayHomeBtn?.addEventListener('click', () => {
+    homeViewDate = new Date();
+    renderHome();
+    updateGoTodayBtn();
+  });
+  // 日付変更のたびに更新
+  const origRenderHome = renderHome;
+  // renderHome後にupdateGoTodayBtnを呼ぶ（既存コード維持のため）
+  setTimeout(updateGoTodayBtn, 100);
+
+  // リロードボタン（PCブラウザのみ表示）
+  const reloadBtn = document.getElementById('reloadBtn');
+  const isStandaloneCheck = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  const isMobile = /iphone|ipad|ipod|android/i.test(navigator.userAgent);
+  if (reloadBtn && !isStandaloneCheck && !isMobile) {
+    reloadBtn.style.display = 'inline-block';
+    reloadBtn.addEventListener('click', () => location.reload());
+  }
+
+  // Pull-to-refresh（PWAスタンドアロン時）
+  if (isStandaloneCheck) {
+    let startY = 0;
+    let pulling = false;
+    document.addEventListener('touchstart', (e) => {
+      startY = e.touches[0].clientY;
+      pulling = window.scrollY === 0;
+    }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+      if (!pulling) return;
+      const diff = e.changedTouches[0].clientY - startY;
+      if (diff > 80) location.reload();
+    }, { passive: true });
+  }
 
   // PWA
   let deferredPrompt = null;
