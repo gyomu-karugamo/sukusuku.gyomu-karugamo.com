@@ -562,9 +562,10 @@
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://app.gyomu-karugamo.com/app.html'
+        redirectTo: 'https://gyomu-karugamo.com/index.html'
       }
     });
+    
     if (error) showMsg(googleMsg, TXT.errorPrefix + error.message);
     // 成功時はGoogleのOAuth画面へリダイレクトされる
     // 戻り先(app.html)でonAuthStateChangeがSIGNED_INを受け取る
@@ -596,14 +597,6 @@
 
 <!-- ===== Service Worker 登録 + PWA バナー制御 ===== -->
 <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('SW registered:', reg.scope))
-        .catch(err => console.warn('SW registration failed:', err));
-    });
-  }
-
   let deferredPrompt = null;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isInStandaloneMode =
