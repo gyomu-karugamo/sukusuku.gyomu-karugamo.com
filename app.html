@@ -1279,6 +1279,25 @@ footer a:hover { color: var(--orange); }
 
     </div>
 
+    <!-- 名前設定 -->
+    <div class="card">
+      <div class="sec-label">Names</div>
+      <div class="card-title" style="margin-bottom:16px;">名前の設定</div>
+      <p class="card-desc" style="margin-bottom:12px;">ホーム・タスク一覧・LINEページでの表示名を設定します</p>
+      <div class="task-form-row">
+        <div class="field">
+          <label>あなたの名前</label>
+          <input type="text" id="myNameInput" placeholder="例：なつみ" maxlength="20">
+        </div>
+        <div class="field">
+          <label>パートナーの名前</label>
+          <input type="text" id="partnerNameInput" placeholder="例：たろう" maxlength="20">
+        </div>
+      </div>
+      <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
+      <p class="msg" id="namesMsg"></p>
+    </div>
+
   </section>
 
   <!-- ========== ACCOUNT ========== -->
@@ -1382,15 +1401,11 @@ footer a:hover { color: var(--orange); }
       </div>
     </div>
 
-  </section>
-
-  <!-- ========== ACCOUNT ========== -->
-  <section id="tab-account" class="tab-pane">
-
     <!-- 名前設定 -->
     <div class="card">
       <div class="sec-label">Names</div>
       <div class="card-title" style="margin-bottom:16px;">名前の設定</div>
+      <p class="card-desc" style="margin-bottom:12px;">ホーム・タスク一覧・LINEページでの表示名を設定します</p>
       <div class="task-form-row">
         <div class="field">
           <label>あなたの名前</label>
@@ -1404,6 +1419,11 @@ footer a:hover { color: var(--orange); }
       <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
       <p class="msg" id="namesMsg"></p>
     </div>
+
+  </section>
+
+  <!-- ========== ACCOUNT ========== -->
+  <section id="tab-account" class="tab-pane">
 
     <!-- プラン -->
     <div class="card">
@@ -1538,7 +1558,23 @@ const SUPABASE_URL = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY254dXltcWJ6a3FmcmN2cGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjAxMTUsImV4cCI6MjA5MDA5NjExNX0.2DGITsYpMg94XaVAfEma_rv71njzyCb445Kcvkj1SyQ";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: 'karugamo-auth',
+  }
+});
+
+// PWA真っ白対策: フォアグラウンド復帰時にセッションを再確認
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible') {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      // セッション切れ → ログイン画面へ
+      showSection('notLoggedAlert');
+    }
+  }
 });
 
 // ========================================
@@ -2276,7 +2312,7 @@ async function main() {
   // =========== EVENT LISTENERS ===========
 
   // タブ内のリンク
-  $('#goLineSetup')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
+  $('#goLineSetup')?.addEventListener('click', (e) => { e.preventDefault(); goTab('settings'); });
   $('#upgradeLink')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
   $('#goAddTask')?.addEventListener('click', (e) => { e.preventDefault(); goTab('tasks'); });
 
