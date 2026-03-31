@@ -1049,11 +1049,13 @@ footer a:hover { color: var(--orange); }
     <!-- 日付ナビ + タスクビュー -->
     <div class="card">
       <!-- 日付ナビゲーション -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-        <button id="goTodayHomeBtn" style="display:none;font-size:10px;color:var(--mist);background:none;border:1px solid var(--border);border-radius:5px;padding:2px 7px;cursor:pointer;flex-shrink:0;">今日</button>
-        <button class="btn" id="homePrevDay" style="padding:5px 11px;font-size:16px;flex-shrink:0;">‹</button>
-        <div class="card-title" id="todayDateLabel" style="flex:1;text-align:center;">今日のタスク</div>
-        <button class="btn" id="homeNextDay" style="padding:5px 11px;font-size:16px;flex-shrink:0;">›</button>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="goTodayHomeBtn" style="display:none;font-size:10px;color:var(--mist);background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;">今日</button>
+          <button class="btn" id="homePrevDay" style="padding:5px 11px;font-size:16px;">‹</button>
+        </div>
+        <div class="card-title" id="todayDateLabel" style="text-align:center;margin:0;">今日のタスク</div>
+        <button class="btn" id="homeNextDay" style="padding:5px 11px;font-size:16px;">›</button>
       </div>
 
 
@@ -1096,7 +1098,7 @@ footer a:hover { color: var(--orange); }
     <!-- Freeプランゲート -->
     <div id="freeGateBanner">
       <span style="font-size:20px;flex-shrink:0;">🔒</span>
-      <div class="gate-text">月10件を超えるLINE送信は<strong>Standardプラン</strong>のみ。</div>
+      <div class="gate-text">Free: 月10件 / Standard: 月30件 / Premium: 無制限</div>
       <button class="btn btn-primary" id="gateUpgradeBtn" style="flex-shrink:0;font-size:12px;">アップグレード</button>
     </div>
 
@@ -1218,70 +1220,80 @@ footer a:hover { color: var(--orange); }
   <!-- ========== REPORT ========== -->
   <section id="tab-report" class="tab-pane">
 
-    <div class="card">
-      <div class="report-month">
-        <div>
-          <div class="sec-label">Monthly Report</div>
-          <div class="month-label" id="reportMonthLabel">2026年3月</div>
-        </div>
-        <div class="month-nav">
-          <button id="prevMonth">‹</button>
-          <button id="nextMonth">›</button>
-        </div>
+    <!-- 月ナビ -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;">
+      <button id="prevMonth" class="btn" style="padding:5px 12px;font-size:16px;">‹</button>
+      <div style="text-align:center;">
+        <div class="sec-label" style="margin-bottom:2px;">Monthly Report</div>
+        <div class="month-label" id="reportMonthLabel">2026年3月</div>
       </div>
+      <button id="nextMonth" class="btn" style="padding:5px 12px;font-size:16px;">›</button>
+    </div>
 
+    <!-- A: 完了数サマリー -->
+    <div class="card">
+      <div class="sec-label" style="margin-bottom:12px;">完了タスク数</div>
       <div class="report-grid">
         <div class="report-stat">
           <div class="report-stat-num" id="rptMyTotal">–</div>
-          <div class="report-stat-label">自分の完了タスク</div>
-          <div class="report-stat-sub" id="rptMyRate"></div>
+          <div class="report-stat-label" id="rptMyLabel">自分</div>
         </div>
         <div class="report-stat">
           <div class="report-stat-num" id="rptPartnerTotal">–</div>
-          <div class="report-stat-label">パートナーの完了</div>
-          <div class="report-stat-sub" id="rptPartnerRate"></div>
+          <div class="report-stat-label" id="rptPartnerLabel">パートナー</div>
         </div>
         <div class="report-stat">
-          <div class="report-stat-num" id="rptRepeat">–</div>
-          <div class="report-stat-label">繰り返しタスク</div>
-          <div class="report-stat-sub">自動送信された回数</div>
+          <div class="report-stat-num" id="rptTotalDays">–</div>
+          <div class="report-stat-label">完了した日数</div>
         </div>
         <div class="report-stat">
           <div class="report-stat-num" id="rptLineSent">–</div>
-          <div class="report-stat-label">LINE送信数</div>
+          <div class="report-stat-label">LINE送信</div>
           <div class="report-stat-sub" id="rptLineSub"></div>
         </div>
       </div>
+    </div>
 
-      <!-- バーグラフ：カテゴリ別 -->
-      <hr class="soft">
-      <div style="margin-bottom:8px;">
-        <div class="sec-label">カテゴリ別タスク数</div>
+    <!-- C: 連続記録（ストリーク） -->
+    <div class="card">
+      <div class="sec-label" style="margin-bottom:10px;">連続完了記録</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="text-align:center;padding:12px;background:var(--cream-dark);border-radius:var(--radius-sm);">
+          <div style="font-size:28px;font-weight:600;color:var(--orange);" id="rptStreak">–</div>
+          <div style="font-size:11px;color:var(--mist);margin-top:4px;">現在の連続日数</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--cream-dark);border-radius:var(--radius-sm);">
+          <div style="font-size:28px;font-weight:600;color:var(--orange);" id="rptBestStreak">–</div>
+          <div style="font-size:11px;color:var(--mist);margin-top:4px;">今月の最長連続</div>
+        </div>
       </div>
-      <div class="bar-chart" id="categoryChart"></div>
+      <!-- 週ごとの完了率グラフ（A案） -->
+      <div style="margin-top:14px;">
+        <div style="font-size:11px;color:var(--mist);margin-bottom:8px;">週ごとの完了率</div>
+        <div id="weeklyChart" style="display:flex;gap:4px;align-items:flex-end;height:60px;"></div>
+        <div id="weeklyLabels" style="display:flex;gap:4px;margin-top:4px;"></div>
+      </div>
+    </div>
 
-      <!-- 負担割合 -->
-      <hr class="soft">
-      <div style="margin-bottom:12px;">
-        <div class="sec-label">負担割合</div>
-      </div>
-      <div class="bar-chart">
+    <!-- B: カテゴリ別 + D: 担当バランス -->
+    <div class="card">
+      <div class="sec-label" style="margin-bottom:12px;">担当バランス <span style="font-size:10px;color:var(--mist);font-weight:400;">（完了件数ベース）</span></div>
+      <div class="bar-chart" style="margin-bottom:16px;">
         <div class="bar-row">
-          <div class="bar-label">自分</div>
-          <div class="bar-track">
-            <div class="bar-fill" id="myLoadBar" style="width:50%"></div>
-          </div>
+          <div class="bar-label" id="rptBarMyLabel">自分</div>
+          <div class="bar-track"><div class="bar-fill" id="myLoadBar" style="width:50%"></div></div>
           <div class="bar-val" id="myLoadPct">–</div>
         </div>
         <div class="bar-row">
-          <div class="bar-label">パートナー</div>
-          <div class="bar-track">
-            <div class="bar-fill partner" id="partnerLoadBar" style="width:50%"></div>
-          </div>
+          <div class="bar-label" id="rptBarPartnerLabel">相手</div>
+          <div class="bar-track"><div class="bar-fill partner" id="partnerLoadBar" style="width:50%"></div></div>
           <div class="bar-val" id="partnerLoadPct">–</div>
         </div>
       </div>
 
+      <hr class="soft">
+      <div class="sec-label" style="margin:12px 0 10px;">カテゴリ別タスク数</div>
+      <div class="bar-chart" id="categoryChart"></div>
     </div>
 
 
@@ -1421,21 +1433,39 @@ footer a:hover { color: var(--orange); }
         <div class="plan-name">Freeプラン <span class="badge badge-mist">現在のプラン</span></div>
         <div class="plan-price">¥0 / 月</div>
         <ul class="feature-list">
-          <li>タスク登録・LINE送信（月10件まで）</li>
-          <li>自分／パートナーのタスク分離管理</li>
-          <li>完了記録・週グラフ</li>
-          <li class="disabled">繰り返しタスクの自動送信</li>
-          <li class="disabled">月次レポート自動生成</li>
-          <li class="disabled">送信件数無制限</li>
+          <li>タスク登録・完了管理</li>
+          <li>LINE送信（月10件まで）</li>
+          <li>月次レポート</li>
+          <li class="disabled">LINE送信（月30件）</li>
+          <li class="disabled">月次レポート</li>
+          <li class="disabled">LINE送信 無制限（Premium）</li>
         </ul>
         <div class="cta-row">
-          <button class="btn btn-primary" id="btnSubscribe">14日間無料で試す →</button>
+          <button class="btn btn-primary" id="btnSubscribe">Standardプランへ（14日無料）→</button>
         </div>
       </div>
       <div id="planStandardBox" class="plan-box standard" style="display:none;">
         <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
+        <ul class="feature-list" style="margin-bottom:14px;">
+          <li>タスク登録・完了管理</li>
+          <li>LINE送信（月30件）</li>
+          <li>月次レポート</li>
+          <li class="disabled">LINE送信 無制限（Premium）</li>
+        </ul>
+        <div class="cta-row" style="gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnUpgradePremium" style="flex:1;">Premiumへアップグレード →</button>
+          <button class="btn btn-danger" id="btnCancel">解約する</button>
+        </div>
+      </div>
+      <div id="planPremiumBox" class="plan-box" style="display:none;border-color:var(--orange);">
+        <div class="plan-name">Premiumプラン <span class="badge badge-orange">現在のプラン</span></div>
+        <ul class="feature-list" style="margin-bottom:14px;">
+          <li>タスク登録・完了管理</li>
+          <li>LINE送信（無制限）</li>
+          <li>月次レポート</li>
+        </ul>
         <div class="cta-row">
-          <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
+          <button class="btn btn-danger" id="btnCancelPremium">解約する</button>
         </div>
       </div>
     </div>
@@ -1632,7 +1662,8 @@ document.addEventListener('visibilitychange', async () => {
 let currentUser = null;
 let currentProfile = null;
 let tasks = [];
-let completions = {};
+let completions = {};          // 今日の完了状態 {taskId: bool}
+let completions_by_date = {};  // レポート用 {dateStr: {taskId: bool}}
 let reportMonth = new Date();
 let taskFilter = 'all';
 let lineSentCount = 0;
@@ -1662,7 +1693,29 @@ function refreshNameLabels() {
   if (statPtLabel)  statPtLabel.textContent  = getPartnerLabel() + ' 完了';
 }
 
-const FREE_LIMIT = 10;
+const FREE_LIMIT      = 10;   // Freeプランの月間LINE送信上限
+const STANDARD_LIMIT  = 30;   // Standardプランの月間LINE送信上限
+
+function isPro() {
+  // StandardまたはPremiumならtrue（後方互換）
+  return isStandard() || isPremium();
+}
+function isStandard() {
+  return !!(currentProfile?.is_active && currentProfile?.tier === 'standard');
+}
+function isPremium() {
+  return !!(currentProfile?.is_active && currentProfile?.tier === 'premium');
+}
+function getMonthlyLimit() {
+  if (isPremium())  return Infinity;
+  if (isStandard()) return STANDARD_LIMIT;
+  return FREE_LIMIT;
+}
+function getLimitLabel() {
+  if (isPremium())  return '無制限（Premium）';
+  if (isStandard()) return `${STANDARD_LIMIT}件（Standard）`;
+  return `${FREE_LIMIT}件（Free）`;
+}
 
 // カテゴリ（単一リスト。デフォルト3件から始め、自由に追加・編集・削除できる）
 const INITIAL_CATEGORIES = [
@@ -1818,23 +1871,35 @@ async function deleteTaskDB(id) {
 // ========== DB: completions ==========
 async function loadCompletions() {
   const today = getTodayStr();
+  // 今月分をまとめて取得（レポートに使用）
+  const firstDay = today.slice(0,7) + '-01';
   const { data, error } = await sb.from('task_completions')
-    .select('task_id, done')
+    .select('task_id, date, done')
     .eq('user_id', currentUser.id)
-    .eq('date', today);
+    .gte('date', firstDay)
+    .eq('done', true);
   if (error) { console.error('loadCompletions', error); completions = {}; return; }
   completions = {};
-  (data || []).forEach(r => completions[r.task_id] = r.done);
+  completions_by_date = {};
+  (data || []).forEach(r => {
+    if (!completions_by_date[r.date]) completions_by_date[r.date] = {};
+    completions_by_date[r.date][r.task_id] = true;
+    if (r.date === today) completions[r.task_id] = true;
+  });
 }
 
-async function saveCompletion(taskId, done) {
-  const today = getTodayStr();
+async function saveCompletion(taskId, date, done) {
   completions[taskId] = done;
+  if (!completions_by_date[date]) completions_by_date[date] = {};
+  if (done) completions_by_date[date][taskId] = true;
+  else delete completions_by_date[date][taskId];
   const { error } = await sb.from('task_completions')
-    .upsert({ user_id: currentUser.id, task_id: taskId, date: today, done },
+    .upsert({ user_id: currentUser.id, task_id: taskId, date, done },
             { onConflict: 'user_id,task_id,date' });
   if (error) console.error('saveCompletion', error);
 }
+
+
 
 // ========== LINE連携ステータスUI更新 ==========
 let lineConnected = false;
@@ -1868,6 +1933,9 @@ async function refreshLineStatus() {
     if (connectedGuide) connectedGuide.style.display = 'none';
     if (alertBanner)   alertBanner.style.display = 'flex';
   }
+  // LINE連携状態が変わったらホームのバナー表示も更新
+  const lb = document.getElementById('lineSendBanner');
+  if (lb) lb.style.display = lineConnected ? 'block' : 'none';
 }
 
 // ========== DB: LINE送信数 ==========
@@ -1922,7 +1990,7 @@ async function disconnectLine() {
 
 // ========== LINE: タスク送信 ==========
 async function sendTaskToLine(task) {
-  if (!isPro() && lineSentCount >= FREE_LIMIT) return false;
+  if (lineSentCount >= getMonthlyLimit()) return false;
   const { data: sess } = await sb.auth.getSession();
   const token = sess?.session?.access_token;
   try {
@@ -1942,9 +2010,6 @@ async function sendTaskToLine(task) {
 // ========================================
 // PLAN
 // ========================================
-function isPro() {
-  return currentProfile && currentProfile.is_active && currentProfile.tier === 'standard';
-}
 
 async function startCheckout() {
   if (!currentUser) return;
@@ -2017,8 +2082,8 @@ function renderHome() {
   renderDateTasks(viewStr);
   renderUsageMeter();
 
-  // LINE通知ボタン表示制御
-  const lineBanner = $('#lineSendBanner');
+  // LINE通知ボタン表示制御（refreshLineStatusが完了していなくても読める）
+  const lineBanner = document.getElementById('lineSendBanner');
   if (lineBanner) lineBanner.style.display = lineConnected ? 'block' : 'none';
 }
 
@@ -2115,15 +2180,11 @@ function renderTaskList(containerId, taskArr, isPartner, dayComp, dateStr) {
   wrap.querySelectorAll('.task-check').forEach(el => {
     el.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const id   = el.dataset.id;
-      const date = el.dataset.date || getTodayStr();
+      const id      = el.dataset.id;
+      const date    = el.dataset.date || getTodayStr();
       const newDone = !(comp[id]);
       comp[id] = newDone;
-      // DB保存
-      await sb.from('task_completions').upsert(
-        { user_id: currentUser.id, task_id: id, date, done: newDone },
-        { onConflict: 'user_id,task_id,date' }
-      );
+      await saveCompletion(id, date, newDone);
       if (date === getTodayStr()) completions = comp;
       renderDateTasks(date);
       if (newDone) showToast('完了しました ✓', 'success');
@@ -2140,7 +2201,7 @@ function renderUsageMeter() {
   const fill = $('#usageFill');
   fill.style.width = pct + '%';
   fill.className = 'usage-fill' + (pct >= 100 ? ' over' : pct >= 80 ? ' warn' : '');
-  $('#usageCount').textContent = `${lineSentCount} / ${FREE_LIMIT}件`;
+  $('#usageCount').textContent = `${lineSentCount} / ${getMonthlyLimit()}件`;
 }
 
 // ========================================
@@ -2322,53 +2383,134 @@ async function addTask(name, assignee, repeat, category, note, taskDate, repeatS
 // UI: REPORT
 // ========================================
 function renderReport() {
-  $('#reportMonthLabel').textContent = formatMonthLabel(reportMonth);
+  const monthLabel = document.getElementById('reportMonthLabel');
+  if (monthLabel) monthLabel.textContent = formatMonthLabel(reportMonth);
 
-  const y = reportMonth.getFullYear();
-  const m = reportMonth.getMonth();
+  const y    = reportMonth.getFullYear();
+  const m    = reportMonth.getMonth();
   const from = new Date(y, m, 1);
-  const to = new Date(y, m+1, 0);
+  const to   = new Date(y, m+1, 0);
+  const todayStr = getTodayStr();
 
-  // localStorageベースで集計（Supabaseテーブルが揃ったら切り替え）
-  let myDone = 0, partnerDone = 0, repeatCount = 0;
+  // 名前ラベルを更新
+  const setEl = (id, text) => { const el = document.getElementById(id); if(el) el.textContent = text; };
+  setEl('rptMyLabel',          getMyLabel());
+  setEl('rptPartnerLabel',     getPartnerLabel());
+  setEl('rptBarMyLabel',       getMyLabel());
+  setEl('rptBarPartnerLabel',  getPartnerLabel());
+
+  // 日別の完了データを収集
+  const dayMap = {}; // dateStr → { myDone, partnerDone, total }
+  let myDone = 0, partnerDone = 0, daysWithAnyDone = 0;
+
   for (let d = new Date(from); d <= to; d.setDate(d.getDate()+1)) {
     const ds = d.toISOString().slice(0,10);
-    const c = JSON.parse(localStorage.getItem(`kamo_completions_${currentUser?.id}_${ds}`) || '{}');
+    if (ds > todayStr) break;
+    const comp = completions_by_date?.[ds] || {};
+    let dayMy = 0, dayPt = 0;
     tasks.forEach(t => {
-      if (c[t.id]) {
-        if (t.assignee === 'me') myDone++;
-        else partnerDone++;
-        if (t.repeat && t.repeat !== 'none') repeatCount++;
+      if (comp[t.id]) {
+        if (t.assignee === 'me') { myDone++; dayMy++; }
+        else                     { partnerDone++; dayPt++; }
       }
     });
+    dayMap[ds] = { myDone: dayMy, partnerDone: dayPt, total: dayMy + dayPt };
+    if (dayMy + dayPt > 0) daysWithAnyDone++;
   }
 
-  $('#rptMyTotal').textContent = myDone;
-  $('#rptPartnerTotal').textContent = partnerDone;
-  $('#rptRepeat').textContent = repeatCount;
-  $('#rptLineSent').textContent = lineSentCount;
-  $('#rptLineSub').textContent = isPro() ? '無制限プラン' : `/ ${FREE_LIMIT}件（Free）`;
+  setEl('rptMyTotal',      myDone);
+  setEl('rptPartnerTotal', partnerDone);
+  setEl('rptTotalDays',    daysWithAnyDone);
+  setEl('rptLineSent',     lineSentCount);
+  setEl('rptLineSub',      '/ ' + getLimitLabel());
 
-  const myRate = myDone + partnerDone > 0 ? Math.round(myDone / (myDone + partnerDone) * 100) : 50;
+  // 担当バランス
+  const myRate      = myDone + partnerDone > 0 ? Math.round(myDone / (myDone + partnerDone) * 100) : 50;
   const partnerRate = 100 - myRate;
-  $('#myLoadBar').style.width = myRate + '%';
-  $('#partnerLoadBar').style.width = partnerRate + '%';
-  $('#myLoadPct').textContent = myRate + '%';
-  $('#partnerLoadPct').textContent = partnerRate + '%';
+  const myBar = document.getElementById('myLoadBar');
+  const ptBar = document.getElementById('partnerLoadBar');
+  if (myBar) myBar.style.width = myRate + '%';
+  if (ptBar) ptBar.style.width = partnerRate + '%';
+  setEl('myLoadPct',      myRate + '%');
+  setEl('partnerLoadPct', partnerRate + '%');
 
-  // カテゴリ集計
+  // C: ストリーク計算（連続で1件以上完了した日数）
+  let currentStreak = 0, bestStreak = 0, streak = 0;
+  const days = Object.keys(dayMap).sort();
+  for (const ds of days) {
+    if (dayMap[ds].total > 0) {
+      streak++;
+      if (streak > bestStreak) bestStreak = streak;
+    } else {
+      streak = 0;
+    }
+  }
+  // 今月の場合は今日まで遡って現在のストリークを計算
+  if (y === new Date().getFullYear() && m === new Date().getMonth()) {
+    currentStreak = 0;
+    const allDays = Object.keys(dayMap).sort().reverse();
+    for (const ds of allDays) {
+      if (ds > todayStr) continue;
+      if (dayMap[ds]?.total > 0) currentStreak++;
+      else break;
+    }
+  }
+  setEl('rptStreak',     currentStreak + '日');
+  setEl('rptBestStreak', bestStreak + '日');
+
+  // A: 週ごとの完了率グラフ
+  const weeks = [];
+  let wStart = new Date(from);
+  while (wStart <= to) {
+    const wEnd = new Date(wStart);
+    wEnd.setDate(wEnd.getDate() + 6);
+    if (wEnd > to) wEnd.setTime(to.getTime());
+    let wDone = 0, wTotal = 0;
+    for (let d2 = new Date(wStart); d2 <= wEnd; d2.setDate(d2.getDate()+1)) {
+      const ds2 = d2.toISOString().slice(0,10);
+      if (ds2 > todayStr) break;
+      const comp2 = completions_by_date?.[ds2] || {};
+      tasks.forEach(t => {
+        const inRange = getTasksForDate(ds2).find(tr => tr.id === t.id);
+        if (inRange) {
+          wTotal++;
+          if (comp2[t.id]) wDone++;
+        }
+      });
+    }
+    weeks.push({ label: `${wStart.getMonth()+1}/${wStart.getDate()}`, rate: wTotal > 0 ? Math.round(wDone/wTotal*100) : 0 });
+    wStart.setDate(wStart.getDate() + 7);
+  }
+  const weekChart  = document.getElementById('weeklyChart');
+  const weekLabels = document.getElementById('weeklyLabels');
+  if (weekChart && weekLabels) {
+    weekChart.innerHTML = weeks.map(w => `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+        <div style="font-size:9px;color:var(--mist);">${w.rate}%</div>
+        <div style="width:100%;background:var(--orange);border-radius:3px 3px 0 0;height:${Math.max(4,w.rate*0.5)}px;opacity:0.85;"></div>
+      </div>`).join('');
+    weekLabels.innerHTML = weeks.map(w =>
+      `<div style="flex:1;text-align:center;font-size:9px;color:var(--mist);">${w.label}</div>`).join('');
+  }
+
+  // B: カテゴリ別（完了数）
   const catCount = {};
-  tasks.forEach(t => {
-    if (t.category) catCount[t.category] = (catCount[t.category]||0) + 1;
+  days.forEach(ds => {
+    const comp3 = completions_by_date?.[ds] || {};
+    tasks.forEach(t => {
+      if (comp3[t.id] && t.category) catCount[t.category] = (catCount[t.category]||0) + 1;
+    });
   });
-  const maxCat = Math.max(1, ...Object.values(catCount));
-  $('#categoryChart').innerHTML = Object.entries(catCount).map(([k, v]) => `
-    <div class="bar-row">
-      <div class="bar-label" style="font-size:11px;">${getCategoryLabel(k)}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${v/maxCat*100}%"></div></div>
-      <div class="bar-val">${v}</div>
-    </div>
-  `).join('') || `<div style="font-size:13px;color:var(--mist);">データがありません</div>`;
+  const maxCat = Math.max(1, ...Object.values(catCount).map(Number));
+  const catChart = document.getElementById('categoryChart');
+  if (catChart) {
+    catChart.innerHTML = Object.entries(catCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+      <div class="bar-row">
+        <div class="bar-label" style="font-size:11px;">${getCategoryLabel(k)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${v/maxCat*100}%"></div></div>
+        <div class="bar-val">${v}</div>
+      </div>`).join('') || `<div style="font-size:13px;color:var(--mist);">データがありません</div>`;
+  }
 }
 
 // ========================================
@@ -2377,12 +2519,19 @@ function renderReport() {
 function renderAccount() {
   $('#currentEmail').textContent = currentUser?.email || '';
 
-  if (isPro()) {
-    $('#planFreeBox').style.display = 'none';
-    $('#planStandardBox').style.display = 'block';
-  } else {
-    $('#planFreeBox').style.display = 'block';
+  const pb = $('#planPremiumBox');
+  if (isPremium()) {
+    $('#planFreeBox').style.display     = 'none';
     $('#planStandardBox').style.display = 'none';
+    if (pb) pb.style.display = 'block';
+  } else if (isStandard()) {
+    $('#planFreeBox').style.display     = 'none';
+    $('#planStandardBox').style.display = 'block';
+    if (pb) pb.style.display = 'none';
+  } else {
+    $('#planFreeBox').style.display     = 'block';
+    $('#planStandardBox').style.display = 'none';
+    if (pb) pb.style.display = 'none';
   }
 
   // Googleログインユーザーはメール変更・PW変更を非表示
@@ -2630,7 +2779,7 @@ async function main() {
 
     if (!name) { showMsg($('#taskAddMsg'), 'タスク名を入力してください', 'error'); return; }
 
-    if (assignee === 'partner' && !isPro() && lineSentCount >= FREE_LIMIT) {
+    if (assignee === 'partner' && lineSentCount >= getMonthlyLimit()) {
       showMsg($('#taskAddMsg'), '今月のLINE送信上限に達しました（Standardプランで無制限）', 'error');
       return;
     }
@@ -2677,6 +2826,8 @@ async function main() {
   // 購読
   $('#btnSubscribe')?.addEventListener('click', startCheckout);
   $('#btnCancel')?.addEventListener('click', openPortal);
+  $('#btnCancelPremium')?.addEventListener('click', openPortal);
+  $('#btnUpgradePremium')?.addEventListener('click', openPortal); // Stripe portalで変更
   $('#gateUpgradeBtn')?.addEventListener('click', () => { goTab('account'); });
 
   // ===== LINE連携（本実装・4桁コード方式） =====
@@ -2915,7 +3066,7 @@ async function main() {
   function updateGoTodayBtn() {
     if (!goTodayHomeBtn) return;
     const today = getTodayStr();
-    goTodayHomeBtn.style.display = getDateStr(homeViewDate) !== today ? 'inline-block' : 'none';
+    goTodayHomeBtn.style.display = getViewDateStr(homeViewDate) !== today ? 'inline-block' : 'none';
   }
   goTodayHomeBtn?.addEventListener('click', () => {
     homeViewDate = new Date();
