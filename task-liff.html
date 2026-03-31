@@ -292,18 +292,20 @@ function getTasksForDate(dateStr) {
 }
 
 // 名前ラベル（profilesから取得）
-let myNameLabel = 'パートナー';
-let partnerNameLabel = 'あなた';  // LINEから見ると自分=partner
+// LINEを見るのはパートナー。tab[0]=partnerタスク=「あなたのタスク」、tab[1]=meタスク=「パートナーのタスク」
+let myNameLabel = 'あなた';        // LINEユーザー本人 = assignee:partner
+let partnerNameLabel = 'パートナー'; // アプリユーザー  = assignee:me
 
 async function loadNames() {
   const { data } = await sb.from('profiles')
     .select('display_name').eq('id', appUserId).single();
   if (data?.display_name) {
     const parts = data.display_name.split(',');
-    const myN = (parts[0] || '').trim();
-    const ptN = (parts[1] || '').trim();
-    if (myN) partnerNameLabel = myN;
-    if (ptN) myNameLabel = ptN;
+    const appUserName    = (parts[0] || '').trim(); // アプリユーザー（me担当）
+    const partnerLineName = (parts[1] || '').trim(); // LINEユーザー（partner担当）
+    // LINEを開くのはpartnerLineName本人 → 「あなたのタスク」として表示
+    if (partnerLineName) myNameLabel      = partnerLineName;  // tab[0]: あなた
+    if (appUserName)     partnerNameLabel = appUserName;      // tab[1]: パートナー
   }
   // タブラベルも更新
   const tabs = document.querySelectorAll('.tab-btn');
