@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>業務かるがも</title>
 <link rel="icon" type="image/png" href="/assets/icon.png">
 <link rel="manifest" href="/manifest.json">
@@ -61,6 +61,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body { min-height: 100vh; }
+html, body {
+  touch-action: manipulation;
+}
 
 body {
   font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
@@ -2070,14 +2073,29 @@ async function refreshLineStatus() {
 // ========== DB: LINE送信数 ==========
 async function countLineSentThisMonth() {
   const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth()+1).padStart(2,'0');
-  const { count, error } = await sb.from('line_sends')
+
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  const toDateTimeString = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}T00:00:00`;
+  };
+
+  const { count, error } = await sb
+    .from('line_sends')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', currentUser.id)
-    .gte('created_at', `${y}-${m}-01`)
-    .lt('created_at', `${y}-${String(now.getMonth()+2).padStart(2,'0')}-01`);
-  if (error) return 0;
+    .gte('created_at', toDateTimeString(monthStart))
+    .lt('created_at', toDateTimeString(nextMonthStart));
+
+  if (error) {
+    console.error('countLineSentThisMonth error:', error);
+    return 0;
+  }
+
   return count || 0;
 }
 
@@ -3196,23 +3214,29 @@ async function main() {
       });
     
       if (res.ok) {
-        const { error: insertErr } = await sb.from('line_sends').insert({
-          user_id: currentUser.id,
-          send_type: 'today_notify'
-        });
-        
+        const { data: inserted, error: insertErr } = await sb
+          .from('line_sends')
+          .insert({
+            user_id: currentUser.id,
+            send_type: 'today_notify'
+          })
+          .select();
+      
+        console.log('line_sends today insert result:', { inserted, insertErr });
+      
         if (insertErr) {
-          console.error('line_sends insert error:', insertErr);
+          console.error('line_sends today insert error:', insertErr);
+          showMsg($('#lineSendMsg'), '通知は送れましたが送信数の保存に失敗しました', 'error');
         } else {
-          lineSentCount = await countLineSentThisMonth();
+          const counted = await countLineSentThisMonth();
+          console.log('lineSentCount after today insert:', counted);
+          lineSentCount = counted;
           renderUsageMeter();
+          showMsg($('#lineSendMsg'), 'パートナーに通知を送りました 💬', 'success');
         }
-    
-        lineSentCount = await countLineSentThisMonth();
-        renderUsageMeter();
-    
-        showMsg($('#lineSendMsg'), 'パートナーに通知を送りました 💬', 'success');
       } else {
+        const errText = await res.text().catch(() => '');
+        console.error('send-line-notify today failed:', res.status, errText);
         showMsg($('#lineSendMsg'), '送信に失敗しました', 'error');
       }
     } else {
