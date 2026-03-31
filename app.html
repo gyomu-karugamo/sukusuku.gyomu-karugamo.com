@@ -1500,14 +1500,6 @@ footer a:hover { color: var(--duck); }
           <button class="btn btn-primary" id="btnSubscribeStandard">Standardへ（14日無料）</button>
           <button class="btn" id="btnSubscribePremium">Premiumへ</button>
         </div>
-        <div class="cta-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" id="btnUpgradePremium" style="flex:1;">Premiumへ変更</button>
-          <button class="btn" id="btnDowngradeFree">Freeへ変更</button>
-        </div>
-        <div class="cta-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="btn" id="btnDowngradeStandard">Standardへ変更</button>
-          <button class="btn btn-danger" id="btnCancelPremium">Freeへ変更</button>
-        </div>
         
       </div>
       <div id="planStandardBox" class="plan-box standard" style="display:none;">
@@ -1984,33 +1976,35 @@ let lineConnected = false;
 async function refreshLineStatus() {
   const conn = await loadLineConnection();
   lineConnected = !!conn;
-  const statusBox    = document.getElementById('lineStatusBox');
-  const guide        = document.getElementById('lineSetupGuide');
-  const connectedGuide = document.getElementById('lineConnectedGuide');
-  const alertBanner  = document.getElementById('lineAlertBanner');
 
-  
-    // 上のステータスバッジは不要なので非表示
-    if (statusBox)     statusBox.style.display = 'none';
-    if (guide)         guide.style.display = 'none';
+  const statusBox = document.getElementById('lineStatusBox');
+  const guide = document.getElementById('lineSetupGuide');
+  const connectedGuide = document.getElementById('lineConnectedGuide');
+  const alertBanner = document.getElementById('lineAlertBanner');
+
+  if (lineConnected) {
+    if (statusBox) statusBox.style.display = 'none';
+    if (guide) guide.style.display = 'none';
     if (connectedGuide) connectedGuide.style.display = 'block';
-    if (alertBanner)   alertBanner.style.display = 'none';
-    // タスクページURLを表示
+    if (alertBanner) alertBanner.style.display = 'none';
+
     if (conn?.access_token) {
       const urlInput = document.getElementById('liffUrlInput');
       if (urlInput) urlInput.value = getTaskPageUrl(conn.access_token);
     }
   } else {
-    if (statusBox)     statusBox.style.display = 'flex';
+    if (statusBox) statusBox.style.display = 'flex';
+
     const titleEl = document.getElementById('lineStatusTitle');
-    const descEl  = document.getElementById('lineStatusDesc');
+    const descEl = document.getElementById('lineStatusDesc');
+
     if (titleEl) titleEl.textContent = '未連携';
-    if (descEl)  descEl.textContent  = 'パートナーに友だち追加してもらいましょう';
-    if (guide)         guide.style.display = 'block';
+    if (descEl) descEl.textContent = 'パートナーに友だち追加してもらいましょう';
+    if (guide) guide.style.display = 'block';
     if (connectedGuide) connectedGuide.style.display = 'none';
-    if (alertBanner)   alertBanner.style.display = 'flex';
+    if (alertBanner) alertBanner.style.display = 'flex';
   }
-  // LINE連携状態が変わったらホームのバナー表示も更新
+
   const lb = document.getElementById('lineSendBanner');
   if (lb) lb.style.display = lineConnected ? 'block' : 'none';
 }
@@ -3467,18 +3461,6 @@ async function main() {
     // 通知カードを非表示
     const nc = document.getElementById('notifySettingCard');
     if (nc) nc.style.display = 'none';
-  });
-
-  document.getElementById('copyLiffUrlBtn')?.addEventListener('click', async () => {
-    const urlInput = document.getElementById('liffUrlInput');
-    const url = urlInput?.value;
-    if (!url) return;
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast('URLをコピーしました！リッチメニューのリンク先に設定してください', 'success');
-    } catch(e) {
-      urlInput?.select();
-    }
   });
 
   // 通知設定カード（LINE連携済み時のみ表示）
