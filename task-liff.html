@@ -465,80 +465,83 @@ document.getElementById('todayBtn').addEventListener('click', () => {
   loadData();
 });
 
-// 初期化 — LIFF認証版
+// ============================================================
+// 初期化 — 正しいLIFF実装
+// LINE内ブラウザでは liff.init() 後は常にログイン済み
+// liff.login() はLINE外ブラウザ（PC等）でのみ呼ぶ
+// ============================================================
 async function init() {
   const mc = document.getElementById('mainContent');
 
+  // タイムアウト付きでLIFF初期化
+  const liffInitPromise = liff.init({ liffId: LIFF_ID });
+  const timeoutPromise  = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('LIFF init timeout')), 8000)
+  );
+
   try {
-    // LIFF初期化
-    await liff.init({ liffId: LIFF_ID });
+    await Promise.race([liffInitPromise, timeoutPromise]);
   } catch(e) {
-    console.error('LIFF init error:', e);
-    // LINEブラウザだがLIFF初期化失敗の場合: URLパラメータフォールバック
-    lineUserId = new URLSearchParams(location.search).get('uid');
-    if (!lineUserId) {
-      mc.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div>読み込みに失敗しました<br><small style="color:var(--mist);">LINEアプリから開き直してください</small></div></div>`;
-      return;
-    }
-    await continueWithUserId(mc);
+    console.error('LIFF init failed:', e);
+    mc.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚠️</div>
+        <div>読み込みに失敗しました<br>
+        <small style="color:var(--mist);">LINEアプリから開き直してください<br>
+        エラー: ${String(e).slice(0,80)}</small></div>
+      </div>`;
     return;
   }
 
-  // ログイン処理
-  if (!liff.isLoggedIn()) {
-    // LINEブラウザ内でもログインが必要な場合
-    if (liff.isInClient()) {
-      // LINEブラウザ内: 自動ログイン
+  // LINE内ブラウザかどうか確認
+  if (liff.isInClient()) {
+    // LINE内ブラウザ: init後は常にログイン済みなのでそのままprofileを取得
+    try {
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+    } catch(e) {
+      console.error('getProfile error:', e);
+      mc.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div>プロフィール取得失敗: ${String(e).slice(0,60)}</div></div>`;
+      return;
+    }
+  } else {
+    // LINE外ブラウザ（PC等）
+    if (!liff.isLoggedIn()) {
+      // ログインページにリダイレクト
       liff.login({ redirectUri: location.href });
-    } else {
-      // 外部ブラウザ: URLパラメータフォールバック（テスト用）
-      lineUserId = new URLSearchParams(location.search).get('uid');
+      return; // リダイレクトされるのでここで終了
+    }
+    try {
+      const profile = await liff.getProfile();
+      lineUserId = profile.userId;
+    } catch(e) {
+      // 外部ブラウザでgetProfile失敗 → URLパラメータ fallback
+      lineUserId = new URLSearchParams(location.search).get('uid') || null;
       if (!lineUserId) {
         mc.innerHTML = `<div class="empty"><div class="empty-icon">📱</div><div>LINEアプリから開いてください</div></div>`;
         return;
       }
-      await continueWithUserId(mc);
-      return;
     }
+  }
+
+  if (!lineUserId) {
+    mc.innerHTML = `<div class="empty"><div class="empty-icon">🔒</div><div>ユーザーIDを取得できませんでした</div></div>`;
     return;
   }
 
-  // LINEユーザーIDを取得
-  try {
-    const profile = await liff.getProfile();
-    lineUserId = profile.userId;
-  } catch(e) {
-    console.error('getProfile error:', e);
-    mc.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div>プロフィールの取得に失敗しました</div></div>`;
-    return;
-  }
-
-  await continueWithUserId(mc);
-}
-
-async function continueWithUserId(mc) {
-  if (!lineUserId) return;
-
-  // line_user_id → アプリのuser_idを取得
+  // line_user_id → アプリの user_id を取得
   const { data: conn, error: connErr } = await sb
     .from('line_connections')
     .select('user_id')
     .eq('line_user_id', lineUserId)
     .single();
 
-  if (connErr) {
-    console.error('line_connections error:', connErr);
-    // RLSエラーの可能性
-    if (connErr.code === 'PGRST301' || connErr.message?.includes('policy')) {
-      mc.innerHTML = `<div class="empty"><div class="empty-icon">🔒</div><div>データの読み込みに失敗しました<br><small style="color:var(--mist);">管理者にお問い合わせください</small></div></div>`;
-    } else {
-      mc.innerHTML = `<div class="empty"><div class="empty-icon">🔗</div><div style="line-height:1.8;">LINE連携が見つかりません。<br>アプリの「設定 → LINE連携」から<br>コードを発行して連携してください。</div></div>`;
-    }
-    return;
-  }
-
-  if (!conn) {
-    mc.innerHTML = `<div class="empty"><div class="empty-icon">🔗</div><div style="line-height:1.8;">LINE連携が見つかりません。<br>アプリの「設定 → LINE連携」から<br>コードを発行して連携してください。</div></div>`;
+  if (connErr || !conn) {
+    console.error('line_connections lookup error:', connErr);
+    const isRLS = connErr?.code === 'PGRST301' || connErr?.message?.includes('row-level') || connErr?.message?.includes('policy');
+    mc.innerHTML = isRLS
+      ? `<div class="empty"><div class="empty-icon">🔒</div><div>データ取得エラー<br><small style="color:var(--mist);">Supabase RLSポリシーを確認してください<br>code: ${connErr?.code || 'PGRST116'}</small></div></div>`
+      : `<div class="empty"><div class="empty-icon">🔗</div><div style="line-height:1.8;">LINE連携が見つかりません。<br>アプリの「設定 → LINE連携」から<br>コードを発行して連携してください。</div></div>`;
     return;
   }
 
