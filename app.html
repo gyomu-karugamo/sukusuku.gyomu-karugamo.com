@@ -1015,27 +1015,26 @@ footer a:hover { color: var(--orange); }
 
     <!-- LINE通知ボタン（連携済み時のみ表示） -->
     <div id="lineSendBanner" style="display:none;margin-bottom:14px;">
-      <div style="display:flex;gap:8px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
         <button id="sendTodayLineBtn" style="
-          flex:1;padding:13px 16px;
+          width:100%;padding:14px 20px;
           background:var(--line-green);color:white;
           border:none;border-radius:var(--radius);
-          font-family:inherit;font-size:13px;font-weight:500;
-          cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+          font-family:inherit;font-size:14px;font-weight:500;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
           box-shadow:0 3px 12px rgba(6,199,85,0.25);transition:opacity 0.15s;">
-          <span style="font-size:16px;">💬</span>
-          タスクの更新を知らせる
+          <span style="font-size:18px;">💬</span>
+          タスクの更新をパートナーにLINEで知らせる
         </button>
         <button id="sendRemindBtn" style="
-          padding:13px 16px;
-          background:var(--orange);color:white;
+          width:100%;padding:14px 20px;
+          background:var(--line-green);color:white;
           border:none;border-radius:var(--radius);
-          font-family:inherit;font-size:13px;font-weight:500;
-          cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
-          box-shadow:0 3px 12px rgba(232,99,42,0.25);transition:opacity 0.15s;"
-          title="未完了タスクをリマインド">
-          <span style="font-size:16px;">🔔</span>
-          リマインド
+          font-family:inherit;font-size:14px;font-weight:500;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
+          box-shadow:0 3px 12px rgba(6,199,85,0.25);transition:opacity 0.15s;">
+          <span style="font-size:18px;">💬</span>
+          未完了タスクをリマインド
         </button>
       </div>
       <p class="msg" id="lineSendMsg" style="text-align:center;margin-top:6px;"></p>
@@ -1265,23 +1264,13 @@ footer a:hover { color: var(--orange); }
       </div>
     </div>
 
-    <!-- C: 連続記録（ストリーク） -->
+    <!-- 週ごとの完了率グラフ -->
     <div class="card">
-      <div class="sec-label" style="margin-bottom:10px;">連続完了記録</div>
-      <div style="display:flex;align-items:center;gap:16px;padding:12px;background:var(--cream-dark);border-radius:var(--radius-sm);">
-        <div style="font-size:36px;font-weight:600;color:var(--orange);" id="rptBestStreak">–</div>
-        <div>
-          <div style="font-size:13px;font-weight:500;">今月の最長連続完了</div>
-          <div style="font-size:11px;color:var(--mist);margin-top:2px;">1日に1件以上完了した日が連続した日数</div>
-        </div>
-      </div>
+      <div class="sec-label" style="margin-bottom:10px;">週ごとの完了率</div>
+      <div id="weeklyChart" style="display:flex;gap:4px;align-items:flex-end;height:60px;"></div>
+      <div id="weeklyLabels" style="display:flex;gap:4px;margin-top:4px;"></div>
       <div id="rptStreak" style="display:none;"></div>
-      <!-- 週ごとの完了率グラフ（A案） -->
-      <div style="margin-top:14px;">
-        <div style="font-size:11px;color:var(--mist);margin-bottom:8px;">週ごとの完了率</div>
-        <div id="weeklyChart" style="display:flex;gap:4px;align-items:flex-end;height:60px;"></div>
-        <div id="weeklyLabels" style="display:flex;gap:4px;margin-top:4px;"></div>
-      </div>
+      <div id="rptBestStreak" style="display:none;"></div>
     </div>
 
     <!-- B: カテゴリ別 + D: 担当バランス -->
@@ -1763,12 +1752,14 @@ function saveCategories() {
 // カテゴリIDからラベルを返す
 function getCategoryLabel(id) {
   if (!id) return '';
-  // categories が未ロードの場合はIDをそのまま返さず空に
-  if (!id.startsWith('cat_') && id.length < 20) {
-    // 旧フォーマット（cooking, childcare等）はそのまま返す
+  const found = categories.find(c => c.id === id);
+  if (found) return found.label;
+  // categoriesがまだロードされていない場合は遅延リトライ
+  if (categories.length === 0) {
+    loadCategories();
     return categories.find(c => c.id === id)?.label || id;
   }
-  return categories.find(c => c.id === id)?.label || '';
+  return id; // 見つからない場合はIDをそのまま（デバッグ用）
 }
 
 // カテゴリselectを再描画
@@ -3033,11 +3024,25 @@ async function main() {
   $('#prevMonth').addEventListener('click', () => {
     reportMonth = new Date(reportMonth.getFullYear(), reportMonth.getMonth()-1, 1);
     renderReport();
+    // 画像プレビューリセット
+    const cv = document.getElementById('reportCanvas');
+    if (cv) cv.style.display = 'none';
+    ['downloadReportBtn','shareXBtn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
   });
   $('#nextMonth').addEventListener('click', () => {
     reportMonth = new Date(reportMonth.getFullYear(), reportMonth.getMonth()+1, 1);
     renderReport();
+    const cv = document.getElementById('reportCanvas');
+    if (cv) cv.style.display = 'none';
+    ['downloadReportBtn','shareXBtn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
   });
+  document.getElementById('generateReportImgBtn')?.addEventListener('click', generateReportImage);
 
   // 購読
   $('#btnSubscribe')?.addEventListener('click', startCheckout);
