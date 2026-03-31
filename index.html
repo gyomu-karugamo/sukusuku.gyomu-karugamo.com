@@ -271,7 +271,6 @@
     background: white; border: 1px solid rgba(26,23,20,0.1);
     box-shadow: 0 4px 24px rgba(26,23,20,0.12);
     padding: 14px 16px; z-index: 200;
-    animation: slideUp 0.3s ease forwards;
   }
   .pwa-banner.show { display: flex; }
   .pwa-banner-icon { font-size: 22px; flex-shrink: 0; }
@@ -322,6 +321,8 @@
     font-size: 13px; color: var(--mist);
     line-height: 1.6; margin-bottom: 16px;
   }
+
+  /* ===== PWA ステップ（app.htmlと共通スタイル） ===== */
   .pwa-steps {
     display: flex; flex-direction: column;
     gap: 12px; margin-bottom: 24px;
@@ -330,11 +331,15 @@
   .pwa-step-num {
     width: 24px; height: 24px; border-radius: 50%;
     background: var(--duck); color: white;
-    font-size: 12px; font-weight: 400;
+    font-size: 11px; font-weight: 500;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; margin-top: 1px;
   }
-  .pwa-step-text { font-size: 14px; color: var(--ink); line-height: 1.6; }
+  .pwa-step-text {
+    font-size: 13px; color: var(--ink);
+    line-height: 1.6;
+  }
+
   .pwa-modal-close {
     width: 100%; padding: 12px;
     background: var(--cream); border: 1px solid rgba(26,23,20,0.12);
@@ -480,12 +485,11 @@
   const SUPABASE_URL = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY254dXltcWJ6a3FmcmN2cGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjAxMTUsImV4cCI6MjA5MDA5NjExNX0.2DGITsYpMg94XaVAfEma_rv71njzyCb445Kcvkj1SyQ";
 
-  // detectSessionInUrl: true にしてOAuthコールバックを自動処理
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
 
-  // ログイン済みなら即リダイレクト（OAuthコールバック含む）
+  // ログイン済み（またはOAuthコールバック後）はapp.htmlへ
   sb.auth.onAuthStateChange((event, session) => {
     if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
       window.location.href = 'https://app.gyomu-karugamo.com/app.html';
@@ -493,13 +497,13 @@
   });
 
   const TXT = {
-    needEmail:    "メールアドレスを入力してください。",
-    needPassword: "パスワードを入力してください。",
-    needAgree:    "利用規約とプライバシーポリシーへの同意が必要です。",
-    invalidEmail: "メールアドレスの形式が正しくありません。",
-    sent:         "認証メールを送信しました。メール内のリンクから続行してください。",
-    pwLoginFailed:"ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。",
-    errorPrefix:  "エラー：",
+    needEmail:     "メールアドレスを入力してください。",
+    needPassword:  "パスワードを入力してください。",
+    needAgree:     "利用規約とプライバシーポリシーへの同意が必要です。",
+    invalidEmail:  "メールアドレスの形式が正しくありません。",
+    sent:          "認証メールを送信しました。メール内のリンクから続行してください。",
+    pwLoginFailed: "ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。",
+    errorPrefix:   "エラー：",
   };
 
   const $ = (s) => document.querySelector(s);
@@ -525,15 +529,15 @@
     magicBtn.disabled = !agreeCheckbox.checked;
   });
 
-  const showPw = $("#show-password");
+  const showPw  = $("#show-password");
   const pwField = $("#pw-password");
   showPw.addEventListener("change", () => {
     pwField.type = showPw.checked ? "text" : "password";
   });
 
-  $("#pw-email").addEventListener("input",   () => showMsg(pwMsg, ""));
-  $("#pw-password").addEventListener("input", () => showMsg(pwMsg, ""));
-  $("#magic-email").addEventListener("input", () => showMsg(magicMsg, ""));
+  $("#pw-email").addEventListener("input",    () => showMsg(pwMsg, ""));
+  $("#pw-password").addEventListener("input",  () => showMsg(pwMsg, ""));
+  $("#magic-email").addEventListener("input",  () => showMsg(magicMsg, ""));
 
   // パスワードログイン
   pwLoginBtn.onclick = async () => {
@@ -550,25 +554,22 @@
     pwLoginBtn.disabled = false;
 
     if (error) { showMsg(pwMsg, TXT.pwLoginFailed); return; }
-
-    try { gtag('event', 'login_success', { method: 'password', funnel_step: 'login_complete' }); } catch(e) {}
-    // onAuthStateChange が SIGNED_IN を受け取りリダイレクト
+    try { gtag('event', 'login_success', { method: 'password' }); } catch(e) {}
+    // onAuthStateChange の SIGNED_IN がリダイレクトを担う
   };
 
   // Googleログイン
+  // ※ redirectTo は Supabase ダッシュボードの Redirect URLs に登録が必要
   $("#btn-google").onclick = async () => {
     const googleMsg = $("#google-message");
     showMsg(googleMsg, "");
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: 'https://gyomu-karugamo.com/index.html'
+        redirectTo: 'https://app.gyomu-karugamo.com/app.html'
       }
     });
-    
     if (error) showMsg(googleMsg, TXT.errorPrefix + error.message);
-    // 成功時はGoogleのOAuth画面へリダイレクトされる
-    // 戻り先(app.html)でonAuthStateChangeがSIGNED_INを受け取る
   };
 
   // マジックリンク / 新規登録
@@ -576,9 +577,9 @@
     const email = $("#magic-email").value.trim();
 
     showMsg(magicMsg, "");
-    if (!email)                     { showMsg(magicMsg, TXT.needEmail);    return; }
-    if (!validateEmail(email))      { showMsg(magicMsg, TXT.invalidEmail); return; }
-    if (!agreeCheckbox.checked)     { showMsg(magicMsg, TXT.needAgree);    return; }
+    if (!email)                 { showMsg(magicMsg, TXT.needEmail);    return; }
+    if (!validateEmail(email))  { showMsg(magicMsg, TXT.invalidEmail); return; }
+    if (!agreeCheckbox.checked) { showMsg(magicMsg, TXT.needAgree);    return; }
 
     magicBtn.disabled = true;
     const { error } = await sb.auth.signInWithOtp({
@@ -595,7 +596,7 @@
   };
 </script>
 
-<!-- ===== Service Worker 登録 + PWA バナー制御 ===== -->
+<!-- ===== PWA バナー・モーダル制御 ===== -->
 <script>
   let deferredPrompt = null;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -615,7 +616,7 @@
     }
   }
 
-  // PWAステップ（iOS用 / Android・Chrome用）
+  // ===== PWA ステップコンテンツ（app.htmlと同一構造） =====
   const IOS_STEPS = `
     <div class="pwa-step">
       <div class="pwa-step-num">1</div>
@@ -630,6 +631,7 @@
       <div class="pwa-step-text"><strong>「追加」</strong>をタップして完了！</div>
     </div>
   `;
+
   const ANDROID_STEPS = `
     <div class="pwa-step">
       <div class="pwa-step-num">1</div>
@@ -647,10 +649,11 @@
 
   document.getElementById('pwaBannerBtn').addEventListener('click', () => {
     if (deferredPrompt) {
+      // Android Chrome: ネイティブのインストールプロンプトを表示
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
     } else {
-      // モーダルを開いてステップを表示
+      // iOS / その他: モーダルで手順を表示
       document.getElementById('pwaModalSub').textContent = isIOS
         ? 'Safariで以下の手順でホーム画面に追加できます。'
         : 'ブラウザの手順でホーム画面に追加できます。';
