@@ -18,7 +18,6 @@
 <!-- ===== /PWA ===== -->
 
 <!-- Google tag (gtag.js) -->
-<!-- TODO: 業務かるがも用のGA4測定IDに差し替え -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-D74K33M791"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -44,9 +43,7 @@
     --success: #4a7c6f;
   }
 
-  html, body {
-    min-height: 100vh;
-  }
+  html, body { min-height: 100vh; }
 
   body {
     font-family: 'DM Sans', sans-serif;
@@ -61,7 +58,6 @@
     overflow-x: hidden;
   }
 
-  /* 背景装飾 */
   body::before {
     content: '';
     position: fixed;
@@ -83,7 +79,6 @@
     pointer-events: none;
   }
 
-  /* ノイズテクスチャ */
   .noise {
     position: fixed;
     inset: 0;
@@ -93,7 +88,6 @@
     opacity: 0.3;
   }
 
-  /* ===== .wrap ===== */
   .wrap {
     position: relative;
     z-index: 1;
@@ -110,7 +104,6 @@
     max-width: 440px;
   }
 
-  /* ロゴ */
   .logo {
     display: flex;
     flex-direction: column;
@@ -120,29 +113,13 @@
     text-decoration: none;
     animation: fadeDown 0.6s ease forwards;
   }
-
-  .logo img {
-    width: 56px;
-    height: 56px;
-    object-fit: contain;
-  }
-
+  .logo img { width: 56px; height: 56px; object-fit: contain; }
   .logo-name {
     font-family: 'Shippori Mincho', serif;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--ink);
-    letter-spacing: 0.04em;
+    font-size: 20px; font-weight: 600;
+    color: var(--ink); letter-spacing: 0.04em;
   }
 
-  .logo-tagline {
-    font-size: 12px;
-    color: var(--mist);
-    letter-spacing: 0.08em;
-    margin-top: -4px;
-  }
-
-  /* カード */
   .card {
     background: white;
     border: 1px solid rgba(26,23,20,0.08);
@@ -150,76 +127,47 @@
     animation: fadeUp 0.6s ease 0.1s both;
   }
 
-  .card-section {
-    margin-bottom: 0;
-  }
-
+  .card-section { margin-bottom: 0; }
   .card-section + .card-section {
-    margin-top: 32px;
-    padding-top: 32px;
+    margin-top: 32px; padding-top: 32px;
     border-top: 1px solid rgba(26,23,20,0.08);
   }
 
   .section-label {
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--duck);
+    font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--duck);
     margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
   }
-
   .section-label::after {
-    content: '';
-    display: block;
-    flex: 1;
-    height: 1px;
-    background: var(--duck);
-    opacity: 0.2;
+    content: ''; display: block; flex: 1;
+    height: 1px; background: var(--duck); opacity: 0.2;
   }
 
   .section-title {
     font-family: 'Shippori Mincho', serif;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 6px;
+    font-size: 20px; font-weight: 600;
+    color: var(--ink); margin-bottom: 6px;
   }
 
   .section-desc {
-    font-size: 13px;
-    color: var(--mist);
-    line-height: 1.7;
-    font-weight: 300;
-    margin-bottom: 20px;
+    font-size: 13px; color: var(--mist);
+    line-height: 1.7; font-weight: 300; margin-bottom: 20px;
   }
 
-  /* フォーム要素 */
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 12px;
-  }
+  .field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 
   input[type="email"],
   input[type="password"],
   input[type="text"] {
-    width: 100%;
-    padding: 12px 16px;
+    width: 100%; padding: 12px 16px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 300;
-    color: var(--ink);
-    background: var(--cream);
+    font-size: 15px; font-weight: 300;
+    color: var(--ink); background: var(--cream);
     border: 1px solid rgba(26,23,20,0.12);
-    border-radius: 0;
-    outline: none;
+    border-radius: 0; outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
-
   input[type="email"]:focus,
   input[type="password"]:focus,
   input[type="text"]:focus {
@@ -227,384 +175,185 @@
     box-shadow: 0 0 0 3px rgba(74,124,111,0.12);
     background: white;
   }
-
   input[type="email"]::placeholder,
-  input[type="password"]::placeholder {
-    color: #b0a898;
-  }
+  input[type="password"]::placeholder { color: #b0a898; }
 
   .show-pw {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--mist);
-    cursor: pointer;
-    user-select: none;
-    margin-top: -2px;
-    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--mist);
+    cursor: pointer; user-select: none;
+    margin-top: -2px; margin-bottom: 4px;
   }
-
   .show-pw input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
-    accent-color: var(--duck);
-    cursor: pointer;
+    width: 14px; height: 14px;
+    accent-color: var(--duck); cursor: pointer;
   }
 
-  /* 同意チェック */
   .agree {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 16px;
-    font-size: 13px;
-    color: var(--mist);
-    line-height: 1.6;
-    font-weight: 300;
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 16px; font-size: 13px;
+    color: var(--mist); line-height: 1.6; font-weight: 300;
   }
-
   .agree input[type="checkbox"] {
-    width: 15px;
-    height: 15px;
-    margin-top: 2px;
-    flex-shrink: 0;
-    accent-color: var(--duck);
-    cursor: pointer;
+    width: 15px; height: 15px; margin-top: 2px;
+    flex-shrink: 0; accent-color: var(--duck); cursor: pointer;
   }
+  .agree a { color: var(--duck); text-decoration: none; }
+  .agree a:hover { text-decoration: underline; }
 
-  .agree a {
-    color: var(--duck);
-    text-decoration: none;
-  }
-
-  .agree a:hover {
-    text-decoration: underline;
-  }
-
-  /* ボタン */
   .btn-primary {
-    width: 100%;
-    padding: 13px 24px;
-    background: var(--duck);
-    color: white;
+    width: 100%; padding: 13px 24px;
+    background: var(--duck); color: white;
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 400;
-    letter-spacing: 0.04em;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
+    font-size: 15px; font-weight: 400;
+    letter-spacing: 0.04em; border: none;
+    cursor: pointer; transition: background 0.2s, transform 0.15s;
     margin-top: 4px;
   }
+  .btn-primary:hover:not(:disabled) { background: var(--ink); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  .btn-primary:hover:not(:disabled) {
-    background: var(--ink);
-    transform: translateY(-1px);
-  }
-
-  .btn-primary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* ===== OR 区切り ===== */
   .divider-or {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    font-size: 12px;
-    color: var(--mist);
-    letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; font-size: 12px;
+    color: var(--mist); letter-spacing: 0.06em;
   }
-
   .divider-or::before,
-  .divider-or::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(26,23,20,0.1);
-  }
+  .divider-or::after { content: ''; flex: 1; height: 1px; background: rgba(26,23,20,0.1); }
 
-  /* ===== .row（Googleボタン行） ===== */
-  .row {
-    margin-bottom: 4px;
-  }
+  .row { margin-bottom: 4px; }
 
-  /* ===== Googleログインボタン ===== */
   .btn-google {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 12px 24px;
-    background: white;
-    color: var(--ink);
+    width: 100%; display: flex;
+    align-items: center; justify-content: center; gap: 10px;
+    padding: 12px 24px; background: white; color: var(--ink);
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    font-weight: 400;
-    letter-spacing: 0.02em;
-    border: 1px solid rgba(26,23,20,0.18);
-    cursor: pointer;
+    font-size: 15px; font-weight: 400; letter-spacing: 0.02em;
+    border: 1px solid rgba(26,23,20,0.18); cursor: pointer;
     transition: background 0.2s, border-color 0.2s, transform 0.15s;
   }
+  .btn-google:hover { background: var(--cream); border-color: rgba(26,23,20,0.3); transform: translateY(-1px); }
+  .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-  .btn-google:hover {
-    background: var(--cream);
-    border-color: rgba(26,23,20,0.3);
-    transform: translateY(-1px);
-  }
-
-  .btn-google svg {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
-  }
-
-  /* フォームメッセージ（.form-message） */
   .form-message {
-    font-size: 13px;
-    line-height: 1.5;
-    min-height: 1.3em;
-    margin-top: 8px;
-    font-weight: 300;
-    color: var(--error);
+    font-size: 13px; line-height: 1.5;
+    min-height: 1.3em; margin-top: 8px;
+    font-weight: 300; color: var(--error);
   }
 
-  /* メッセージ */
-  .msg {
-    font-size: 13px;
-    line-height: 1.5;
-    min-height: 1.3em;
-    margin-top: 8px;
-    font-weight: 300;
-  }
-  .msg.error { color: var(--error); }
+  .msg { font-size: 13px; line-height: 1.5; min-height: 1.3em; margin-top: 8px; font-weight: 300; }
+  .msg.error   { color: var(--error); }
   .msg.success { color: var(--success); }
 
-  /* フッター */
   .foot {
-    margin-top: 28px;
-    text-align: center;
-    font-size: 12px;
-    color: var(--mist);
-    line-height: 1.7;
-    font-weight: 300;
+    margin-top: 28px; text-align: center;
+    font-size: 12px; color: var(--mist);
+    line-height: 1.7; font-weight: 300;
     animation: fadeUp 0.6s ease 0.25s both;
   }
-
-  .foot a {
-    color: var(--duck);
-    text-decoration: none;
-  }
-
+  .foot a { color: var(--duck); text-decoration: none; }
   .foot-links {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-top: 12px;
+    display: flex; justify-content: center;
+    gap: 20px; flex-wrap: wrap; margin-top: 12px;
   }
-
   .foot-links a {
-    color: var(--mist);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-decoration: none;
-    transition: color 0.2s;
+    color: var(--mist); font-size: 11px;
+    letter-spacing: 0.04em; text-decoration: none; transition: color 0.2s;
   }
-
   .foot-links a:hover { color: var(--duck); }
 
   /* ===== PWA バナー ===== */
   .pwa-banner {
-    display: none;
-    align-items: center;
-    gap: 12px;
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
+    display: none; align-items: center; gap: 12px;
+    position: fixed; bottom: 20px; left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 32px);
-    max-width: 440px;
-    background: white;
-    border: 1px solid rgba(26,23,20,0.1);
+    width: calc(100% - 32px); max-width: 440px;
+    background: white; border: 1px solid rgba(26,23,20,0.1);
     box-shadow: 0 4px 24px rgba(26,23,20,0.12);
-    padding: 14px 16px;
-    z-index: 200;
+    padding: 14px 16px; z-index: 200;
     animation: slideUp 0.3s ease forwards;
   }
-
-  .pwa-banner.show {
-    display: flex;
-  }
-
-  .pwa-banner-icon {
-    font-size: 22px;
-    flex-shrink: 0;
-  }
-
-  .pwa-banner-body {
-    flex: 1;
-    min-width: 0;
-  }
-
+  .pwa-banner.show { display: flex; }
+  .pwa-banner-icon { font-size: 22px; flex-shrink: 0; }
+  .pwa-banner-body { flex: 1; min-width: 0; }
   .pwa-banner-title {
     font-family: 'Shippori Mincho', serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 2px;
+    font-size: 13px; font-weight: 600;
+    color: var(--ink); margin-bottom: 2px;
   }
-
-  .pwa-banner-desc {
-    font-size: 11px;
-    color: var(--mist);
-    line-height: 1.5;
-  }
-
+  .pwa-banner-desc { font-size: 11px; color: var(--mist); line-height: 1.5; }
   .pwa-banner-btn {
-    flex-shrink: 0;
-    padding: 8px 14px;
-    background: var(--duck);
-    color: white;
+    flex-shrink: 0; padding: 8px 14px;
+    background: var(--duck); color: white;
     font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 400;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
+    font-size: 12px; font-weight: 400;
+    border: none; cursor: pointer; transition: background 0.2s;
   }
-
-  .pwa-banner-btn:hover {
-    background: var(--ink);
-  }
-
+  .pwa-banner-btn:hover { background: var(--ink); }
   .pwa-banner-close {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--mist);
-    font-size: 16px;
-    cursor: pointer;
-    transition: color 0.2s;
+    flex-shrink: 0; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none;
+    color: var(--mist); font-size: 16px;
+    cursor: pointer; transition: color 0.2s;
   }
-
-  .pwa-banner-close:hover {
-    color: var(--ink);
-  }
+  .pwa-banner-close:hover { color: var(--ink); }
 
   /* ===== PWA モーダル ===== */
   .pwa-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26,23,20,0.4);
-    z-index: 300;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0 0 20px;
+    display: none; position: fixed; inset: 0;
+    background: rgba(26,23,20,0.4); z-index: 300;
+    align-items: flex-end; justify-content: center;
+    padding: 0 16px 20px;
   }
-
-  .pwa-modal-overlay.show {
-    display: flex;
-  }
-
+  .pwa-modal-overlay.show { display: flex; }
   .pwa-modal {
     background: white;
-    width: calc(100% - 32px);
-    max-width: 440px;
+    width: 100%; max-width: 440px;
     padding: 28px 28px 24px;
     animation: slideUp 0.3s ease forwards;
   }
-
   .pwa-modal-title {
     font-family: 'Shippori Mincho', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--ink);
-    margin-bottom: 8px;
+    font-size: 18px; font-weight: 600;
+    color: var(--ink); margin-bottom: 8px;
   }
-
   .pwa-modal-sub {
-    font-size: 13px;
-    color: var(--mist);
-    line-height: 1.6;
-    margin-bottom: 20px;
+    font-size: 13px; color: var(--mist);
+    line-height: 1.6; margin-bottom: 16px;
   }
-
   .pwa-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
+    display: flex; flex-direction: column;
+    gap: 12px; margin-bottom: 24px;
   }
-
-  .pwa-step {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
+  .pwa-step { display: flex; align-items: flex-start; gap: 12px; }
   .pwa-step-num {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--duck);
-    color: white;
-    font-size: 12px;
-    font-weight: 400;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--duck); color: white;
+    font-size: 12px; font-weight: 400;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
   }
-
-  .pwa-step-text {
-    font-size: 14px;
-    color: var(--ink);
-    line-height: 1.6;
-  }
-
+  .pwa-step-text { font-size: 14px; color: var(--ink); line-height: 1.6; }
   .pwa-modal-close {
-    width: 100%;
-    padding: 12px;
-    background: var(--cream);
-    border: 1px solid rgba(26,23,20,0.12);
-    color: var(--ink);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background 0.2s;
+    width: 100%; padding: 12px;
+    background: var(--cream); border: 1px solid rgba(26,23,20,0.12);
+    color: var(--ink); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; cursor: pointer; transition: background 0.2s;
   }
+  .pwa-modal-close:hover { background: var(--warm); }
 
-  .pwa-modal-close:hover {
-    background: var(--warm);
-  }
-
-  /* アニメーション */
   @keyframes fadeDown {
     from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
   @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   @media (max-width: 480px) {
@@ -618,139 +367,148 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body>
-  <!-- ===== PWA 手順モーダル ===== -->
-  <div id="pwaModal" class="pwa-modal-overlay">
-    <div class="pwa-modal">
-      <div class="pwa-modal-title">📱 ホーム画面に追加</div>
-      <div class="pwa-modal-sub" id="pwaModalSub"></div>
-      <div class="pwa-steps" id="pwaSteps"></div>
-      <button class="pwa-modal-close" id="pwaModalClose">閉じる</button>
+
+<!-- ===== PWA 手順モーダル ===== -->
+<div id="pwaModal" class="pwa-modal-overlay">
+  <div class="pwa-modal">
+    <div class="pwa-modal-title">📱 ホーム画面に追加</div>
+    <div class="pwa-modal-sub" id="pwaModalSub"></div>
+    <div class="pwa-steps" id="pwaSteps"></div>
+    <button class="pwa-modal-close" id="pwaModalClose">閉じる</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ===== PWA バナー ===== -->
+  <div id="pwaBanner" class="pwa-banner">
+    <div class="pwa-banner-icon">📱</div>
+    <div class="pwa-banner-body">
+      <div class="pwa-banner-title">アプリとして使う</div>
+      <div class="pwa-banner-desc">ホーム画面に追加するとアプリのように使えます</div>
     </div>
+    <button class="pwa-banner-btn" id="pwaBannerBtn">追加する</button>
+    <button class="pwa-banner-close" id="pwaBannerClose">×</button>
   </div>
 
-  <div class="wrap">
+  <div class="noise"></div>
 
-    <!-- ===== PWA バナー ===== -->
-    <div id="pwaBanner" class="pwa-banner">
-      <div class="pwa-banner-icon">📱</div>
-      <div class="pwa-banner-body">
-        <div class="pwa-banner-title">アプリとして使う</div>
-        <div class="pwa-banner-desc">ホーム画面に追加するとアプリのように使えます</div>
+  <div class="container">
+
+    <!-- ロゴ -->
+    <a href="/" class="logo">
+      <img src="/assets/icon.png" alt="業務かるがも">
+      <span class="logo-name">業務かるがも</span>
+    </a>
+
+    <div class="card">
+
+      <!-- パスワードログイン -->
+      <div class="card-section">
+        <div class="section-label">Login</div>
+        <h2 class="section-title">ログイン</h2>
+        <p class="section-desc">パスワードを設定済みの方はこちら。</p>
+
+        <div class="field">
+          <input id="pw-email" type="email" placeholder="メールアドレス" autocomplete="email">
+          <input id="pw-password" type="password" placeholder="パスワード" autocomplete="current-password">
+          <label class="show-pw">
+            <input type="checkbox" id="show-password">
+            パスワードを表示
+          </label>
+        </div>
+
+        <button id="btn-login-pw" class="btn-primary">ログイン</button>
+        <p id="pw-message" class="msg" aria-live="polite"></p>
       </div>
-      <button class="pwa-banner-btn" id="pwaBannerBtn">追加する</button>
-      <button class="pwa-banner-close" id="pwaBannerClose">×</button>
+
+      <!-- OR 区切り -->
+      <div class="divider-or">または</div>
+
+      <!-- Google ログイン -->
+      <div class="row">
+        <button id="btn-google" class="btn-google">
+          <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.73 1.22 9.23 3.61l6.9-6.9C35.68 2.2 30.2 0 24 0 14.6 0 6.48 5.48 2.56 13.44l8.04 6.24C12.6 13.28 17.8 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24c0-1.64-.14-3.21-.41-4.73H24v9h12.7c-.55 2.9-2.18 5.36-4.66 7.02l7.2 5.6C43.98 36.2 46.5 30.6 46.5 24z"/>
+            <path fill="#FBBC05" d="M10.6 28.68a14.5 14.5 0 010-9.36l-8.04-6.24A24 24 0 000 24c0 3.9.94 7.6 2.56 10.92l8.04-6.24z"/>
+            <path fill="#34A853" d="M24 48c6.2 0 11.4-2.05 15.2-5.6l-7.2-5.6c-2 1.35-4.56 2.15-8 2.15-6.2 0-11.4-3.78-13.4-9.18l-8.04 6.24C6.48 42.52 14.6 48 24 48z"/>
+          </svg>
+          <span>Googleでログイン</span>
+        </button>
+        <p id="google-message" class="form-message" aria-live="polite"></p>
+      </div>
+
+      <!-- 新規登録 / パスワード再設定 -->
+      <div class="card-section">
+        <div class="section-label">Register / Reset</div>
+        <h2 class="section-title">新規登録 / パスワード再設定</h2>
+        <p class="section-desc">メールアドレスを認証してアカウントを作成します。すでにアカウントがある場合、同じ手順でパスワード再設定へ進めます。</p>
+
+        <label class="agree">
+          <input type="checkbox" id="agree">
+          <span>
+            <a href="https://gyomu-karugamo.com/terms.html" target="_blank" rel="noopener">利用規約</a>および
+            <a href="https://gyomu-karugamo.com/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>を読んで同意しました。また、本サービスは女性を対象としており、女性であることに同意します。
+          </span>
+        </label>
+
+        <div class="field">
+          <input id="magic-email" type="email" placeholder="メールアドレス" autocomplete="email">
+        </div>
+
+        <button id="btn-magic" class="btn-primary" disabled>認証メールを送る</button>
+        <p id="magic-message" class="msg" aria-live="polite"></p>
+      </div>
+
     </div>
 
-    <div class="noise"></div>
-
-    <div class="container">
-
-      <!-- ロゴ -->
-      <a href="/" class="logo">
-        <img src="/assets/icon.png" alt="業務かるがも">
-        <span class="logo-name">業務かるがも</span>
-      </a>
-
-      <div class="card">
-
-        <!-- パスワードログイン -->
-        <div class="card-section">
-          <div class="section-label">Login</div>
-          <h2 class="section-title">ログイン</h2>
-          <p class="section-desc">パスワードを設定済みの方はこちら。</p>
-
-          <div class="field">
-            <input id="pw-email" type="email" placeholder="メールアドレス" autocomplete="email">
-            <input id="pw-password" type="password" placeholder="パスワード" autocomplete="current-password">
-            <label class="show-pw">
-              <input type="checkbox" id="show-password">
-              パスワードを表示
-            </label>
-          </div>
-
-          <button id="btn-login-pw" class="btn-primary">ログイン</button>
-          <p id="pw-message" class="msg" aria-live="polite"></p>
-        </div>
-
-        <!-- OR 区切り -->
-        <div class="divider-or">または</div>
-
-        <!-- Google ログイン -->
-        <div class="row">
-          <button id="btn-google" class="btn-google">
-            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.73 1.22 9.23 3.61l6.9-6.9C35.68 2.2 30.2 0 24 0 14.6 0 6.48 5.48 2.56 13.44l8.04 6.24C12.6 13.28 17.8 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.5 24c0-1.64-.14-3.21-.41-4.73H24v9h12.7c-.55 2.9-2.18 5.36-4.66 7.02l7.2 5.6C43.98 36.2 46.5 30.6 46.5 24z"/>
-              <path fill="#FBBC05" d="M10.6 28.68a14.5 14.5 0 010-9.36l-8.04-6.24A24 24 0 000 24c0 3.9.94 7.6 2.56 10.92l8.04-6.24z"/>
-              <path fill="#34A853" d="M24 48c6.2 0 11.4-2.05 15.2-5.6l-7.2-5.6c-2 1.35-4.56 2.15-8 2.15-6.2 0-11.4-3.78-13.4-9.18l-8.04 6.24C6.48 42.52 14.6 48 24 48z"/>
-            </svg>
-            <span id="t_google_btn">Googleでログイン</span>
-          </button>
-          <p id="google-message" class="form-message" aria-live="polite"></p>
-        </div>
-
-        <!-- 新規登録 / パスワード再設定 -->
-        <div class="card-section">
-          <div class="section-label">Register / Reset</div>
-          <h2 class="section-title">新規登録 / パスワード再設定</h2>
-          <p class="section-desc">メールアドレスを認証してアカウントを作成します。すでにアカウントがある場合、同じ手順でパスワード再設定へ進めます。</p>
-
-          <label class="agree">
-            <input type="checkbox" id="agree">
-            <span>
-              <a href="https://gyomu-karugamo.com/terms.html/terms.html" target="_blank" rel="noopener">利用規約</a>および
-              <a href="https://gyomu-karugamo.com/terms.html/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>を読んで同意しました。また、本サービスは女性を対象としており、女性であることに同意します。
-            </span>
-          </label>
-
-          <div class="field">
-            <input id="magic-email" type="email" placeholder="メールアドレス" autocomplete="email">
-          </div>
-
-          <button id="btn-magic" class="btn-primary" disabled>認証メールを送る</button>
-          <p id="magic-message" class="msg" aria-live="polite"></p>
-        </div>
-
+    <div class="foot">
+      <p>メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
+      <div class="foot-links">
+        <a href="https://gyomu-karugamo.com/terms.html" target="_blank" rel="noopener">利用規約</a>
+        <a href="https://gyomu-karugamo.com/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>
+        <a href="https://gyomu-karugamo.com/legal.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a>
+        <a href="https://gyomu-karugamo.com/contact.html" target="_blank" rel="noopener">お問い合わせ</a>
       </div>
+    </div>
 
-      <div class="foot">
-        <p>メールが届かない場合は、迷惑メールフォルダもご確認ください。</p>
-        <div class="foot-links">
-          <a href="https://gyomu-karugamo.com/terms.html" target="_blank" rel="noopener">利用規約</a>
-          <a href="https://gyomu-karugamo.com/terms.html/privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a>
-          <a href="https://gyomu-karugamo.com/terms.html/legal.html" target="_blank" rel="noopener">特定商取引法に基づく表記</a>
-          <a href="https://gyomu-karugamo.com/terms.html/contact.html" target="_blank" rel="noopener">お問い合わせ</a>
-        </div>
-      </div>
-
-    </div><!-- /.container -->
-  </div><!-- /.wrap -->
+  </div><!-- /.container -->
+</div><!-- /.wrap -->
 
 <script>
   const SUPABASE_URL = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY254dXltcWJ6a3FmcmN2cGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjAxMTUsImV4cCI6MjA5MDA5NjExNX0.2DGITsYpMg94XaVAfEma_rv71njzyCb445Kcvkj1SyQ";
 
+  // detectSessionInUrl: true にしてOAuthコールバックを自動処理
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
 
+  // ログイン済みなら即リダイレクト（OAuthコールバック含む）
+  sb.auth.onAuthStateChange((event, session) => {
+    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+      window.location.href = 'https://app.gyomu-karugamo.com/app.html';
+    }
+  });
+
   const TXT = {
-    needEmail: "メールアドレスを入力してください。",
+    needEmail:    "メールアドレスを入力してください。",
     needPassword: "パスワードを入力してください。",
-    needAgree: "利用規約とプライバシーポリシーへの同意が必要です。",
+    needAgree:    "利用規約とプライバシーポリシーへの同意が必要です。",
     invalidEmail: "メールアドレスの形式が正しくありません。",
-    sent: "認証メールを送信しました。メール内のリンクから続行してください。",
-    pwLoginFailed: "ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。",
-    errorPrefix: "エラー：",
+    sent:         "認証メールを送信しました。メール内のリンクから続行してください。",
+    pwLoginFailed:"ログインに失敗しました。メールアドレスまたはパスワードをご確認ください。",
+    errorPrefix:  "エラー：",
   };
 
   const $ = (s) => document.querySelector(s);
 
   const agreeCheckbox = $("#agree");
-  const magicBtn = $("#btn-magic");
-  const pwLoginBtn = $("#btn-login-pw");
-  const pwMsg = $("#pw-message");
-  const magicMsg = $("#magic-message");
+  const magicBtn      = $("#btn-magic");
+  const pwLoginBtn    = $("#btn-login-pw");
+  const pwMsg         = $("#pw-message");
+  const magicMsg      = $("#magic-message");
 
   function showMsg(el, text, type = "error") {
     if (!el) return;
@@ -773,33 +531,28 @@
     pwField.type = showPw.checked ? "text" : "password";
   });
 
-  $("#pw-email").addEventListener("input", () => showMsg(pwMsg, ""));
+  $("#pw-email").addEventListener("input",   () => showMsg(pwMsg, ""));
   $("#pw-password").addEventListener("input", () => showMsg(pwMsg, ""));
   $("#magic-email").addEventListener("input", () => showMsg(magicMsg, ""));
 
+  // パスワードログイン
   pwLoginBtn.onclick = async () => {
-    const email = $("#pw-email").value.trim();
+    const email    = $("#pw-email").value.trim();
     const password = $("#pw-password").value;
 
     showMsg(pwMsg, "");
-    if (!email) { showMsg(pwMsg, TXT.needEmail); return; }
+    if (!email)                { showMsg(pwMsg, TXT.needEmail);    return; }
     if (!validateEmail(email)) { showMsg(pwMsg, TXT.invalidEmail); return; }
-    if (!password) { showMsg(pwMsg, TXT.needPassword); return; }
+    if (!password)             { showMsg(pwMsg, TXT.needPassword); return; }
 
     pwLoginBtn.disabled = true;
     const { error } = await sb.auth.signInWithPassword({ email, password });
     pwLoginBtn.disabled = false;
 
-    if (error) {
-      showMsg(pwMsg, TXT.pwLoginFailed);
-      return;
-    }
+    if (error) { showMsg(pwMsg, TXT.pwLoginFailed); return; }
 
-    try {
-      gtag('event', 'login_success', { method: 'password', funnel_step: 'login_complete' });
-    } catch(e) {}
-
-    window.location.href = `/app.html`;
+    try { gtag('event', 'login_success', { method: 'password', funnel_step: 'login_complete' }); } catch(e) {}
+    // onAuthStateChange が SIGNED_IN を受け取りリダイレクト
   };
 
   // Googleログイン
@@ -808,36 +561,36 @@
     showMsg(googleMsg, "");
     const { error } = await sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `https://app.gyomu-karugamo.com/app.html` }
+      options: {
+        redirectTo: 'https://app.gyomu-karugamo.com/app.html'
+      }
     });
-    if (error) {
-      showMsg(googleMsg, TXT.errorPrefix + error.message);
-    }
+    if (error) showMsg(googleMsg, TXT.errorPrefix + error.message);
+    // 成功時はGoogleのOAuth画面へリダイレクトされる
+    // 戻り先(app.html)でonAuthStateChangeがSIGNED_INを受け取る
   };
 
+  // マジックリンク / 新規登録
   magicBtn.onclick = async () => {
     const email = $("#magic-email").value.trim();
 
     showMsg(magicMsg, "");
-    if (!email) { showMsg(magicMsg, TXT.needEmail); return; }
-    if (!validateEmail(email)) { showMsg(magicMsg, TXT.invalidEmail); return; }
-    if (!agreeCheckbox.checked) { showMsg(magicMsg, TXT.needAgree); return; }
+    if (!email)                     { showMsg(magicMsg, TXT.needEmail);    return; }
+    if (!validateEmail(email))      { showMsg(magicMsg, TXT.invalidEmail); return; }
+    if (!agreeCheckbox.checked)     { showMsg(magicMsg, TXT.needAgree);    return; }
 
     magicBtn.disabled = true;
     const { error } = await sb.auth.signInWithOtp({
       email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: `https://app.gyomu-karugamo.com/app.html`
+        emailRedirectTo: 'https://app.gyomu-karugamo.com/app.html'
       }
     });
     magicBtn.disabled = false;
 
-    if (error) {
-      showMsg(magicMsg, TXT.errorPrefix + error.message);
-    } else {
-      showMsg(magicMsg, TXT.sent, "success");
-    }
+    if (error) { showMsg(magicMsg, TXT.errorPrefix + error.message); }
+    else       { showMsg(magicMsg, TXT.sent, "success"); }
   };
 </script>
 
@@ -851,7 +604,6 @@
     });
   }
 
-  // PWA バナー制御
   let deferredPrompt = null;
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isInStandaloneMode =
@@ -870,23 +622,46 @@
     }
   }
 
+  // PWAステップ（iOS用 / Android・Chrome用）
+  const IOS_STEPS = `
+    <div class="pwa-step">
+      <div class="pwa-step-num">1</div>
+      <div class="pwa-step-text">画面下の<strong>共有ボタン（□↑）</strong>をタップ</div>
+    </div>
+    <div class="pwa-step">
+      <div class="pwa-step-num">2</div>
+      <div class="pwa-step-text">メニューをスクロールして<strong>「ホーム画面に追加」</strong>をタップ</div>
+    </div>
+    <div class="pwa-step">
+      <div class="pwa-step-num">3</div>
+      <div class="pwa-step-text"><strong>「追加」</strong>をタップして完了！</div>
+    </div>
+  `;
+  const ANDROID_STEPS = `
+    <div class="pwa-step">
+      <div class="pwa-step-num">1</div>
+      <div class="pwa-step-text">ブラウザ右上の<strong>メニュー（⋮）</strong>をタップ</div>
+    </div>
+    <div class="pwa-step">
+      <div class="pwa-step-num">2</div>
+      <div class="pwa-step-text"><strong>「アプリをインストール」</strong>をタップ</div>
+    </div>
+    <div class="pwa-step">
+      <div class="pwa-step-num">3</div>
+      <div class="pwa-step-text"><strong>「インストール」</strong>をタップして完了！</div>
+    </div>
+  `;
+
   document.getElementById('pwaBannerBtn').addEventListener('click', () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
     } else {
+      // モーダルを開いてステップを表示
       document.getElementById('pwaModalSub').textContent = isIOS
         ? 'Safariで以下の手順でホーム画面に追加できます。'
         : 'ブラウザの手順でホーム画面に追加できます。';
-      document.getElementById('pwaSteps').innerHTML = isIOS ? `
-        <div class="pwa-step"><div class="pwa-step-num">1</div><div class="pwa-step-text">画面下の<strong>共有ボタン（□↑）</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">2</div><div class="pwa-step-text">メニューをスクロールして<strong>「ホーム画面に追加」</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">3</div><div class="pwa-step-text"><strong>「追加」</strong>をタップして完了！</div></div>
-      ` : `
-        <div class="pwa-step"><div class="pwa-step-num">1</div><div class="pwa-step-text">ブラウザ右上の<strong>メニュー（⋮）</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">2</div><div class="pwa-step-text"><strong>「アプリをインストール」</strong>をタップ</div></div>
-        <div class="pwa-step"><div class="pwa-step-num">3</div><div class="pwa-step-text"><strong>「インストール」</strong>をタップして完了！</div></div>
-      `;
+      document.getElementById('pwaSteps').innerHTML = isIOS ? IOS_STEPS : ANDROID_STEPS;
       document.getElementById('pwaModal').classList.add('show');
     }
   });
