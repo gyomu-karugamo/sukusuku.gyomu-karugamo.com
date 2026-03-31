@@ -6,7 +6,7 @@
 <title>業務かるがも</title>
 <link rel="icon" type="image/png" href="/assets/icon.png">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#e8632a">
+<meta name="theme-color" content="#4a7c6f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -48,6 +48,7 @@
 
   --line-green: #06c755;
   --line-pale: #e8f9ef;
+  --partner-accent: #06c755;
 
   --border: rgba(26,23,20,0.08);
   --shadow: 0 4px 24px rgba(26,23,20,0.08);
@@ -626,7 +627,7 @@ textarea { resize: vertical; min-height: 80px; }
   background: var(--duck);
   transition: width 0.6s ease;
 }
-.bar-fill.partner { background: var(--line-green); }
+.bar-fill.partner { background: var(--partner-accent); }
 .bar-val { font-size: 12px; color: var(--brown); width: 28px; text-align: right; flex-shrink: 0; }
 
 /* ========== ACCOUNT TAB ========== */
@@ -1076,15 +1077,15 @@ footer a:hover { color: var(--duck); }
       <div class="task-group">
         <div class="task-group-label" id="myGroupLabel">自分がやること</div>
         <div id="myTaskList"></div>
-        <div style="margin-top:8px;">
-          <a href="#" id="goAddTask" style="font-size:12px;color:var(--duck);text-decoration:none;">＋ タスクを追加する</a>
-        </div>
       </div>
 
       <!-- パートナーのタスク -->
       <div class="task-group" style="margin-top:4px;">
         <div class="task-group-label" id="partnerGroupLabel">パートナーへのお願い</div>
         <div id="partnerTaskList"></div>
+        <div style="margin-top:8px;">
+          <a href="#" id="goAddTask" style="font-size:12px;color:var(--duck);text-decoration:none;">＋ タスクを追加する</a>
+        </div>
       </div>
 
       <!-- Freeプランの利用件数 -->
@@ -1097,7 +1098,7 @@ footer a:hover { color: var(--duck); }
           <div class="usage-fill" id="usageFill" style="width:0%"></div>
         </div>
         <div style="font-size:11px;color:var(--mist);margin-top:6px;">
-          無制限で使うには <a href="#" id="upgradeLink" style="color:var(--duck);">Standardプランへ →</a>
+          プランに応じた上限で利用できます。<a href="#" id="upgradeLink" style="color:var(--duck);">プランを見る →</a>
         </div>
       </div>
     </div>
@@ -1206,7 +1207,7 @@ footer a:hover { color: var(--duck); }
           <div style="display:flex;gap:4px;">
             <button class="btn" id="filterAll"     style="font-size:12px;padding:5px 12px;border-radius:999px;">すべて</button>
             <button class="btn" id="filterMe"      style="font-size:12px;padding:5px 12px;border-radius:999px;" id="filterMeBtn">自分</button>
-            <button class="btn" id="filterPartner" style="font-size:12px;padding:5px 12px;border-radius:999px;">相手</button>
+            <button class="btn" id="filterPartner" style="font-size:12px;padding:5px 12px;border-radius:999px;">パートナー</button>
           </div>
         </div>
       </div>
@@ -1304,7 +1305,7 @@ footer a:hover { color: var(--duck); }
       <!-- 左右1本バー -->
       <div style="height:24px;border-radius:999px;overflow:hidden;display:flex;margin-bottom:8px;">
         <div id="myLoadBar" style="width:50%;background:var(--duck);transition:width 0.4s;"></div>
-        <div id="partnerLoadBar" style="flex:1;background:#c7e8d4;"></div>
+        <div id="partnerLoadBar" style="flex:1;background:var(--partner-accent);"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;">
         <div style="display:flex;align-items:center;gap:6px;">
@@ -1315,7 +1316,7 @@ footer a:hover { color: var(--duck); }
         <div style="display:flex;align-items:center;gap:6px;">
           <strong id="partnerLoadPct">–</strong>
           <span id="rptBarPartnerLabel2">パートナー</span>
-          <div style="width:10px;height:10px;border-radius:2px;background:#c7e8d4;flex-shrink:0;"></div>
+          <div style="width:10px;height:10px;border-radius:2px;background:var(--partner-accent);flex-shrink:0;"></div>
         </div>
       </div>
     </div>
@@ -1449,6 +1450,13 @@ footer a:hover { color: var(--duck); }
       <div class="card-title" style="margin-bottom:4px;">毎日の定時通知</div>
       <p class="card-desc">毎日、設定した時刻にパートナーのLINEへタスクを通知します。</p>
 
+      <div id="notifyPlanLock" class="status-box warning" style="display:none;">
+        Freeプランでは毎日の定時通知は利用できません。Standardプランで利用できます。
+        <div style="margin-top:10px;">
+          <button class="btn btn-primary" id="notifyUpgradeBtn" style="font-size:12px;">Standardプランを見る</button>
+        </div>
+      </div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--cream-dark);border-radius:var(--radius-sm);margin-bottom:12px;">
         <span style="font-size:14px;font-weight:500;">通知を有効にする</span>
         <label class="toggle-switch" for="notifyEnabled">
@@ -1484,6 +1492,7 @@ footer a:hover { color: var(--duck); }
           <li>タスク登録・完了管理</li>
           <li>LINE送信（月10件まで）</li>
           <li class="disabled">月次レポート</li>
+          <li class="disabled">毎日の定時通知</li>
           <li class="disabled">LINE送信（月30件）</li>
           <li class="disabled">LINE送信 無制限（Premium）</li>
         </ul>
@@ -1860,7 +1869,11 @@ function showMsg(el, text, type = '') {
 }
 
 function getTodayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 function getDateLabel() {
@@ -2128,7 +2141,10 @@ function goTab(name) {
 // UI: HOME
 // ========================================
 function getViewDateStr(d) {
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 function renderHome() {
@@ -2264,13 +2280,25 @@ function renderTaskList(containerId, taskArr, isPartner, dayComp, dateStr) {
 function renderUsageMeter() {
   const box = $('#usageMeterBox');
   if (!box) return;
-  if (isPro()) { box.style.display = 'none'; return; }
+
   box.style.display = 'block';
-  const pct = Math.min(100, Math.round(lineSentCount / FREE_LIMIT * 100));
+
+  const limit = getMonthlyLimit();
+  const isUnlimited = !Number.isFinite(limit);
+
   const fill = $('#usageFill');
+
+  if (isUnlimited) {
+    fill.style.width = '100%';
+    fill.className = 'usage-fill';
+    $('#usageCount').textContent = `${lineSentCount} / 無制限`;
+    return;
+  }
+
+  const pct = Math.min(100, Math.round(lineSentCount / limit * 100));
   fill.style.width = pct + '%';
   fill.className = 'usage-fill' + (pct >= 100 ? ' over' : pct >= 80 ? ' warn' : '');
-  $('#usageCount').textContent = `${lineSentCount} / ${getMonthlyLimit()}件`;
+  $('#usageCount').textContent = `${lineSentCount} / ${limit}件`;
 }
 
 // ========================================
@@ -2641,7 +2669,7 @@ function renderReport() {
             <div style="font-size:11px;color:var(--mist);margin-bottom:4px;">${getCategoryLabel(k)}</div>
             <div style="height:20px;border-radius:999px;overflow:hidden;display:flex;">
               <div style="width:${myW}%;background:var(--duck);transition:width 0.4s;"></div>
-              <div style="flex:1;background:#c7e8d4;"></div>
+              <div style="flex:1;background:var(--partner-accent);"></div>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:3px;color:var(--mist);">
               <span>${getMyLabel()} ${myW}% (${mv}件)</span>
@@ -2837,6 +2865,38 @@ function renderAccount() {
   return isStandard() || isPremium();
 }
 
+function renderNotifyGate() {
+  const card = document.getElementById('notifySettingCard');
+  const lock = document.getElementById('notifyPlanLock');
+  const toggle = document.getElementById('notifyEnabled');
+  const timeRow = document.getElementById('notifyTimeRow');
+  const saveBtn = document.getElementById('saveNotifyBtn');
+  const timeInput = document.getElementById('notifyTime');
+
+  if (!card) return;
+
+  if (!lineConnected) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+
+  if (isStandard() || isPremium()) {
+    if (lock) lock.style.display = 'none';
+    if (toggle) toggle.disabled = false;
+    if (timeInput) timeInput.disabled = false;
+    if (saveBtn) saveBtn.disabled = false;
+  } else {
+    if (lock) lock.style.display = 'block';
+    if (toggle) toggle.checked = false;
+    if (toggle) toggle.disabled = true;
+    if (timeRow) timeRow.style.display = 'none';
+    if (timeInput) timeInput.disabled = true;
+    if (saveBtn) saveBtn.disabled = true;
+  }
+}
+
 function renderReportGate() {
   const lockedBox = document.getElementById('reportLockedBox');
   const contentBox = document.getElementById('reportContent');
@@ -2919,14 +2979,13 @@ async function main() {
   lineSentCount = await countLineSentThisMonth();
 
   // Render
+  loadCategories();
+  refreshCategorySelect();
+  
   renderHome();
   renderAllTasks();
   renderAccount();
   renderReportGate();
-
-  // カテゴリ読み込み
-  loadCategories();
-  refreshCategorySelect();
 
   // 名前読み込み（Supabase優先、なければlocalStorage）
   {
@@ -2939,10 +2998,16 @@ async function main() {
     if (document.getElementById('myNameInput'))      document.getElementById('myNameInput').value      = myName;
     if (document.getElementById('partnerNameInput')) document.getElementById('partnerNameInput').value = partnerName;
     refreshNameLabels();
+    refreshNameLabels();
+    renderHome();
+    renderAllTasks();
   }
 
   // LINE連携チェック
   await refreshLineStatus();
+
+  await refreshLineStatus();
+  renderNotifyGate();
 
   // =========== REALTIME: パートナー完了通知 ===========
   // task_completionsの変更をリアルタイム監視
@@ -3129,6 +3194,10 @@ async function main() {
       saveCategories();
       refreshCategorySelect();
     }
+  });
+
+  document.getElementById('notifyUpgradeBtn')?.addEventListener('click', () => {
+    goTab('account');
   });
 
   // ログアウト
