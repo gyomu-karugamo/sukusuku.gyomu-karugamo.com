@@ -1599,6 +1599,33 @@ function refreshCategorySelect() {
   sel.value = current;
 }
 
+// カテゴリ管理モーダルのリスト描画（グローバル関数 - inline onclickから呼ばれる）
+function renderCategoryList() {
+  const wrap = document.getElementById('categoryList');
+  if (!wrap) return;
+  if (categories.length === 0) {
+    wrap.innerHTML = '<div style="font-size:13px;color:var(--mist);padding:8px 0;">カテゴリがありません</div>';
+    return;
+  }
+  wrap.innerHTML = categories.map((cat, i) => `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+      <div style="display:flex;flex-direction:column;gap:1px;flex-shrink:0;">
+        <button data-cat-action="up" data-cat-idx="${i}"
+          style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:10px;padding:1px 5px;color:var(--mist);line-height:1.4;"
+          ${i === 0 ? 'disabled style="opacity:0.3;cursor:default;"' : ''}>▲</button>
+        <button data-cat-action="down" data-cat-idx="${i}"
+          style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:10px;padding:1px 5px;color:var(--mist);line-height:1.4;"
+          ${i === categories.length - 1 ? 'disabled style="opacity:0.3;cursor:default;"' : ''}>▼</button>
+      </div>
+      <input type="text" value="${escHtml(cat.label)}" data-cat-idx="${i}"
+        style="flex:1;font-size:13px;padding:6px 10px;"
+        placeholder="カテゴリ名">
+      <button data-cat-action="del" data-cat-idx="${i}"
+        style="background:none;border:none;cursor:pointer;color:var(--error);font-size:13px;padding:2px 8px;flex-shrink:0;"
+        title="削除">✕</button>
+    </div>`).join('');
+}
+
 
 
 
@@ -2300,25 +2327,7 @@ async function main() {
   if ($('#repeatStartDate')) $('#repeatStartDate').value = getTodayStr();
 
   // カスタムカテゴリ管理ボタン
-  // カテゴリ管理モーダル（単一リスト）
-  function renderCategoryList() {
-    const wrap = document.getElementById('categoryList');
-    if (!wrap) return;
-    if (categories.length === 0) {
-      wrap.innerHTML = '<div style="font-size:13px;color:var(--mist);">カテゴリがありません</div>';
-      return;
-    }
-    wrap.innerHTML = categories.map((cat, i) => `
-      <div style="display:flex;align-items:center;gap:6px;">
-        <input type="text" value="${escHtml(cat.label)}" data-cat-idx="${i}"
-          style="flex:1;font-size:13px;padding:6px 10px;"
-          placeholder="カテゴリ名"
-          onchange="categories[${i}].label=this.value.trim()||categories[${i}].label; saveCategories(); refreshCategorySelect();">
-        <button onclick="categories.splice(${i},1); saveCategories(); renderCategoryList(); refreshCategorySelect();"
-          style="background:none;border:none;cursor:pointer;color:var(--error);font-size:13px;padding:2px 8px;flex-shrink:0;">削除</button>
-      </div>`).join('');
-  }
-
+  // カテゴリモーダルのイベント
   document.getElementById('manageCategoriesLink')?.addEventListener('click', (e) => {
     e.preventDefault();
     renderCategoryList();
@@ -2331,16 +2340,42 @@ async function main() {
     if (e.target === document.getElementById('categoryModal'))
       document.getElementById('categoryModal').classList.remove('show');
   });
-
-  $('#addCategoryBtn')?.addEventListener('click', () => {
-    const name = ($('#newCategoryName')?.value || '').trim();
+  document.getElementById('addCategoryBtn')?.addEventListener('click', () => {
+    const name = (document.getElementById('newCategoryName')?.value || '').trim();
     if (!name) return;
-    const id = 'cat_' + Date.now();
-    categories.push({ id, label: name });
+    categories.push({ id: 'cat_' + Date.now(), label: name });
     saveCategories();
     renderCategoryList();
     refreshCategorySelect();
-    if ($('#newCategoryName')) $('#newCategoryName').value = '';
+    document.getElementById('newCategoryName').value = '';
+  });
+  // カテゴリリストのイベント委譲（削除・並び替え・名前変更）
+  document.getElementById('categoryList')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-cat-action]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.catIdx);
+    const action = btn.dataset.catAction;
+    if (action === 'del') {
+      categories.splice(idx, 1);
+    } else if (action === 'up' && idx > 0) {
+      [categories[idx-1], categories[idx]] = [categories[idx], categories[idx-1]];
+    } else if (action === 'down' && idx < categories.length - 1) {
+      [categories[idx], categories[idx+1]] = [categories[idx+1], categories[idx]];
+    }
+    saveCategories();
+    renderCategoryList();
+    refreshCategorySelect();
+  });
+  document.getElementById('categoryList')?.addEventListener('change', (e) => {
+    const input = e.target.closest('input[data-cat-idx]');
+    if (!input) return;
+    const idx = parseInt(input.dataset.catIdx);
+    const val = input.value.trim();
+    if (val && categories[idx]) {
+      categories[idx].label = val;
+      saveCategories();
+      refreshCategorySelect();
+    }
   });
 
   // ログアウト
