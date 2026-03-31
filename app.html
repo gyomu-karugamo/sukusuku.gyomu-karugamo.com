@@ -1159,17 +1159,21 @@ footer a:hover { color: var(--orange); }
 
     <!-- タスクマスタ一覧 -->
     <div class="card">
-      <div class="tab-section-title">
-        <span>タスクマスタ</span>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <span style="font-size:11px;color:var(--mist);">完了済みを</span>
-          <select id="taskViewMode" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);">
-            <option value="active">非表示</option>
-            <option value="all">すべて表示</option>
-          </select>
-          <button class="btn" id="filterAll"     style="font-size:11px;padding:4px 10px;">すべて</button>
-          <button class="btn" id="filterMe"      style="font-size:11px;padding:4px 10px;" id="filterMeBtn">自分</button>
-          <button class="btn" id="filterPartner" style="font-size:11px;padding:4px 10px;">相手</button>
+      <div style="margin-bottom:12px;">
+        <div style="font-family:'Noto Serif JP',serif;font-size:17px;font-weight:600;margin-bottom:10px;">タスクマスタ</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:6px;background:var(--cream-dark);border-radius:999px;padding:4px 10px 4px 12px;">
+            <span style="font-size:12px;color:var(--mist);white-space:nowrap;">完了済み</span>
+            <select id="taskViewMode" style="font-size:12px;background:transparent;border:none;outline:none;color:var(--brown);cursor:pointer;padding:0 2px;">
+              <option value="active">非表示</option>
+              <option value="all">表示</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button class="btn" id="filterAll"     style="font-size:12px;padding:5px 12px;border-radius:999px;">すべて</button>
+            <button class="btn" id="filterMe"      style="font-size:12px;padding:5px 12px;border-radius:999px;" id="filterMeBtn">自分</button>
+            <button class="btn" id="filterPartner" style="font-size:12px;padding:5px 12px;border-radius:999px;">相手</button>
+          </div>
         </div>
       </div>
       <p style="font-size:11px;color:var(--mist);margin-bottom:10px;line-height:1.6;">
@@ -1582,7 +1586,13 @@ const DEFAULT_CATEGORIES_BASE = [
 
 function loadDefaultCategories() {
   const stored = localStorage.getItem('kamo_default_cats_' + (currentUser?.id || 'guest'));
-  return stored ? JSON.parse(stored) : DEFAULT_CATEGORIES_BASE.map(c => ({ ...c }));
+  if (!stored) return DEFAULT_CATEGORIES_BASE.map(c => ({ ...c }));
+  const parsed = JSON.parse(stored);
+  // 件数が変わっていたら（古いデータ）リセット
+  if (parsed.length !== DEFAULT_CATEGORIES_BASE.length) {
+    return DEFAULT_CATEGORIES_BASE.map(c => ({ ...c }));
+  }
+  return parsed;
 }
 let defaultCategories = DEFAULT_CATEGORIES_BASE.map(c => ({ ...c }));
 
@@ -1618,15 +1628,25 @@ function renderDefaultCategoryList() {
   const wrap = document.getElementById('defaultCategoryList');
   if (!wrap) return;
   wrap.innerHTML = defaultCategories.map((c, i) => `
-    <div style="display:flex;align-items:center;gap:8px;">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
       <input type="text" value="${escHtml(c.label)}" data-idx="${i}"
         style="flex:1;font-size:13px;padding:6px 10px;"
         placeholder="カテゴリ名"
         onchange="renameDefaultCategory(${i}, this.value)">
-      <button onclick="resetDefaultCategory(${i})" 
-        style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:11px;padding:0 4px;"
-        title="元の名前に戻す" style="font-size:10px;color:var(--mist);">元に戻す</button>
+      <button onclick="resetDefaultCategory(${i})"
+        style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:11px;padding:2px 6px;flex-shrink:0;"
+        title="初期名に戻す">戻す</button>
+      <button onclick="deleteDefaultCategory(${i})"
+        style="background:none;border:none;cursor:pointer;color:var(--error);font-size:11px;padding:2px 6px;flex-shrink:0;"
+        title="このカテゴリを削除">削除</button>
     </div>`).join('');
+}
+
+function deleteDefaultCategory(idx) {
+  defaultCategories.splice(idx, 1);
+  saveDefaultCategories();
+  renderDefaultCategoryList();
+  refreshCategorySelect();
 }
 
 function renameDefaultCategory(idx, newLabel) {
