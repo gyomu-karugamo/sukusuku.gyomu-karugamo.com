@@ -1059,23 +1059,15 @@ footer a:hover { color: var(--duck); }
     <!-- 日付ナビ + タスクビュー -->
     <div class="card">
       <!-- 日付ナビゲーション -->
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:16px;">
-        <!-- 左：今日ボタン -->
-        <div style="display:flex;justify-content:flex-start;">
-          <button id="goTodayHomeBtn" style="display:none;font-size:10px;color:var(--mist);background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;">今日</button>
-        </div>
-        <!-- 中央：← 日付 →（常に中央固定） -->
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button class="btn" id="homePrevDay" style="padding:5px 11px;font-size:16px;">‹</button>
-          <div class="card-title" id="todayDateLabel" style="min-width:110px;text-align:center;margin:0;">今日のタスク</div>
-          <button class="btn" id="homeNextDay" style="padding:5px 11px;font-size:16px;">›</button>
-        </div>
-        <!-- 右：バランス用 -->
-        <div></div>
+      <div style="position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+        <!-- 今日ボタン（左端に絶対配置） -->
+        <button id="goTodayHomeBtn" style="display:none;position:absolute;left:0;font-size:10px;color:var(--mist);background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;">今日</button>
+        <!-- ← 日付 → -->
+        <button class="btn" id="homePrevDay" style="padding:5px 11px;font-size:16px;">‹</button>
+        <div class="card-title" id="todayDateLabel" style="text-align:center;margin:0 8px;white-space:nowrap;">今日のタスク</div>
+        <button class="btn" id="homeNextDay" style="padding:5px 11px;font-size:16px;">›</button>
       </div>
-
-
-
+      
       <!-- 自分のタスク -->
       <div class="task-group">
         <div class="task-group-label" id="myGroupLabel">自分がやること</div>
