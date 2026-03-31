@@ -1779,47 +1779,105 @@ function getLimitLabel() {
 const INITIAL_CATEGORIES = [
   { id: 'housework', label: '家事' },
   { id: 'childcare', label: '育児' },
-  { id: 'other',     label: 'その他' },
+  { id: 'other', label: 'その他' },
 ];
+
 let categories = []; // { id, label }[]
 
-function loadCategories() {
-  const stored = localStorage.getItem('kamo_cats_v2_' + (currentUser?.id || 'guest'));
-  if (stored) {
-    categories = JSON.parse(stored);
-  } else {
-    // 初回: デフォルト3件
+async function loadCategories() {
+  if (!currentUser?.id) {
     categories = INITIAL_CATEGORIES.map(c => ({ ...c }));
+    return;
+  }
+
+  const { data, error } = await sb
+    .from('user_categories')
+    .select('id, label, sort_order')
+    .eq('user_id', currentUser.id)
+    .order('sort_order', { ascending: true });
+
+  if (error) {
+    console.error('loadCategories error:', error);
+    categories = INITIAL_CATEGORIES.map(c => ({ ...c }));
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    const seedRows = INITIAL_CATEGORIES.map((c, i) => ({
+      user_id: currentUser.id,
+      id: c.id,
+      label: c.label,
+      sort_order: i,
+    }));
+
+    const { error: seedError } = await sb.from('user_categories').insert(seedRows);
+
+    if (seedError) {
+      console.error('seed user_categories error:', seedError);
+      categories = INITIAL_CATEGORIES.map(c => ({ ...c }));
+      return;
+    }
+
+    categories = INITIAL_CATEGORIES.map(c => ({ ...c }));
+    return;
+  }
+
+  categories = data.map(c => ({
+    id: c.id,
+    label: c.label,
+  }));
+}
+
+async function saveCategories() {
+  if (!currentUser?.id) return;
+
+  const rows = categories.map((c, i) => ({
+    user_id: currentUser.id,
+    id: c.id,
+    label: c.label,
+    sort_order: i,
+  }));
+
+  const { error } = await sb
+    .from('user_categories')
+    .upsert(rows, { onConflict: 'user_id,id' });
+
+  if (error) {
+    console.error('saveCategories error:', error);
   }
 }
 
-function saveCategories() {
-  localStorage.setItem('kamo_cats_v2_' + currentUser.id, JSON.stringify(categories));
+async function deleteCategoryFromDB(categoryId) {
+  if (!currentUser?.id) return;
+
+  const { error } = await sb
+    .from('user_categories')
+    .delete()
+    .eq('user_id', currentUser.id)
+    .eq('id', categoryId);
+
+  if (error) {
+    console.error('deleteCategoryFromDB error:', error);
+  }
 }
 
-// カテゴリIDからラベルを返す
 function getCategoryLabel(id) {
   if (!id) return '';
   const found = categories.find(c => c.id === id);
-  if (found) return found.label;
-  // categoriesがまだロードされていない場合は遅延リトライ
-  if (categories.length === 0) {
-    loadCategories();
-    return categories.find(c => c.id === id)?.label || id;
-  }
-  return id; // 見つからない場合はIDをそのまま（デバッグ用）
+  return found ? found.label : id;
 }
 
-// カテゴリselectを再描画
 function refreshCategorySelect() {
   const sel = document.getElementById('taskCategory');
   if (!sel) return;
+
   const current = sel.value;
-  sel.innerHTML = '<option value="">なし</option>' +
+  sel.innerHTML =
+    '<option value="">なし</option>' +
     categories.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.label)}</option>`).join('');
+
   sel.value = current;
 }
-
 // カテゴリ管理モーダルのリスト描画（グローバル関数 - inline onclickから呼ばれる）
 function renderCategoryList() {
   const wrap = document.getElementById('categoryList');
@@ -3031,7 +3089,7 @@ async function main() {
   lineSentCount = await countLineSentThisMonth();
 
   // Render
-  loadCategories();
+  await loadCategories();
   refreshCategorySelect();
   
   renderHome();
@@ -3250,42 +3308,59 @@ async function main() {
     if (e.target === document.getElementById('categoryModal'))
       document.getElementById('categoryModal').classList.remove('show');
   });
-  document.getElementById('addCategoryBtn')?.addEventListener('click', () => {
+  document.getElementById('addCategoryBtn')?.addEventListener('click', async () => {
     const name = (document.getElementById('newCategoryName')?.value || '').trim();
     if (!name) return;
-    categories.push({ id: 'cat_' + Date.now(), label: name });
-    saveCategories();
+  
+    const newCategory = {
+      id: 'cat_' + Date.now(),
+      label: name,
+    };
+  
+    categories.push(newCategory);
+    await saveCategories();
     renderCategoryList();
     refreshCategorySelect();
     document.getElementById('newCategoryName').value = '';
   });
   // カテゴリリストのイベント委譲（削除・並び替え・名前変更）
-  document.getElementById('categoryList')?.addEventListener('click', (e) => {
+  document.getElementById('categoryList')?.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-cat-action]');
     if (!btn) return;
-    const idx = parseInt(btn.dataset.catIdx);
+  
+    const idx = parseInt(btn.dataset.catIdx, 10);
     const action = btn.dataset.catAction;
+  
+    if (Number.isNaN(idx) || !categories[idx]) return;
+  
     if (action === 'del') {
+      const targetId = categories[idx].id;
       categories.splice(idx, 1);
+      await deleteCategoryFromDB(targetId);
+      await saveCategories();
     } else if (action === 'up' && idx > 0) {
-      [categories[idx-1], categories[idx]] = [categories[idx], categories[idx-1]];
+      [categories[idx - 1], categories[idx]] = [categories[idx], categories[idx - 1]];
+      await saveCategories();
     } else if (action === 'down' && idx < categories.length - 1) {
-      [categories[idx], categories[idx+1]] = [categories[idx+1], categories[idx]];
+      [categories[idx], categories[idx + 1]] = [categories[idx + 1], categories[idx]];
+      await saveCategories();
     }
-    saveCategories();
+  
     renderCategoryList();
     refreshCategorySelect();
   });
-  document.getElementById('categoryList')?.addEventListener('change', (e) => {
+  document.getElementById('categoryList')?.addEventListener('change', async (e) => {
     const input = e.target.closest('input[data-cat-idx]');
     if (!input) return;
-    const idx = parseInt(input.dataset.catIdx);
+  
+    const idx = parseInt(input.dataset.catIdx, 10);
     const val = input.value.trim();
-    if (val && categories[idx]) {
-      categories[idx].label = val;
-      saveCategories();
-      refreshCategorySelect();
-    }
+  
+    if (!val || !categories[idx]) return;
+  
+    categories[idx].label = val;
+    await saveCategories();
+    refreshCategorySelect();
   });
 
   document.getElementById('notifyUpgradeBtn')?.addEventListener('click', () => {
