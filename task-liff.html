@@ -292,11 +292,32 @@ function getTasksForDate(dateStr) {
   });
 }
 
+// 名前ラベル（profilesから取得）
+let myNameLabel = 'パートナー';
+let partnerNameLabel = 'あなた';  // LINEから見ると自分=partner
+
+async function loadNames() {
+  const { data } = await sb.from('profiles')
+    .select('display_name').eq('id', appUserId).single();
+  if (data?.display_name) {
+    const parts = data.display_name.split(',');
+    const myN = (parts[0] || '').trim();
+    const ptN = (parts[1] || '').trim();
+    if (myN) partnerNameLabel = myN + 'さん（参考）';
+    if (ptN) myNameLabel = ptN + 'さん（あなた）';
+  }
+  // タブラベルも更新
+  const tabs = document.querySelectorAll('.tab-btn');
+  if (tabs[0]) tabs[0].textContent = myNameLabel + 'のタスク';
+  if (tabs[1]) tabs[1].textContent = partnerNameLabel + 'のタスク';
+}
+
 async function loadData() {
   const dateStr = getDateStr(viewDate);
 
-  // タスク取得
-  const { data: tasks } = await sb.from('tasks').select('*').eq('user_id', appUserId);
+  // タスク取得（RLSを回避するためservice_role経由にはできないのでRLSポリシーが必要）
+  const { data: tasks, error: taskErr } = await sb.from('tasks').select('*').eq('user_id', appUserId);
+  if (taskErr) console.error('tasks error:', taskErr);
   allTasks = tasks || [];
 
   // 完了状況取得
@@ -350,14 +371,14 @@ function render() {
     content.innerHTML = `
       <div class="progress-bar">
         <div class="progress-label">
-          <span>あなたの進捗</span>
+          <span>${myNameLabel}の進捗</span>
           <span>${doneCount} / ${partnerTasks.length}件</span>
         </div>
         <div class="progress-track">
           <div class="progress-fill" style="width:${partnerTasks.length>0?Math.round(doneCount/partnerTasks.length*100):0}%"></div>
         </div>
       </div>
-      <div class="group-label">あなたがやること</div>
+      <div class="group-label">${myNameLabel}のタスク</div>
       ${partnerTasks.map(t => taskCard(t, true)).join('')}`;
 
   } else if (currentTab === 'me') {
@@ -367,7 +388,7 @@ function render() {
       return;
     }
     content.innerHTML = `
-      <div class="group-label">パートナーがやること（参考）</div>
+      <div class="group-label">${partnerNameLabel}のタスク</div>
       ${myTasks.map(t => taskCard(t, false)).join('')}`;
 
   } else {
@@ -385,10 +406,10 @@ function render() {
           <div class="progress-fill" style="width:${pct}%"></div>
         </div>
       </div>
-      <div class="group-label">あなた担当</div>
+      <div class="group-label">${myNameLabel}担当</div>
       ${partnerTasks.map(t => taskCard(t, true)).join('')}
       ${partnerTasks.length===0 ? '<div class="empty" style="padding:12px 0 20px;"><div class="empty-icon" style="font-size:20px;">🎉</div>なし</div>' : ''}
-      <div class="group-label" style="margin-top:8px;">パートナー担当（参考）</div>
+      <div class="group-label" style="margin-top:8px;">${partnerNameLabel}担当</div>
       ${myTasks.map(t => taskCard(t, false)).join('')}
       ${myTasks.length===0 ? '<div class="empty" style="padding:12px 0 20px;"><div class="empty-icon" style="font-size:20px;">—</div>なし</div>' : ''}`;
   }
@@ -505,6 +526,7 @@ async function init() {
   }
 
   appUserId = conn.user_id;
+  await loadNames();
   await loadData();
 }
 
