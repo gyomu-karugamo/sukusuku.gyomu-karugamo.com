@@ -1677,7 +1677,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false,  // PKCEをコード側で制御するため false
+    detectSessionInUrl: false
   }
 });
 
@@ -1689,7 +1689,7 @@ document.addEventListener('visibilitychange', async () => {
     const { data: { session } } = await sb.auth.getSession();
     // ログイン済みだったのにセッションがなくなった場合だけリロード
     if (!session && window._karuLoggedIn) {
-      location.reload();
+      location.replace('/index.html');
     }
   } catch(e) {
     console.warn('session check error:', e);
@@ -2473,6 +2473,8 @@ function renderReport() {
 
   // タスク完了率（各自の棒グラフ）
   // 自分の担当タスク総数と完了数を計算
+  const days = Object.keys(dayMap).sort();
+  
   let myTotal = 0, ptTotal = 0;
   days.forEach(ds => {
     const dt = getTasksForDate(ds);
@@ -2503,7 +2505,6 @@ function renderReport() {
 
   // C: ストリーク計算（連続で1件以上完了した日数）
   let currentStreak = 0, bestStreak = 0, streak = 0;
-  const days = Object.keys(dayMap).sort();
   for (const ds of days) {
     if (dayMap[ds].total > 0) {
       streak++;
@@ -2808,17 +2809,6 @@ async function main() {
   // タブセット
   $('#todayDateLabel') && ($('#todayDateLabel').textContent = getDateLabel());
 
-  // PKCEコード交換（URLに ?code= がある場合のみ）
-  if (new URLSearchParams(location.search).has('code')) {
-    try {
-      await sb.auth.exchangeCodeForSession(window.location.href);
-      // コードを消してリロード（URLをクリーン）
-      const url = new URL(location.href);
-      url.searchParams.delete('code');
-      history.replaceState({}, '', url.toString());
-    } catch(e) { console.warn('exchangeCode:', e); }
-  }
-
   // セッション変化を監視（ログアウト時はリロード）
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT') {
@@ -2834,7 +2824,7 @@ async function main() {
   let user = initSession?.user || null;
 
   // セッションがない場合はgetUserも試みる（フォールバック）
-  if (!user) {
+  
     const { data: { user: u } } = await sb.auth.getUser();
     user = u || null;
   }
@@ -2842,8 +2832,10 @@ async function main() {
   if (!user) {
     $('#notLoggedAlert').classList.add('show');
     document.querySelector('.site-header').style.display = 'none';
-    document.querySelector('.page').style.display = 'none';
     document.querySelector('footer').style.display = 'none';
+
+    document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
+  
     return;
   }
 
@@ -3475,17 +3467,6 @@ async function main() {
 }
 
 main();
-</script>
-
-<!-- Service Worker: PWA白画面問題のため無効化 -->
-<script>
-// 既存のSWとキャッシュを全削除（白画面の原因）
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
-}
-if ('caches' in window) {
-  caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
-}
 </script>
 
 </body>
