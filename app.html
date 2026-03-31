@@ -1015,17 +1015,29 @@ footer a:hover { color: var(--orange); }
 
     <!-- LINE通知ボタン（連携済み時のみ表示） -->
     <div id="lineSendBanner" style="display:none;margin-bottom:14px;">
-      <button id="sendTodayLineBtn" style="
-        width:100%;padding:14px 20px;
-        background:var(--line-green);color:white;
-        border:none;border-radius:var(--radius);
-        font-family:inherit;font-size:14px;font-weight:500;
-        cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;
-        box-shadow:0 3px 12px rgba(6,199,85,0.25);
-        transition:opacity 0.15s;">
-        <span style="font-size:18px;">💬</span>
-        タスクの更新をパートナーにLINEで知らせる
-      </button>
+      <div style="display:flex;gap:8px;">
+        <button id="sendTodayLineBtn" style="
+          flex:1;padding:13px 16px;
+          background:var(--line-green);color:white;
+          border:none;border-radius:var(--radius);
+          font-family:inherit;font-size:13px;font-weight:500;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+          box-shadow:0 3px 12px rgba(6,199,85,0.25);transition:opacity 0.15s;">
+          <span style="font-size:16px;">💬</span>
+          タスクの更新を知らせる
+        </button>
+        <button id="sendRemindBtn" style="
+          padding:13px 16px;
+          background:var(--orange);color:white;
+          border:none;border-radius:var(--radius);
+          font-family:inherit;font-size:13px;font-weight:500;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+          box-shadow:0 3px 12px rgba(232,99,42,0.25);transition:opacity 0.15s;"
+          title="未完了タスクをリマインド">
+          <span style="font-size:16px;">🔔</span>
+          リマインド
+        </button>
+      </div>
       <p class="msg" id="lineSendMsg" style="text-align:center;margin-top:6px;"></p>
     </div>
 
@@ -2636,12 +2648,9 @@ function generateReportImage() {
     const hint = document.getElementById('shareHint');
     if (dl) { dl.href = canvas.toDataURL('image/png'); dl.style.display = 'inline-block'; }
 
-    const shareText = month + ' のタスクレポート📊
-'
-      + myLbl + ': ' + myDone + '件完了 / ' + ptLbl + ': ' + ptDone + '件完了
-'
-      + '最長連続: ' + best + ' 🦆
-#業務かるがも';
+    const shareText = month + ' のタスクレポート📊\n'
+      + myLbl + ': ' + myDone + '件完了 / ' + ptLbl + ': ' + ptDone + '件完了\n'
+      + '最長連続: ' + best + ' 🦆\n#業務かるがも';
     if (xBtn) {
       xBtn.href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText)
         + '&url=' + encodeURIComponent('https://app.gyomu-karugamo.com');
@@ -2777,6 +2786,34 @@ async function main() {
   // LINE連携チェック
   await refreshLineStatus();
 
+  // =========== REALTIME: パートナー完了通知 ===========
+  // task_completionsの変更をリアルタイム監視
+  // → パートナーがLINEでタスクを完了したらアプリに即反映
+  sb.channel('partner-completions-' + currentUser.id)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'task_completions',
+      filter: `user_id=eq.${currentUser.id}`
+    }, async (payload) => {
+      // 完了記録が変わったらcompletionsを再取得してホームを更新
+      await loadCompletions();
+      renderHome();
+      // パートナーによる完了（LINEから）の場合にトースト表示
+      // payload.new.done === true の場合のみ通知
+      if (payload.new?.done === true) {
+        const t = tasks.find(t => t.id === payload.new.task_id);
+        if (t && t.assignee === 'partner') {
+          showToast(`${getPartnerLabel()}が「${t.name}」を完了しました ✓`, 'success');
+        }
+      }
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('Realtime: task_completions subscribed');
+      }
+    });
+
   // =========== EVENT LISTENERS ===========
 
   // タブ内のリンク
@@ -2827,6 +2864,37 @@ async function main() {
       showMsg($('#lineSendMsg'), 'LINE連携が必要です', 'error');
     }
     btn.disabled = false;
+    setTimeout(() => showMsg($('#lineSendMsg'), ''), 3000);
+  });
+
+  // リマインドボタン（未完了タスクをリマインド送信）
+  $('#sendRemindBtn')?.addEventListener('click', async () => {
+    const dateStr = getViewDateStr(homeViewDate);
+    const partnerTasks = getTasksForDate(dateStr).filter(t => t.assignee === 'partner');
+    const undone = partnerTasks.filter(t => !completions[t.id]);
+    if (undone.length === 0) {
+      showMsg($('#lineSendMsg'), 'すべて完了済みです ✓', 'success');
+      setTimeout(() => showMsg($('#lineSendMsg'), ''), 3000);
+      return;
+    }
+    const rbtn = $('#sendRemindBtn');
+    if (rbtn) rbtn.disabled = true;
+    const { data: conn } = await sb.from('line_connections').select('line_user_id').eq('user_id', currentUser.id).single();
+    if (conn?.line_user_id) {
+      const { data: sess } = await sb.auth.getSession();
+      const token = sess?.session?.access_token;
+      const undoneList = undone.map(t => '・' + t.name).join('\n');
+      const remindMsg = `🔔 まだ完了していないタスクがあります！\n\n${undoneList}\n\nメニューの「タスクを確認」から完了報告ができます 🦆`;
+      await fetch('https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/send-line-notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ line_user_id: conn.line_user_id, message: remindMsg })
+      });
+      showMsg($('#lineSendMsg'), `リマインドを送りました（${undone.length}件未完了）`, 'success');
+    } else {
+      showMsg($('#lineSendMsg'), 'LINE連携が必要です', 'error');
+    }
+    if (rbtn) rbtn.disabled = false;
     setTimeout(() => showMsg($('#lineSendMsg'), ''), 3000);
   });
 
