@@ -51,14 +51,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
+  gap: 6px;
+  padding: 8px 12px;
   background: white;
   border-bottom: 1px solid var(--border);
 }
-.date-nav button {
+.date-nav > button:not(.today-btn) {
   background: none; border: 1px solid var(--border);
-  border-radius: 8px; padding: 6px 12px;
+  border-radius: 8px; padding: 5px 11px;
   font-size: 16px; cursor: pointer; color: var(--brown);
 }
 .date-nav .date-label {
@@ -66,9 +66,10 @@ body {
   min-width: 110px; text-align: center;
 }
 .today-btn {
-  font-size: 10px; color: var(--mist);
+  font-size: 9px; color: var(--mist);
   background: none; border: 1px solid var(--border);
-  border-radius: 6px; cursor: pointer; padding: 3px 7px;
+  border-radius: 5px; cursor: pointer;
+  padding: 2px 5px; margin-right: 2px;
 }
 
 /* タブ */
@@ -205,10 +206,10 @@ body {
 
 <!-- 日付ナビ -->
 <div class="date-nav">
+  <button class="today-btn" id="todayBtn">今日</button>
   <button id="prevDay">‹</button>
   <div class="date-label" id="dateLabel">読み込み中…</div>
   <button id="nextDay">›</button>
-  <button class="today-btn" id="todayBtn" style="margin-left:4px;">今日</button>
 </div>
 
 <!-- タブ -->
