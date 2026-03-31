@@ -1,12 +1,12 @@
 {
   "name": "業務かるがも",
-  "short_name": "かるがも",
+  "short_name": "業務かるがも",
   "description": "生活タスク管理アプリ",
   "start_url": "/app.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#faf7f2",
-  "theme_color": "#e8632a",
+  "theme_color": "#4a7c6f",
   "orientation": "portrait",
   "icons": [
     {
