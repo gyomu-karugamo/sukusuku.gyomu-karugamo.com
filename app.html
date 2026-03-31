@@ -1010,7 +1010,6 @@ footer a:hover { color: var(--orange); }
     <div class="home-hero">
       <div class="home-hero-label">Today's Overview</div>
       <div class="home-hero-title" id="heroTitle">今日も一日、お疲れさまです。</div>
-      <div class="home-hero-name" id="heroName"></div>
       <img src="/assets/icon.png" class="home-hero-duck" alt="">
     </div>
 
@@ -1049,13 +1048,13 @@ footer a:hover { color: var(--orange); }
     <!-- 日付ナビ + タスクビュー -->
     <div class="card">
       <!-- 日付ナビゲーション -->
-      <div style="display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin-bottom:16px;">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <button id="goTodayHomeBtn" style="display:none;font-size:10px;color:var(--mist);background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;white-space:nowrap;">今日</button>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px;">
+        <button id="goTodayHomeBtn" style="display:none;font-size:10px;color:var(--mist);background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;cursor:pointer;flex-shrink:0;white-space:nowrap;">今日</button>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;">
           <button class="btn" id="homePrevDay" style="padding:5px 11px;font-size:16px;">‹</button>
+          <div class="card-title" id="todayDateLabel" style="min-width:120px;text-align:center;margin:0;">今日のタスク</div>
+          <button class="btn" id="homeNextDay" style="padding:5px 11px;font-size:16px;">›</button>
         </div>
-        <div class="card-title" id="todayDateLabel" style="text-align:center;margin:0;">今日のタスク</div>
-        <button class="btn" id="homeNextDay" style="padding:5px 11px;font-size:16px;">›</button>
       </div>
 
 
@@ -1294,6 +1293,18 @@ footer a:hover { color: var(--orange); }
       <hr class="soft">
       <div class="sec-label" style="margin:12px 0 10px;">カテゴリ別タスク数</div>
       <div class="bar-chart" id="categoryChart"></div>
+    </div>
+
+    <!-- SNS共有カード -->
+    <div class="card" style="text-align:center;">
+      <div class="sec-label" style="margin-bottom:10px;">レポートをシェア</div>
+      <canvas id="reportCanvas" style="display:none;max-width:100%;border-radius:12px;margin-bottom:12px;"></canvas>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button id="generateReportImgBtn" class="btn btn-primary" style="font-size:13px;">画像を生成</button>
+        <a id="downloadReportBtn" class="btn" style="font-size:13px;display:none;" download="karugamo-report.png">ダウンロード</a>
+        <a id="shareXBtn" class="btn" target="_blank" style="font-size:13px;background:#000;color:#fff;border-color:#000;display:none;">𝕏 でシェア</a>
+      </div>
+      <p style="font-size:11px;color:var(--mist);margin-top:8px;" id="shareHint"></p>
     </div>
 
 
@@ -1742,7 +1753,12 @@ function saveCategories() {
 // カテゴリIDからラベルを返す
 function getCategoryLabel(id) {
   if (!id) return '';
-  return categories.find(c => c.id === id)?.label || id;
+  // categories が未ロードの場合はIDをそのまま返さず空に
+  if (!id.startsWith('cat_') && id.length < 20) {
+    // 旧フォーマット（cooking, childcare等）はそのまま返す
+    return categories.find(c => c.id === id)?.label || id;
+  }
+  return categories.find(c => c.id === id)?.label || '';
 }
 
 // カテゴリselectを再描画
@@ -2077,7 +2093,7 @@ function renderHome() {
 
   const name = currentUser?.email?.split('@')[0] || '';
   const heroNameEl = $('#heroName');
-  if (heroNameEl) heroNameEl.textContent = name ? `こんにちは、${name}さん` : 'いつもお疲れさまです';
+  // heroName表示は不要
 
   renderDateTasks(viewStr);
   renderUsageMeter();
@@ -2514,6 +2530,123 @@ function renderReport() {
 }
 
 // ========================================
+// REPORT: 画像生成 & SNS共有
+// ========================================
+function generateReportImage() {
+  const canvas  = document.getElementById('reportCanvas');
+  const ctx     = canvas.getContext('2d');
+  const month   = document.getElementById('reportMonthLabel')?.textContent || '';
+  const myDone  = document.getElementById('rptMyTotal')?.textContent || '0';
+  const ptDone  = document.getElementById('rptPartnerTotal')?.textContent || '0';
+  const streak  = document.getElementById('rptStreak')?.textContent || '0日';
+  const myPct   = document.getElementById('myLoadPct')?.textContent || '–';
+  const ptPct   = document.getElementById('partnerLoadPct')?.textContent || '–';
+  const myLbl   = getMyLabel();
+  const ptLbl   = getPartnerLabel();
+
+  // キャンバスサイズ
+  canvas.width  = 800;
+  canvas.height = 440;
+
+  // 背景グラデーション（オレンジ）
+  const grad = ctx.createLinearGradient(0, 0, 800, 440);
+  grad.addColorStop(0,   '#e8632a');
+  grad.addColorStop(1,   '#f5a06e');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 800, 440, 20);
+  ctx.fill();
+
+  // 半透明パネル
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath();
+  ctx.roundRect(30, 90, 740, 310, 14);
+  ctx.fill();
+
+  // アプリ名
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font      = '600 16px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('業務かるがも', 400, 36);
+
+  // 月
+  ctx.fillStyle = 'white';
+  ctx.font      = '700 32px sans-serif';
+  ctx.fillText(month + ' のレポート', 400, 74);
+
+  // 完了数
+  ctx.fillStyle = 'white';
+  ctx.font      = '600 14px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(myLbl + ' 完了タスク', 70, 130);
+  ctx.font      = '700 48px sans-serif';
+  ctx.fillText(myDone + '件', 70, 185);
+
+  ctx.font      = '600 14px sans-serif';
+  ctx.fillText(ptLbl + ' 完了タスク', 280, 130);
+  ctx.font      = '700 48px sans-serif';
+  ctx.fillText(ptDone + '件', 280, 185);
+
+  // 連続記録
+  ctx.font      = '600 14px sans-serif';
+  ctx.fillText('連続完了', 490, 130);
+  ctx.font      = '700 48px sans-serif';
+  ctx.fillText(streak, 490, 185);
+
+  // 担当バランスバー
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath();
+  ctx.roundRect(60, 220, 680, 10, 5);
+  ctx.fill();
+
+  const myRatio = parseInt(myPct) / 100;
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  ctx.roundRect(60, 220, 680 * myRatio, 10, 5);
+  ctx.fill();
+
+  ctx.fillStyle = 'white';
+  ctx.font      = '500 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(`${myLbl} ${myPct}   ${ptLbl} ${ptPct}`, 60, 252);
+
+  // 区切り線
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth   = 1;
+  ctx.beginPath();
+  ctx.moveTo(60, 268);
+  ctx.lineTo(740, 268);
+  ctx.stroke();
+
+  // タグライン
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font      = '400 13px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('2人のタスクを一緒に管理 🦆', 400, 296);
+
+  // URL
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font      = '400 12px sans-serif';
+  ctx.fillText('app.gyomu-karugamo.com', 400, 320);
+
+  // Xシェアテキスト
+  const shareText = `${month} のタスクレポート📊
+${myLbl}: ${myDone}件完了 / ${ptLbl}: ${ptDone}件完了
+連続記録: ${streak} 🦆
+#業務かるがも`;
+  const shareUrl  = 'https://app.gyomu-karugamo.com';
+  const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+
+  canvas.style.display = 'block';
+  const dl = document.getElementById('downloadReportBtn');
+  const xBtn = document.getElementById('shareXBtn');
+  const hint = document.getElementById('shareHint');
+  if (dl) { dl.href = canvas.toDataURL('image/png'); dl.style.display = 'inline-block'; }
+  if (xBtn) { xBtn.href = xUrl; xBtn.style.display = 'inline-block'; }
+  if (hint) hint.textContent = '※ Xでシェアする際は画像をダウンロードしてツイートに添付してください';
+}
+
+// ========================================
 // UI: ACCOUNT
 // ========================================
 function renderAccount() {
@@ -2703,6 +2836,16 @@ async function main() {
   if ($('#repeatStartDate')) $('#repeatStartDate').value = getTodayStr();
 
   // カスタムカテゴリ管理ボタン
+  // タスク編集モーダルのイベント（ここで登録）
+  document.getElementById('editTaskCancelBtn')?.addEventListener('click', () => {
+    document.getElementById('editTaskModal').classList.remove('show');
+  });
+  document.getElementById('editTaskSaveBtn')?.addEventListener('click', saveEditTask);
+  document.getElementById('editTaskModal')?.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('editTaskModal'))
+      document.getElementById('editTaskModal').classList.remove('show');
+  });
+
   // カテゴリモーダルのイベント
   document.getElementById('manageCategoriesLink')?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -3150,7 +3293,17 @@ main();
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+    // 既存のSWを全て解除してキャッシュ問題を防ぐ
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.unregister());
+    });
+    if ('caches' in window) {
+      caches.keys().then(keys => keys.forEach(k => caches.delete(k)));
+    }
+    // クリーンになってから改めて登録
+    setTimeout(() => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }, 500);
   });
 }
 </script>
