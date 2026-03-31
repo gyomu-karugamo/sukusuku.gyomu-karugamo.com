@@ -274,7 +274,9 @@ function getDateLabel(d) {
 function getTasksForDate(dateStr) {
   return allTasks.filter(t => {
     if (!t.repeat || t.repeat === 'none') {
-      return (t.task_date || t.created_at?.slice(0,10)) === dateStr;
+      // task_date も created_at もない場合は今日扱い（古いデータ対応）
+      const td = t.task_date || t.created_at?.slice(0,10) || dateStr;
+      return td === dateStr;
     }
     const start = t.repeat_start || t.created_at?.slice(0,10);
     const end   = t.repeat_end || '2099-12-31';
@@ -470,40 +472,52 @@ async function init() {
   try {
     // LIFF初期化
     await liff.init({ liffId: LIFF_ID });
-
-    // LINEブラウザ以外からアクセスされた場合
-    if (!liff.isInClient()) {
-      // PC等での開発確認用: URLパラメータ ?uid= があれば使う
-      const uid = new URLSearchParams(location.search).get('uid');
-      if (uid) {
-        lineUserId = uid;
-      } else {
-        mc.innerHTML = `
-          <div class="empty">
-            <div class="empty-icon">📱</div>
-            <div>LINEアプリから開いてください</div>
-          </div>`;
-        return;
-      }
-    } else {
-      // LIFF経由 → LINEユーザーIDを取得
-      if (!liff.isLoggedIn()) {
-        liff.login({ redirectUri: location.href });
-        return;
-      }
-      const profile = await liff.getProfile();
-      lineUserId = profile.userId;
-    }
-
   } catch(e) {
     console.error('LIFF init error:', e);
-    // フォールバック: URLパラメータ ?uid= を使う（テスト用）
+    // LINEブラウザだがLIFF初期化失敗の場合: URLパラメータフォールバック
     lineUserId = new URLSearchParams(location.search).get('uid');
     if (!lineUserId) {
-      mc.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>読み込みに失敗しました</div>`;
+      mc.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div>読み込みに失敗しました<br><small style="color:var(--mist);">LINEアプリから開き直してください</small></div></div>`;
       return;
     }
+    await continueWithUserId(mc);
+    return;
   }
+
+  // ログイン処理
+  if (!liff.isLoggedIn()) {
+    // LINEブラウザ内でもログインが必要な場合
+    if (liff.isInClient()) {
+      // LINEブラウザ内: 自動ログイン
+      liff.login({ redirectUri: location.href });
+    } else {
+      // 外部ブラウザ: URLパラメータフォールバック（テスト用）
+      lineUserId = new URLSearchParams(location.search).get('uid');
+      if (!lineUserId) {
+        mc.innerHTML = `<div class="empty"><div class="empty-icon">📱</div><div>LINEアプリから開いてください</div></div>`;
+        return;
+      }
+      await continueWithUserId(mc);
+      return;
+    }
+    return;
+  }
+
+  // LINEユーザーIDを取得
+  try {
+    const profile = await liff.getProfile();
+    lineUserId = profile.userId;
+  } catch(e) {
+    console.error('getProfile error:', e);
+    mc.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div>プロフィールの取得に失敗しました</div></div>`;
+    return;
+  }
+
+  await continueWithUserId(mc);
+}
+
+async function continueWithUserId(mc) {
+  if (!lineUserId) return;
 
   // line_user_id → アプリのuser_idを取得
   const { data: conn, error: connErr } = await sb
@@ -512,16 +526,19 @@ async function init() {
     .eq('line_user_id', lineUserId)
     .single();
 
-  if (connErr || !conn) {
-    mc.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">🔗</div>
-        <div style="line-height:1.8;">
-          LINE連携が見つかりません。<br>
-          アプリの「アカウント → LINE連携」から<br>
-          コードを発行して連携してください。
-        </div>
-      </div>`;
+  if (connErr) {
+    console.error('line_connections error:', connErr);
+    // RLSエラーの可能性
+    if (connErr.code === 'PGRST301' || connErr.message?.includes('policy')) {
+      mc.innerHTML = `<div class="empty"><div class="empty-icon">🔒</div><div>データの読み込みに失敗しました<br><small style="color:var(--mist);">管理者にお問い合わせください</small></div></div>`;
+    } else {
+      mc.innerHTML = `<div class="empty"><div class="empty-icon">🔗</div><div style="line-height:1.8;">LINE連携が見つかりません。<br>アプリの「設定 → LINE連携」から<br>コードを発行して連携してください。</div></div>`;
+    }
+    return;
+  }
+
+  if (!conn) {
+    mc.innerHTML = `<div class="empty"><div class="empty-icon">🔗</div><div style="line-height:1.8;">LINE連携が見つかりません。<br>アプリの「設定 → LINE連携」から<br>コードを発行して連携してください。</div></div>`;
     return;
   }
 
