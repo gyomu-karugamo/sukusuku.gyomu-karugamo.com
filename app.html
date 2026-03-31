@@ -1089,10 +1089,12 @@ footer a:hover { color: var(--orange); }
           <label>担当者</label>
           <div class="radio-group" id="assigneeGroup">
             <label class="radio-label selected">
-              <input type="radio" name="assignee" value="me" checked> 🙋 自分
+              <input type="radio" name="assignee" value="me" checked>
+              <span id="assigneeMeLabel">自分</span>
             </label>
             <label class="radio-label">
-              <input type="radio" name="assignee" value="partner"> 👤 パートナー
+              <input type="radio" name="assignee" value="partner">
+              <span id="assigneePartnerLabel">パートナー</span>
             </label>
           </div>
         </div>
@@ -1112,11 +1114,8 @@ footer a:hover { color: var(--orange); }
             <label>カテゴリ <button type="button" id="manageCategoriesLink" style="font-size:11px;color:var(--orange);background:none;border:none;cursor:pointer;text-decoration:underline;margin-left:6px;">編集</button></label>
             <select id="taskCategory">
               <option value="">なし</option>
-              <option value="cooking">料理</option>
-              <option value="cleaning">掃除</option>
-              <option value="laundry">洗濯</option>
+              <option value="housework">家事</option>
               <option value="childcare">育児</option>
-              <option value="shopping">買い物</option>
               <option value="other">その他</option>
             </select>
           </div>
@@ -1158,16 +1157,25 @@ footer a:hover { color: var(--orange); }
 
     </div>
 
-    <!-- 全タスク一覧 -->
+    <!-- タスクマスタ一覧 -->
     <div class="card">
       <div class="tab-section-title">
-        <span>全タスク一覧</span>
-        <div style="display:flex;gap:6px;">
-          <button class="btn" id="filterAll" style="font-size:11px;padding:4px 10px;">すべて</button>
-          <button class="btn" id="filterMe" style="font-size:11px;padding:4px 10px;">自分</button>
+        <span>タスクマスタ</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:11px;color:var(--mist);">完了済みを</span>
+          <select id="taskViewMode" style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);">
+            <option value="active">非表示</option>
+            <option value="all">すべて表示</option>
+          </select>
+          <button class="btn" id="filterAll"     style="font-size:11px;padding:4px 10px;">すべて</button>
+          <button class="btn" id="filterMe"      style="font-size:11px;padding:4px 10px;" id="filterMeBtn">自分</button>
           <button class="btn" id="filterPartner" style="font-size:11px;padding:4px 10px;">相手</button>
         </div>
       </div>
+      <p style="font-size:11px;color:var(--mist);margin-bottom:10px;line-height:1.6;">
+        タスクの定義を管理します。削除してもホーム画面の過去の完了記録は残ります。<br>
+        今日の完了・未完了の操作は「ホーム」タブから行ってください。
+      </p>
       <div id="allTaskList">
         <div class="empty-state">
           <div class="empty-icon">📋</div>
@@ -1329,8 +1337,8 @@ footer a:hover { color: var(--orange); }
     <!-- 通知設定 -->
     <div class="card" id="notifySettingCard" style="display:none;">
       <div class="sec-label">通知設定</div>
-      <div class="card-title" style="margin-bottom:4px;">毎朝の定時通知</div>
-      <p class="card-desc">毎朝、その日のタスクをパートナーのLINEに自動送信します。</p>
+      <div class="card-title" style="margin-bottom:4px;">毎日の定時通知</div>
+      <p class="card-desc">毎日、設定した時刻にパートナーのLINEにタスクを通知します。</p>
 
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div class="field" style="flex:1;min-width:120px;">
@@ -1349,37 +1357,6 @@ footer a:hover { color: var(--orange); }
       <div style="font-size:11px;color:var(--mist);margin-top:10px;line-height:1.7;">
         ※ Supabase Cron Jobs の設定が必要です（設定方法はREADMEを参照）<br>
         ※ 時刻はJST（日本標準時）です
-      </div>
-    </div>
-
-    <!-- プラン -->
-    <div class="card">
-      <div class="sec-label">Plan</div>
-      <div class="card-title" style="margin-bottom:16px;">現在のプラン</div>
-
-      <!-- Free -->
-      <div id="planFreeBox" class="plan-box" style="display:none;">
-        <div class="plan-name">Freeプラン <span class="badge badge-mist">現在のプラン</span></div>
-        <div class="plan-price">¥0 / 月</div>
-        <ul class="feature-list">
-          <li>タスク登録・LINE送信（月10件まで）</li>
-          <li>自分／パートナーのタスク分離管理</li>
-          <li>完了記録・週グラフ</li>
-          <li class="disabled">繰り返しタスクの自動送信</li>
-          <li class="disabled">月次レポート自動生成</li>
-          <li class="disabled">送信件数無制限</li>
-        </ul>
-        <div class="cta-row">
-          <button class="btn btn-primary" id="btnSubscribe">14日間無料で試す →</button>
-        </div>
-      </div>
-
-      <!-- Standard -->
-      <div id="planStandardBox" class="plan-box standard" style="display:none;">
-        <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
-        <div class="cta-row">
-          <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
-        </div>
       </div>
     </div>
 
@@ -1404,6 +1381,33 @@ footer a:hover { color: var(--orange); }
       </div>
       <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
       <p class="msg" id="namesMsg"></p>
+    </div>
+
+    <!-- プラン -->
+    <div class="card">
+      <div class="sec-label">Plan</div>
+      <div class="card-title" style="margin-bottom:16px;">現在のプラン</div>
+      <div id="planFreeBox" class="plan-box" style="display:none;">
+        <div class="plan-name">Freeプラン <span class="badge badge-mist">現在のプラン</span></div>
+        <div class="plan-price">¥0 / 月</div>
+        <ul class="feature-list">
+          <li>タスク登録・LINE送信（月10件まで）</li>
+          <li>自分／パートナーのタスク分離管理</li>
+          <li>完了記録・週グラフ</li>
+          <li class="disabled">繰り返しタスクの自動送信</li>
+          <li class="disabled">月次レポート自動生成</li>
+          <li class="disabled">送信件数無制限</li>
+        </ul>
+        <div class="cta-row">
+          <button class="btn btn-primary" id="btnSubscribe">14日間無料で試す →</button>
+        </div>
+      </div>
+      <div id="planStandardBox" class="plan-box standard" style="display:none;">
+        <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
+        <div class="cta-row">
+          <button class="btn btn-danger" id="btnCancel">サブスクを解約する</button>
+        </div>
+      </div>
     </div>
 
     <!-- アカウント情報 -->
@@ -1543,6 +1547,18 @@ function refreshNameLabels() {
   const ptEl = document.getElementById('partnerGroupLabel');
   if (myEl) myEl.textContent = getMyLabel() + 'がやること';
   if (ptEl) ptEl.textContent = getPartnerLabel() + 'へのお願い';
+  // タスク追加フォームの担当者ラベル
+  const aMe = document.getElementById('assigneeMeLabel');
+  const aPt = document.getElementById('assigneePartnerLabel');
+  if (aMe) aMe.textContent = getMyLabel();
+  if (aPt) aPt.textContent = getPartnerLabel();
+  // 統計ラベル
+  const statMyLabel = document.querySelector('.stat-card:nth-child(1) .stat-label');
+  const statMyLabel2 = document.querySelector('.stat-card:nth-child(2) .stat-label');
+  const statPtLabel = document.querySelector('.stat-card:nth-child(3) .stat-label');
+  if (statMyLabel)  statMyLabel.textContent  = getMyLabel() + ' 完了';
+  if (statMyLabel2) statMyLabel2.textContent = getMyLabel() + ' 合計';
+  if (statPtLabel)  statPtLabel.textContent  = getPartnerLabel() + ' 完了';
 }
 
 const FREE_LIMIT = 10;
@@ -1559,11 +1575,8 @@ function saveCustomCategories() {
 
 // デフォルトカテゴリ（編集可能）
 const DEFAULT_CATEGORIES_BASE = [
-  { value: 'cooking',   label: '料理' },
-  { value: 'cleaning',  label: '掃除' },
-  { value: 'laundry',   label: '洗濯' },
+  { value: 'housework', label: '家事' },
   { value: 'childcare', label: '育児' },
-  { value: 'shopping',  label: '買い物' },
   { value: 'other',     label: 'その他' },
 ];
 
@@ -1612,7 +1625,7 @@ function renderDefaultCategoryList() {
         onchange="renameDefaultCategory(${i}, this.value)">
       <button onclick="resetDefaultCategory(${i})" 
         style="background:none;border:none;cursor:pointer;color:var(--mist);font-size:11px;padding:0 4px;"
-        title="初期値に戻す">↩</button>
+        title="元の名前に戻す" style="font-size:10px;color:var(--mist);">元に戻す</button>
     </div>`).join('');
 }
 
@@ -2413,6 +2426,9 @@ async function main() {
     showMsg($('#taskAddMsg'), 'タスクを追加しました', 'success');
     setTimeout(() => showMsg($('#taskAddMsg'), ''), 2000);
   });
+
+  // 完了表示切り替え
+  $('#taskViewMode')?.addEventListener('change', () => renderAllTasks());
 
   // フィルターボタン
   ['filterAll','filterMe','filterPartner'].forEach(id => {
