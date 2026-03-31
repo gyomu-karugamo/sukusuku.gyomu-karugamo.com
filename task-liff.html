@@ -484,16 +484,21 @@ async function init() {
     });
   } catch(e) {
     console.error('LIFF init error:', e);
+    const errCode = e?.code || e?.message || String(e);
+    // INVALID_CONFIG = リッチメニューのURLが直URLになっている場合
+    // 正しいURL: https://liff.line.me/2009652849-VvuDGKzF
     mc.innerHTML = `
       <div class="empty">
         <div class="empty-icon">⚠️</div>
-        <div>LIFF初期化エラー<br>
-        <small style="color:var(--mist);">
-          LINEアプリから開き直してください<br>
-          リッチメニューのURLが<br>
-          <code style="font-size:10px;">https://liff.line.me/2009652849-VvuDGKzF</code><br>
-          になっているか確認してください
-        </small></div>
+        <div style="line-height:1.8;">
+          読み込みに失敗しました<br>
+          <small style="color:var(--mist);">
+            リッチメニューの「タスクを確認」URLを<br>
+            <strong style="color:var(--orange);font-size:11px;">https://liff.line.me/2009652849-VvuDGKzF</strong><br>
+            に変更してください<br>
+            (エラー: ${errCode.slice(0,60)})
+          </small>
+        </div>
       </div>`;
     return;
   }
