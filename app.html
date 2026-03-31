@@ -2822,10 +2822,6 @@ async function main() {
   // セッションからuserを取得（高速・ネットワーク不要）
   const { data: { session: initSession } } = await sb.auth.getSession();
   let user = initSession?.user || null;
-
-  // セッションからuserを取得（高速・ネットワーク不要）
-  const { data: { session: initSession } } = await sb.auth.getSession();
-  let user = initSession?.user || null;
   
   // セッションがない場合はgetUserも試みる（フォールバック）
   if (!user) {
