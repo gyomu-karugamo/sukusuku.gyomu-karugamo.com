@@ -911,6 +911,19 @@ footer a:hover { color: var(--orange); }
 }
 .usage-fill.warn { background: #e8a030; }
 .usage-fill.over { background: var(--error); }
+.toggle-switch { position:relative; display:inline-block; width:44px; height:26px; }
+.toggle-switch input { position:absolute; opacity:0; width:0; height:0; }
+.toggle-track {
+  position:absolute; inset:0; border-radius:999px;
+  background:var(--border); transition:background 0.2s;
+}
+.toggle-switch input:checked + .toggle-track { background:var(--orange); }
+.toggle-track::after {
+  content:''; position:absolute; top:3px; left:3px;
+  width:20px; height:20px; border-radius:50%; background:white;
+  box-shadow:0 1px 4px rgba(0,0,0,0.2); transition:transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-track::after { transform:translateX(18px); }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1342,25 +1355,23 @@ footer a:hover { color: var(--orange); }
     <div class="card" id="notifySettingCard" style="display:none;">
       <div class="sec-label">通知設定</div>
       <div class="card-title" style="margin-bottom:4px;">毎日の定時通知</div>
-      <p class="card-desc">毎日、設定した時刻にパートナーのLINEにタスクを通知します。</p>
+      <p class="card-desc">毎日、設定した時刻にパートナーのLINEへタスクを通知します。</p>
 
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-        <div class="field" style="flex:1;min-width:120px;">
-          <label>通知時刻（パートナーのLINEに送信）</label>
-          <input type="time" id="notifyTime" value="07:00" style="width:100%;">
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;padding-top:18px;">
-          <input type="checkbox" id="notifyEnabled" checked style="width:16px;height:16px;accent-color:var(--orange);">
-          <label for="notifyEnabled" style="font-size:13px;cursor:pointer;">有効</label>
-        </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--cream-dark);border-radius:var(--radius-sm);margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:500;">通知を有効にする</span>
+        <label class="toggle-switch" for="notifyEnabled">
+          <input type="checkbox" id="notifyEnabled">
+          <span class="toggle-track"></span>
+        </label>
       </div>
-      <div style="margin-top:10px;">
+
+      <div id="notifyTimeRow" style="display:none;">
+        <div class="field">
+          <label>通知時刻</label>
+          <input type="time" id="notifyTime" value="07:00" style="max-width:160px;">
+        </div>
         <button class="btn btn-primary" id="saveNotifyBtn" style="font-size:13px;">保存する</button>
         <p class="msg" id="notifyMsg" style="margin-top:6px;"></p>
-      </div>
-      <div style="font-size:11px;color:var(--mist);margin-top:10px;line-height:1.7;">
-        ※ Supabase Cron Jobs の設定が必要です（設定方法はREADMEを参照）<br>
-        ※ 時刻はJST（日本標準時）です
       </div>
     </div>
 
@@ -2519,9 +2530,21 @@ async function main() {
 
   // 連携解除
   document.getElementById('lineDisconnectBtn')?.addEventListener('click', async () => {
-    await disconnectLine();
+    const btn = document.getElementById('lineDisconnectBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '解除中…'; }
+    const { error } = await sb.from('line_connections')
+      .delete().eq('user_id', currentUser.id);
+    if (btn) { btn.disabled = false; btn.textContent = '連携を解除する'; }
+    if (error) {
+      console.error('disconnectLine error:', error);
+      showToast('エラーが発生しました: ' + (error.message || error.code), 'error');
+      return;
+    }
     showToast('LINE連携を解除しました');
     await refreshLineStatus();
+    // 通知カードを非表示
+    const nc = document.getElementById('notifySettingCard');
+    if (nc) nc.style.display = 'none';
   });
 
   document.getElementById('copyLiffUrlBtn')?.addEventListener('click', async () => {
@@ -2536,20 +2559,52 @@ async function main() {
     }
   });
 
-  // ① 通知設定カード表示制御（LINE連携済み時のみ）
+  // 通知設定カード（LINE連携済み時のみ表示）
+  function applyNotifyToggle(enabled) {
+    const row = document.getElementById('notifyTimeRow');
+    if (row) row.style.display = enabled ? 'block' : 'none';
+  }
+
   if (lineConnected) {
-    const notifyCard = $('#notifySettingCard');
+    const notifyCard = document.getElementById('notifySettingCard');
     if (notifyCard) notifyCard.style.display = 'block';
 
-    // 保存済み設定を読み込む
-    const { data: prof } = await sb.from('profiles')
+    // Supabaseから保存済み設定を読み込む（デフォルトは無効）
+    const { data: profN } = await sb.from('profiles')
       .select('notify_time, notify_enabled')
       .eq('id', currentUser.id).single();
-    if (prof) {
-      if ($('#notifyTime') && prof.notify_time) $('#notifyTime').value = prof.notify_time;
-      if ($('#notifyEnabled')) $('#notifyEnabled').checked = prof.notify_enabled !== false;
+    const isEnabled = profN?.notify_enabled === true; // デフォルト false
+    const chk = document.getElementById('notifyEnabled');
+    if (chk) chk.checked = isEnabled;
+    if (profN?.notify_time) {
+      const timeEl = document.getElementById('notifyTime');
+      if (timeEl) timeEl.value = profN.notify_time;
     }
+    applyNotifyToggle(isEnabled);
   }
+
+  document.getElementById('notifyEnabled')?.addEventListener('change', function() {
+    applyNotifyToggle(this.checked);
+    if (!this.checked) {
+      sb.from('profiles').update({ notify_enabled: false }).eq('id', currentUser.id)
+        .then(() => showToast('通知を無効にしました'));
+    }
+  });
+
+  document.getElementById('saveNotifyBtn')?.addEventListener('click', async () => {
+    const time    = document.getElementById('notifyTime')?.value || '07:00';
+    const enabled = document.getElementById('notifyEnabled')?.checked === true;
+    const { error } = await sb.from('profiles')
+      .update({ notify_time: time, notify_enabled: enabled })
+      .eq('id', currentUser.id);
+    const msgEl = document.getElementById('notifyMsg');
+    if (error) {
+      showMsg(msgEl, 'エラー: ' + (error.message || ''), 'error');
+    } else {
+      showMsg(msgEl, `保存しました（毎日 ${time} に送信）`, 'success');
+      setTimeout(() => showMsg(msgEl, ''), 3000);
+    }
+  });
 
   // 名前保存（localStorage + Supabase profiles.display_name）
   $('#saveNamesBtn')?.addEventListener('click', async () => {
@@ -2565,18 +2620,6 @@ async function main() {
     renderHome();
     showMsg($('#namesMsg'), '保存しました', 'success');
     setTimeout(() => showMsg($('#namesMsg'), ''), 2000);
-  });
-
-  $('#saveNotifyBtn')?.addEventListener('click', async () => {
-    const time    = $('#notifyTime')?.value || '07:00';
-    const enabled = $('#notifyEnabled')?.checked !== false;
-    const { error } = await sb.from('profiles')
-      .update({ notify_time: time, notify_enabled: enabled })
-      .eq('id', currentUser.id);
-    const msgEl = $('#notifyMsg');
-    if (error) { showMsg(msgEl, 'エラーが発生しました', 'error'); }
-    else        { showMsg(msgEl, `保存しました（毎朝 ${time} に送信）`, 'success'); }
-    setTimeout(() => showMsg(msgEl, ''), 3000);
   });
 
   // メールアドレス変更
@@ -2619,8 +2662,12 @@ async function main() {
     $('#newPw1').value = ''; $('#newPw2').value = '';
   });
 
-  // アカウント削除
+  // アカウント削除（Standardプランの場合はブロック）
   $('#deleteAccountBtn')?.addEventListener('click', () => {
+    if (isPro()) {
+      showToast('Standardプランを解約してからアカウントを削除してください', 'error');
+      return;
+    }
     $('#deleteModal').classList.add('show');
   });
   $('#deleteCancelBtn')?.addEventListener('click', () => {
