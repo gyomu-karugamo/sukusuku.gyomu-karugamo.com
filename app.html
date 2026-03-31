@@ -1583,6 +1583,12 @@ function saveCategories() {
   localStorage.setItem('kamo_cats_v2_' + currentUser.id, JSON.stringify(categories));
 }
 
+// カテゴリIDからラベルを返す
+function getCategoryLabel(id) {
+  if (!id) return '';
+  return categories.find(c => c.id === id)?.label || id;
+}
+
 // カテゴリselectを再描画
 function refreshCategorySelect() {
   const sel = document.getElementById('taskCategory');
@@ -2167,7 +2173,10 @@ async function main() {
 
   // Auth
   try {
-    await sb.auth.exchangeCodeForSession(window.location.href);
+    // codeパラメータがある時だけPKCEセッション交換を実行
+    if (new URLSearchParams(location.search).has('code')) {
+      try { await sb.auth.exchangeCodeForSession(window.location.href); } catch(e) {}
+    }
   } catch(e) {}
 
   let user = null;
