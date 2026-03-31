@@ -334,13 +334,15 @@ textarea { resize: vertical; min-height: 80px; }
   position: relative;
   overflow: hidden;
 }
-.home-hero::before {
-  content: '🦆';
+.home-hero-duck {
   position: absolute;
-  right: 20px;
-  bottom: -8px;
-  font-size: 72px;
-  opacity: 0.18;
+  right: 16px;
+  bottom: -4px;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  opacity: 0.22;
+  pointer-events: none;
 }
 .home-hero-label {
   font-size: 11px;
@@ -942,6 +944,9 @@ footer a:hover { color: var(--orange); }
         <span class="brand-name">業務かるがも</span>
       </a>
       <div class="user-area">
+        <button id="reloadBtn" style="display:none;background:none;border:none;cursor:pointer;padding:4px 6px;opacity:0.65;line-height:0;" title="リロード">
+          <img src="/assets/reload.png" style="width:18px;height:18px;object-fit:contain;" alt="reload">
+        </button>
         <span id="userEmail" class="user-email"></span>
         <button id="logoutBtn" class="btn" style="font-size:12px;">ログアウト</button>
       </div>
@@ -1006,6 +1011,7 @@ footer a:hover { color: var(--orange); }
       <div class="home-hero-label">Today's Overview</div>
       <div class="home-hero-title" id="heroTitle">今日も一日、お疲れさまです。</div>
       <div class="home-hero-name" id="heroName"></div>
+      <img src="/assets/icon.png" class="home-hero-duck" alt="">
     </div>
 
     <!-- 今日のクイック統計 -->
@@ -1034,9 +1040,7 @@ footer a:hover { color: var(--orange); }
             <div class="sec-label" id="homeViewLabel" style="margin-bottom:0;">Today</div>
             <div style="display:flex;align-items:center;gap:8px;">
               <button id="goTodayHomeBtn" style="display:none;font-size:11px;color:var(--orange);background:none;border:1px solid rgba(232,99,42,0.3);border-radius:6px;padding:3px 10px;cursor:pointer;">今日に戻る</button>
-              <button id="reloadBtn" style="display:none;background:none;border:none;cursor:pointer;padding:4px;opacity:0.7;" title="リロード">
-                <img src="/assets/reload.png" style="width:18px;height:18px;object-fit:contain;" alt="reload">
-              </button>
+
             </div>
           </div>
           <div class="card-title" id="todayDateLabel" style="cursor:pointer;" title="今日に戻る">今日のタスク</div>
@@ -1279,24 +1283,6 @@ footer a:hover { color: var(--orange); }
 
     </div>
 
-    <!-- 名前設定 -->
-    <div class="card">
-      <div class="sec-label">Names</div>
-      <div class="card-title" style="margin-bottom:16px;">名前の設定</div>
-      <p class="card-desc" style="margin-bottom:12px;">ホーム・タスク一覧・LINEページでの表示名を設定します</p>
-      <div class="task-form-row">
-        <div class="field">
-          <label>あなたの名前</label>
-          <input type="text" id="myNameInput" placeholder="例：なつみ" maxlength="20">
-        </div>
-        <div class="field">
-          <label>パートナーの名前</label>
-          <input type="text" id="partnerNameInput" placeholder="例：たろう" maxlength="20">
-        </div>
-      </div>
-      <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
-      <p class="msg" id="namesMsg"></p>
-    </div>
 
   </section>
 
@@ -1377,6 +1363,25 @@ footer a:hover { color: var(--orange); }
       </div>
     </div>
 
+    <!-- 名前設定 -->
+    <div class="card">
+      <div class="sec-label">Names</div>
+      <div class="card-title" style="margin-bottom:16px;">名前の設定</div>
+      <p class="card-desc" style="margin-bottom:12px;">ホーム・タスク一覧・LINEページでの表示名を設定します</p>
+      <div class="task-form-row">
+        <div class="field">
+          <label>あなたの名前</label>
+          <input type="text" id="myNameInput" placeholder="例：はなこ" maxlength="20">
+        </div>
+        <div class="field">
+          <label>パートナーの名前</label>
+          <input type="text" id="partnerNameInput" placeholder="例：たろう" maxlength="20">
+        </div>
+      </div>
+      <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
+      <p class="msg" id="namesMsg"></p>
+    </div>
+
     <!-- 通知設定 -->
     <div class="card" id="notifySettingCard" style="display:none;">
       <div class="sec-label">通知設定</div>
@@ -1401,24 +1406,6 @@ footer a:hover { color: var(--orange); }
       </div>
     </div>
 
-    <!-- 名前設定 -->
-    <div class="card">
-      <div class="sec-label">Names</div>
-      <div class="card-title" style="margin-bottom:16px;">名前の設定</div>
-      <p class="card-desc" style="margin-bottom:12px;">ホーム・タスク一覧・LINEページでの表示名を設定します</p>
-      <div class="task-form-row">
-        <div class="field">
-          <label>あなたの名前</label>
-          <input type="text" id="myNameInput" placeholder="例：なつみ" maxlength="20">
-        </div>
-        <div class="field">
-          <label>パートナーの名前</label>
-          <input type="text" id="partnerNameInput" placeholder="例：たろう" maxlength="20">
-        </div>
-      </div>
-      <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
-      <p class="msg" id="namesMsg"></p>
-    </div>
 
   </section>
 
@@ -1965,7 +1952,8 @@ function renderHome() {
   $('#todayDateLabel').textContent = label + (isToday ? ' — 今日' : '');
 
   const name = currentUser?.email?.split('@')[0] || '';
-  $('#heroName').textContent = name ? `こんにちは、${name}さん` : '';
+  const heroNameEl = $('#heroName');
+  if (heroNameEl) heroNameEl.textContent = name ? `こんにちは、${name}さん` : 'いつもお疲れさまです';
 
   renderDateTasks(viewStr);
   renderUsageMeter();
