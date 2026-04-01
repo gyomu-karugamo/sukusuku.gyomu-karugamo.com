@@ -1465,6 +1465,9 @@ footer a:hover { color: var(--duck); }
           <label>通知時刻</label>
           <input type="time" id="notifyTime" value="07:00" style="max-width:160px;">
         </div>
+        <p style="font-size:11px;color:var(--mist);margin-bottom:10px;line-height:1.6;">
+          📌 1日1回のみ送信されます。時刻を変更しても、当日分がすでに送信済みの場合は翌日から反映されます。
+        </p>
         <button class="btn btn-primary" id="saveNotifyBtn" style="font-size:13px;">保存する</button>
         <p class="msg" id="notifyMsg" style="margin-top:6px;"></p>
       </div>
@@ -3047,10 +3050,11 @@ function renderAccount() {
     if (pwSec) pwSec.style.display = 'none';
   }
 
-  // PW未設定バナー: Googleログイン以外 かつ has_password=false の場合に表示
+  // PW未設定バナー: Googleログイン以外 かつ has_password が true でない場合に表示
+  // has_password が null（既存ユーザー）または false（新規）どちらも表示対象
   const pwBanner = $('#pwSetupBanner');
   if (pwBanner) {
-    const showBanner = !isGoogle && currentProfile?.has_password === false;
+    const showBanner = !isGoogle && !currentProfile?.has_password;
     pwBanner.style.display = showBanner ? 'block' : 'none';
   }
 }
