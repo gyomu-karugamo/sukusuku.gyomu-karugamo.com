@@ -3190,8 +3190,7 @@ async function main() {
     btn.disabled = true;
     // 通知メッセージ（タスクリストではなくリッチメニューに誘導）
     const senderName = myName ? `${myName}さん` : 'パートナー';
-    const notifyMsg = `${senderName}がタスクを更新しました！
-    メニューの「タスクを確認」を押して確認しましょう！`;
+    const notifyMsg = `${senderName}がタスクを更新しました！メニューの「タスクを確認」か「今日」と送信してください。`;
     // Supabase Edge Function 経由でpush送信
     const { data: conn } = await sb.from('line_connections').select('line_user_id').eq('user_id', currentUser.id).single();
     if (conn?.line_user_id) {
