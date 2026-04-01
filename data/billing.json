@@ -1,8 +1,14 @@
 {
   "stripe": {
     "standard": {
-      "payment_link_url": "https://buy.stripe.com/test_3cI9AT4H44Bu3J73t7fjG01",
-      "payment_link_no_trial_url": "https://buy.stripe.com/28E00k8KHdCx4qw4G43ks03"
+      "payment_link_trial": "https://buy.stripe.com/test_cNi6oHgpM4Bua7vgfTfjG02",
+      "payment_link_no_trial": "https://buy.stripe.com/test_bJedR96Pc6JC93r1kZfjG03",
+      "price_id": "price_1THEGUFip1mPhO1Uc5TEVzwG"
+    },
+    "premium": {
+      "payment_link_trial": "hhttps://buy.stripe.com/test_5kQbJ1c9w5Fy93re7LfjG04",
+      "payment_link_no_trial": "https://buy.stripe.com/test_4gM3cv7TgaZSenLgfTfjG05",
+      "price_id": "price_1THEE4Fip1mPhO1U0NawHmJz"
     }
   }
 }
