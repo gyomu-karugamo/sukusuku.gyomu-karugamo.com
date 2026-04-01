@@ -1492,8 +1492,8 @@ footer a:hover { color: var(--duck); }
           <li class="disabled">LINE送信 月150件（Premium）</li>
         </ul>
         <div class="cta-row">
-          <button class="btn btn-primary" id="btnSubscribeStandard">Standardへ（14日無料）</button>
-          <button class="btn" id="btnSubscribePremium">Premiumへ（14日無料）</button>
+          <button class="btn btn-primary" id="btnSubscribeStandard">Standardへ（7日間無料）</button>
+          <button class="btn" id="btnSubscribePremium">Premiumへ（7日間無料）</button>
         </div>
         <p id="trialNote" style="font-size:11px;color:var(--mist);margin-top:8px;"></p>
       </div>
@@ -1755,9 +1755,12 @@ const FREE_LIMIT      = 10;   // Freeプランの月間LINE送信上限
 const STANDARD_LIMIT  = 50;   // Standardプランの月間LINE送信上限 (¥680)
 const PREMIUM_LIMIT   = 150;  // Premiumプランの月間LINE送信上限 (¥1,200)
 
-// stripe_customer_id が存在 = 過去に課金あり（トライアル判定用・サーバー側でも使用）
+// stripe_customer_id が存在 かつ 過去に is_active=true になったことがある = 課金歴あり
+// ※ checkout画面を開いただけ（未決済キャンセル）はis_activeがfalseのまま
+// → stripe_customer_idがあってもis_activeがfalse=キャンセル or 未決済 → トライアル対象
 function hasEverSubscribed() {
-  return !!(currentProfile?.stripe_customer_id);
+  // profiles に stripe_subscription_id が存在する = 実際に決済が完了したことがある
+  return !!(currentProfile?.stripe_subscription_id);
 }
 
 function isPro() {
@@ -1963,7 +1966,7 @@ const REPEAT_LABEL = {
 // ========================================
 async function loadOrCreateProfile(userId) {
   let { data, error } = await sb.from('profiles')
-    .select('id, tier, is_active, has_password, stripe_customer_id')
+    .select('id, tier, is_active, has_password, stripe_customer_id, stripe_subscription_id')
     .eq('id', userId)
     .single();
 
@@ -1973,7 +1976,7 @@ async function loadOrCreateProfile(userId) {
       { onConflict: 'id' }
     );
     ({ data, error } = await sb.from('profiles')
-      .select('id, tier, is_active, has_password, stripe_customer_id')
+      .select('id, tier, is_active, has_password, stripe_customer_id, stripe_subscription_id')
       .eq('id', userId).single());
   }
   return { data, error };
@@ -2216,19 +2219,52 @@ async function startCheckout(plan) {
 }
 
 async function openPortal() {
+  // stripe_customer_idがない場合はポータルを開けない
+  if (!currentProfile?.stripe_customer_id) {
+    showToast('お客様情報が見つかりません。サポートにお問い合わせください。', 'error');
+    return;
+  }
   const { data: sess } = await sb.auth.getSession();
   const token = sess?.session?.access_token;
-  const res = await fetch(
-    'https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/create-portal-session',
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ user_id: currentUser.id, return_url: location.href })
+  if (!token) { showToast('ログインし直してください', 'error'); return; }
+
+  // ボタンを一時的に無効化してローディング表示
+  const portalBtns = ['btnUpgradePremium','btnDowngradeStandard','btnCancel','btnCancelPremium'];
+  portalBtns.forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = true;
+  });
+
+  try {
+    const res = await fetch(
+      'https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/create-portal-session',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ user_id: currentUser.id, return_url: location.href })
+      }
+    );
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error('create-portal-session error:', res.status, errText);
+      showToast('エラーが発生しました（' + res.status + '）', 'error');
+      return;
     }
-  );
-  if (!res.ok) { showToast('エラーが発生しました', 'error'); return; }
-  const d = await res.json();
-  if (d?.url) window.location.href = d.url;
+    const d = await res.json();
+    if (d?.url) {
+      window.location.href = d.url;
+    } else {
+      showToast('ポータルURLが取得できませんでした', 'error');
+    }
+  } catch(e) {
+    console.error('openPortal error:', e);
+    showToast('ネットワークエラーが発生しました', 'error');
+  } finally {
+    portalBtns.forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.disabled = false;
+    });
+  }
 }
 
 // ========================================
@@ -2983,8 +3019,8 @@ function renderAccount() {
   const stdBtn = $('#btnSubscribeStandard');
   const preBtn = $('#btnSubscribePremium');
   const trialNote = $('#trialNote');
-  if (stdBtn) stdBtn.textContent = everSubscribed ? 'Standardへ登録' : 'Standardへ（14日無料）';
-  if (preBtn) preBtn.textContent = everSubscribed ? 'Premiumへ登録' : 'Premiumへ（14日無料）';
+  if (stdBtn) stdBtn.textContent = everSubscribed ? 'Standardへ登録' : 'Standardへ（7日間無料）';
+  if (preBtn) preBtn.textContent = everSubscribed ? 'Premiumへ登録' : 'Premiumへ（7日間無料）';
   if (trialNote) {
     trialNote.textContent = everSubscribed
       ? '※ 過去にご利用歴があるため、無料トライアルは適用されません。'
