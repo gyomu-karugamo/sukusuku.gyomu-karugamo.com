@@ -1758,16 +1758,37 @@ const PREMIUM_LIMIT   = 100;  // Premiumプランの月間LINE送信上限
 // ========================================
 // STRIPE 決済リンク（billing.json管理）
 // ========================================
-const STRIPE_LINKS = {
-  standard: {
-    withTrial: 'https://buy.stripe.com/test_3cI9AT4H44Bu3J73t7fjG01',
-    noTrial:   'https://buy.stripe.com/28E00k8KHdCx4qw4G43ks03',
-  },
-  premium: {
-    withTrial: 'https://buy.stripe.com/PREMIUM_TRIAL_PLACEHOLDER',
-    noTrial:   'https://buy.stripe.com/PREMIUM_NO_TRIAL_PLACEHOLDER',
-  }
+// STRIPE_LINKSはfetchで上書きされる。fallbackとして空を置く
+let STRIPE_LINKS = {
+  standard: { withTrial: '', noTrial: '' },
+  premium:  { withTrial: '', noTrial: '' }
 };
+
+async function loadBillingConfig() {
+  try {
+    const res = await fetch('/billing.json');
+    if (!res.ok) throw new Error('billing.json not found');
+    const json = await res.json();
+    STRIPE_LINKS = {
+      standard: {
+        withTrial: json.stripe.standard.payment_link_trial,
+        noTrial:   json.stripe.standard.payment_link_no_trial,
+      },
+      premium: {
+        withTrial: json.stripe.premium.payment_link_trial,
+        noTrial:   json.stripe.premium.payment_link_no_trial,
+      }
+    };
+    // webhookが使うPrice IDもここで読めるが、フロントでは使わないので不要
+  } catch(e) {
+    console.error('billing.json 読み込み失敗:', e);
+    // fallback: ボタンを無効化して案内
+    ['btnSubscribeStandard','btnSubscribePremium'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) { btn.disabled = true; btn.textContent = '決済設定エラー'; }
+    });
+  }
+}
 
 function isPro() {
   return isStandard() || isPremium();
@@ -3086,6 +3107,7 @@ function escHtml(s) {
 }
 
 async function main() {
+  await loadBillingConfig(); 
   initTabs();
 
   document.addEventListener('click', (e) => {
