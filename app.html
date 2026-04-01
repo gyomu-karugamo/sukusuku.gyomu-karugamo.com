@@ -1695,7 +1695,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: false
+    detectSessionInUrl: true  // OAuthコールバック（#access_token=...）を自動処理するために必要
   }
 });
 
@@ -3133,33 +3133,60 @@ async function main() {
   // タブセット
   $('#todayDateLabel') && ($('#todayDateLabel').textContent = getDateLabel());
 
-  // セッション変化を監視（ログアウト時はリロード）
+  // セッション変化を監視
+  // SIGNED_IN: OAuthコールバック後にここで検知してmainInitを呼ぶ
+  // SIGNED_OUT: ログアウト時にリロード
+  // TOKEN_REFRESHED: 静かに更新
   sb.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_OUT') {
       location.reload();
+    }
+    if (event === 'SIGNED_IN' && session && !currentUser) {
+      // OAuthコールバック後にセッションが確立したタイミングで初期化を実行
+      mainInit(session.user);
     }
     if (event === 'TOKEN_REFRESHED' && session && currentUser) {
       // トークン更新時は静かに更新するだけ
     }
   });
 
-  // セッションからuserを取得（高速・ネットワーク不要）
+  // セッションからuserを取得
+  // detectSessionInUrl: true により、OAuthコールバック時は
+  // onAuthStateChange(SIGNED_IN) が先に発火してmainInitを呼ぶ。
+  // 通常のページロード時はここで取得する。
   const { data: { session: initSession } } = await sb.auth.getSession();
   let user = initSession?.user || null;
-  
+
   // セッションがない場合はgetUserも試みる（フォールバック）
   if (!user) {
     const { data: { user: u } } = await sb.auth.getUser();
     user = u || null;
   }
-  
-  if (!user) {
-    $('#notLoggedAlert').classList.add('show');
-    document.querySelector('.site-header').style.display = 'none';
-    document.querySelector('footer').style.display = 'none';
-    document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
-    return;
+
+  if (user) {
+    // 通常ロード: セッションが既にある場合はそのまま初期化
+    await mainInit(user);
+  } else {
+    // セッションなし: OAuthコールバック処理中の可能性があるため少し待つ
+    // （onAuthStateChange(SIGNED_IN)が来なければ未ログイン表示）
+    setTimeout(() => {
+      if (!currentUser) {
+        $('#notLoggedAlert').classList.add('show');
+        document.querySelector('.site-header').style.display = 'none';
+        document.querySelector('footer').style.display = 'none';
+        document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
+      }
+    }, 1500);
   }
+}
+
+// ========================================
+// MAIN INIT（ログイン確認後の初期化処理）
+// main()から呼ばれる場合とonAuthStateChange(SIGNED_IN)から呼ばれる場合がある
+// currentUserが既にセットされていれば二重実行しない
+// ========================================
+async function mainInit(user) {
+  if (currentUser) return; // 二重実行防止
 
   currentUser = user;
   window._karuLoggedIn = true; // PWA白画面対策フラグ
