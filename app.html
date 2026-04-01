@@ -1978,6 +1978,20 @@ const REPEAT_LABEL = {
 // ========================================
 // SUPABASE HELPERS
 // ========================================
+// Freeプランにダウングレードされた場合、繰り返しタスクをすべて今日で停止する
+async function stopRepeatTasksForFree() {
+  const today = getTodayStr();
+  const repeatTasks = tasks.filter(t => t.repeat && t.repeat !== 'none' && (!t.repeat_end || t.repeat_end > today));
+  if (repeatTasks.length === 0) return;
+
+  // DBを一括更新
+  for (const t of repeatTasks) {
+    await sb.from('tasks').update({ repeat_end: today }).eq('id', t.id);
+    t.repeat_end = today; // ローカルも更新
+  }
+  console.log(`Stopped ${repeatTasks.length} repeat tasks for Free plan`);
+}
+
 async function loadOrCreateProfile(userId) {
   let { data, error } = await sb.from('profiles')
     .select('id, tier, is_active, has_password, stripe_customer_id, stripe_subscription_id')
@@ -3260,6 +3274,17 @@ async function mainInit(user) {
   await loadCompletions();
   lineSentCount = await countLineSentThisMonth();
 
+  // Freeプランの場合、繰り返しタスクを停止（ダウングレード対応）
+  // localStorageで前回プランを記憶し、有料→Freeになった場合に停止処理を実行
+  const prevPlan = localStorage.getItem('kamo_prev_plan_' + user.id) || '';
+  const currentPlan = currentProfile?.tier || 'free';
+  const wasDowngradedToFree = !isPro() && (prevPlan === 'standard' || prevPlan === 'premium');
+  if (wasDowngradedToFree && tasks.length > 0) {
+    await stopRepeatTasksForFree();
+    showToast('Freeプランに変更されたため、繰り返しタスクを停止しました', 'error');
+  }
+  localStorage.setItem('kamo_prev_plan_' + user.id, currentPlan);
+
   // Render
   await loadCategories();
   refreshCategorySelect();
@@ -3349,12 +3374,15 @@ async function mainInit(user) {
       showMsg($('#lineSendMsg'), 'この日のパートナータスクはありません', 'error');
       return;
     }
+    // 上限チェック
+    if (lineSentCount >= getMonthlyLimit()) {
+      showMsg($('#lineSendMsg'), `今月の送信上限（${getMonthlyLimit()}件）に達しました。プランをアップグレードしてください。`, 'error');
+      return;
+    }
     const btn = $('#sendTodayLineBtn');
     btn.disabled = true;
-    // 通知メッセージ（タスクリストではなくリッチメニューに誘導）
     const senderName = myName ? `${myName}さん` : 'パートナー';
     const notifyMsg = `${senderName}がタスクを更新しました！メニューの「タスクを確認」か「今日」と送信してください。`;
-    // Supabase Edge Function 経由でpush送信
     const { data: conn } = await sb.from('line_connections').select('line_user_id').eq('user_id', currentUser.id).single();
     if (conn?.line_user_id) {
       const { data: sess } = await sb.auth.getSession();
@@ -3407,6 +3435,12 @@ async function mainInit(user) {
     if (undone.length === 0) {
       showMsg($('#lineSendMsg'), 'すべて完了済みです ✓', 'success');
       setTimeout(() => showMsg($('#lineSendMsg'), ''), 3000);
+      return;
+    }
+    // 上限チェック
+    if (lineSentCount >= getMonthlyLimit()) {
+      showMsg($('#lineSendMsg'), `今月の送信上限（${getMonthlyLimit()}件）に達しました。プランをアップグレードしてください。`, 'error');
+      setTimeout(() => showMsg($('#lineSendMsg'), ''), 4000);
       return;
     }
     const rbtn = $('#sendRemindBtn');
