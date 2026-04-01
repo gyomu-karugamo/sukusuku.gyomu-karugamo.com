@@ -2218,14 +2218,13 @@ async function startCheckout(plan) {
   }
 }
 
-async function openPortal() {
+async function openPortal(action = '') {
   // stripe_customer_idがない場合はポータルを開けない
   if (!currentProfile?.stripe_customer_id) {
     showToast('お客様情報が見つかりません。サポートにお問い合わせください。', 'error');
     return;
   }
 
-  // getSession() はキャッシュを返すことがあるため getUser() でトークンを再取得
   const { data: { session } } = await sb.auth.getSession();
   const token = session?.access_token;
   if (!token) { showToast('ログインし直してください', 'error'); return; }
@@ -2242,7 +2241,7 @@ async function openPortal() {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ user_id: currentUser.id, return_url: location.href })
+        body: JSON.stringify({ user_id: currentUser.id, return_url: location.href, action })
       }
     );
     if (!res.ok) {
@@ -3332,8 +3331,7 @@ async function mainInit(user) {
     btn.disabled = true;
     // 通知メッセージ（タスクリストではなくリッチメニューに誘導）
     const senderName = myName ? `${myName}さん` : 'パートナー';
-    const notifyMsg = `${senderName}がタスクを更新しました！
-    メニューの「タスクを確認」を押して確認しましょう！`;
+    const notifyMsg = `${senderName}がタスクを更新しました！メニューの「タスクを確認」か「今日」と送信してください。`;
     // Supabase Edge Function 経由でpush送信
     const { data: conn } = await sb.from('line_connections').select('line_user_id').eq('user_id', currentUser.id).single();
     if (conn?.line_user_id) {
@@ -3396,7 +3394,7 @@ async function mainInit(user) {
       const { data: sess } = await sb.auth.getSession();
       const token = sess?.session?.access_token;
       const undoneList = undone.map(t => '・' + t.name).join('\n');
-      const remindMsg = `🔔 まだ完了していないタスクがあります！\n\n${undoneList}\n\nメニューの「タスクを確認」から完了報告ができます 🦆`;
+      const remindMsg = `⚠️ 未完了のタスクがあります！\n\n${undoneList}\n\nメニューの「タスクを確認」か「今日」と送信してください。`;
     
       const res = await fetch('https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/send-line-notify', {
         method: 'POST',
@@ -3613,10 +3611,10 @@ async function mainInit(user) {
   // 購読・プラン変更ボタン
   $('#btnSubscribeStandard')?.addEventListener('click', () => startCheckout('standard'));
   $('#btnSubscribePremium')?.addEventListener('click',  () => startCheckout('premium'));
-  $('#btnUpgradePremium')?.addEventListener('click', openPortal);
-  $('#btnDowngradeStandard')?.addEventListener('click', openPortal);
-  $('#btnCancel')?.addEventListener('click', openPortal);
-  $('#btnCancelPremium')?.addEventListener('click', openPortal);
+  $('#btnUpgradePremium')?.addEventListener('click',    () => openPortal('upgrade_premium'));
+  $('#btnDowngradeStandard')?.addEventListener('click', () => openPortal('downgrade_standard'));
+  $('#btnCancel')?.addEventListener('click',            () => openPortal('cancel'));
+  $('#btnCancelPremium')?.addEventListener('click',     () => openPortal('cancel'));
   $('#gateUpgradeBtn')?.addEventListener('click', () => { goTab('account'); });
 
   // ===== LINE連携（本実装・4桁コード方式） =====
