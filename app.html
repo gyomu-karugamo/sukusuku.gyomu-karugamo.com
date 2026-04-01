@@ -1764,7 +1764,6 @@ const STRIPE_LINKS = {
     noTrial:   'https://buy.stripe.com/28E00k8KHdCx4qw4G43ks03',
   },
   premium: {
-    // StripeダッシュボードでPremium用Payment Linkを作成後に差し替え
     withTrial: 'https://buy.stripe.com/PREMIUM_TRIAL_PLACEHOLDER',
     noTrial:   'https://buy.stripe.com/PREMIUM_NO_TRIAL_PLACEHOLDER',
   }
@@ -1779,13 +1778,10 @@ function isStandard() {
 function isPremium() {
   return !!(currentProfile?.is_active && currentProfile?.tier === 'premium');
 }
-
-// 一度でも有料決済したことがあるか
-// stripe_customer_id が存在 = Stripeに顧客レコードがある = 過去に課金あり
+// stripe_customer_id が存在 = 過去に課金あり → トライアルなし
 function hasEverSubscribed() {
   return !!(currentProfile?.stripe_customer_id);
 }
-
 function getMonthlyLimit() {
   if (isPremium())  return PREMIUM_LIMIT;
   if (isStandard()) return STANDARD_LIMIT;
@@ -2176,39 +2172,22 @@ async function sendTaskToLine(task) {
 // PLAN: 決済リンク選択ロジック
 // ========================================
 
-// Standard購読ボタンを押したとき
-// - 初めて → 14日無料トライアルあり
-// - 過去に決済あり（stripe_customer_idが存在）→ トライアルなし
 async function startCheckoutStandard() {
   if (!currentUser) return;
   const useTrial = !hasEverSubscribed();
-  const baseUrl = useTrial
-    ? STRIPE_LINKS.standard.withTrial
-    : STRIPE_LINKS.standard.noTrial;
-  const params = new URLSearchParams({
-    prefilled_email: currentUser.email,
-    client_reference_id: currentUser.id
-  });
+  const baseUrl = useTrial ? STRIPE_LINKS.standard.withTrial : STRIPE_LINKS.standard.noTrial;
+  const params = new URLSearchParams({ prefilled_email: currentUser.email, client_reference_id: currentUser.id });
   window.location.href = `${baseUrl}?${params}`;
 }
 
-// Premium購読ボタンを押したとき
-// - 初めて → 14日無料トライアルあり
-// - 過去に決済あり → トライアルなし
 async function startCheckoutPremium() {
   if (!currentUser) return;
   const useTrial = !hasEverSubscribed();
-  const baseUrl = useTrial
-    ? STRIPE_LINKS.premium.withTrial
-    : STRIPE_LINKS.premium.noTrial;
-  const params = new URLSearchParams({
-    prefilled_email: currentUser.email,
-    client_reference_id: currentUser.id
-  });
+  const baseUrl = useTrial ? STRIPE_LINKS.premium.withTrial : STRIPE_LINKS.premium.noTrial;
+  const params = new URLSearchParams({ prefilled_email: currentUser.email, client_reference_id: currentUser.id });
   window.location.href = `${baseUrl}?${params}`;
 }
 
-// Stripe Customer Portal（解約・プラン変更）
 async function openPortal() {
   const { data: sess } = await sb.auth.getSession();
   const token = sess?.session?.access_token;
@@ -3534,11 +3513,8 @@ async function main() {
   // 購読・プラン変更ボタン
   $('#btnSubscribeStandard')?.addEventListener('click', startCheckoutStandard);
   $('#btnSubscribePremium')?.addEventListener('click', startCheckoutPremium);
-  // Standard → Premium: Stripe Customer Portalでプラン変更
   $('#btnUpgradePremium')?.addEventListener('click', openPortal);
-  // Premium → Standard: Stripe Customer Portalでプラン変更
   $('#btnDowngradeStandard')?.addEventListener('click', openPortal);
-  // 解約
   $('#btnCancel')?.addEventListener('click', openPortal);
   $('#btnCancelPremium')?.addEventListener('click', openPortal);
   $('#gateUpgradeBtn')?.addEventListener('click', () => { goTab('account'); });
@@ -3844,4 +3820,12 @@ async function main() {
     sessionStorage.setItem('pwaBannerDismissed', '1');
   });
   $('#pwaModalClose')?.addEventListener('click', () => $('#pwaModal').classList.remove('show'));
-  $('#pwaModal'
+  $('#pwaModal')?.addEventListener('click', (e) => { if (e.target === $('#pwaModal')) $('#pwaModal').classList.remove('show'); });
+}
+  
+
+main();
+</script>
+
+</body>
+</html>
