@@ -1106,7 +1106,7 @@ footer a:hover { color: var(--duck); }
     <!-- Freeプランゲート -->
     <div id="freeGateBanner">
       <span style="font-size:20px;flex-shrink:0;">🔒</span>
-      <div class="gate-text">Free: 月10件 / Standard: 月30件 / Premium: 月100件</div>
+      <div class="gate-text">Free: 月10件 / Standard: 月50件 / Premium: 月150件</div>
       <button class="btn btn-primary" id="gateUpgradeBtn" style="flex-shrink:0;font-size:12px;">アップグレード</button>
     </div>
 
@@ -1488,8 +1488,8 @@ footer a:hover { color: var(--duck); }
           <li>LINE送信（月10件まで）</li>
           <li class="disabled">月次レポート（Standard以上）</li>
           <li class="disabled">毎日の定時通知（Standard以上）</li>
-          <li class="disabled">LINE送信 月30件（Standard）</li>
-          <li class="disabled">LINE送信 月100件（Premium）</li>
+          <li class="disabled">LINE送信 月50件（Standard）</li>
+          <li class="disabled">LINE送信 月150件（Premium）</li>
         </ul>
         <div class="cta-row">
           <button class="btn btn-primary" id="btnSubscribeStandard">Standardへ（14日無料）</button>
@@ -1499,13 +1499,13 @@ footer a:hover { color: var(--duck); }
       </div>
       <div id="planStandardBox" class="plan-box standard" style="display:none;">
         <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
-        <div class="plan-price"><strong>¥480</strong> / 月</div>
+        <div class="plan-price"><strong>¥680</strong> / 月</div>
         <ul class="feature-list" style="margin-bottom:14px;">
           <li>タスク登録・完了管理</li>
-          <li>LINE送信（月30件）</li>
+          <li>LINE送信（月50件）</li>
           <li>月次レポート</li>
           <li>毎日の定時通知</li>
-          <li class="disabled">LINE送信 月100件（Premium）</li>
+          <li class="disabled">LINE送信 月150件（Premium）</li>
         </ul>
         <div class="cta-row" style="gap:8px;flex-wrap:wrap;">
           <button class="btn btn-primary" id="btnUpgradePremium" style="flex:1;">Premiumへアップグレード →</button>
@@ -1514,10 +1514,10 @@ footer a:hover { color: var(--duck); }
       </div>
       <div id="planPremiumBox" class="plan-box" style="display:none;border-color:var(--duck);">
         <div class="plan-name">Premiumプラン <span class="badge badge-orange">現在のプラン</span></div>
-        <div class="plan-price"><strong>¥980</strong> / 月</div>
+        <div class="plan-price"><strong>¥1,200</strong> / 月</div>
         <ul class="feature-list" style="margin-bottom:14px;">
           <li>タスク登録・完了管理</li>
-          <li>LINE送信（月100件）</li>
+          <li>LINE送信（月150件）</li>
           <li>月次レポート</li>
           <li>毎日の定時通知</li>
         </ul>
@@ -1752,42 +1752,12 @@ function refreshNameLabels() {
 }
 
 const FREE_LIMIT      = 10;   // Freeプランの月間LINE送信上限
-const STANDARD_LIMIT  = 30;   // Standardプランの月間LINE送信上限
-const PREMIUM_LIMIT   = 100;  // Premiumプランの月間LINE送信上限
+const STANDARD_LIMIT  = 50;   // Standardプランの月間LINE送信上限 (¥680)
+const PREMIUM_LIMIT   = 150;  // Premiumプランの月間LINE送信上限 (¥1,200)
 
-// ========================================
-// STRIPE 決済リンク（billing.json管理）
-// ========================================
-// STRIPE_LINKSはfetchで上書きされる。fallbackとして空を置く
-let STRIPE_LINKS = {
-  standard: { withTrial: '', noTrial: '' },
-  premium:  { withTrial: '', noTrial: '' }
-};
-
-async function loadBillingConfig() {
-  try {
-    const res = await fetch('/billing.json');
-    if (!res.ok) throw new Error('billing.json not found');
-    const json = await res.json();
-    STRIPE_LINKS = {
-      standard: {
-        withTrial: json.stripe.standard.payment_link_trial,
-        noTrial:   json.stripe.standard.payment_link_no_trial,
-      },
-      premium: {
-        withTrial: json.stripe.premium.payment_link_trial,
-        noTrial:   json.stripe.premium.payment_link_no_trial,
-      }
-    };
-    // webhookが使うPrice IDもここで読めるが、フロントでは使わないので不要
-  } catch(e) {
-    console.error('billing.json 読み込み失敗:', e);
-    // fallback: ボタンを無効化して案内
-    ['btnSubscribeStandard','btnSubscribePremium'].forEach(id => {
-      const btn = document.getElementById(id);
-      if (btn) { btn.disabled = true; btn.textContent = '決済設定エラー'; }
-    });
-  }
+// stripe_customer_id が存在 = 過去に課金あり（トライアル判定用・サーバー側でも使用）
+function hasEverSubscribed() {
+  return !!(currentProfile?.stripe_customer_id);
 }
 
 function isPro() {
@@ -1799,10 +1769,7 @@ function isStandard() {
 function isPremium() {
   return !!(currentProfile?.is_active && currentProfile?.tier === 'premium');
 }
-// stripe_customer_id が存在 = 過去に課金あり → トライアルなし
-function hasEverSubscribed() {
-  return !!(currentProfile?.stripe_customer_id);
-}
+
 function getMonthlyLimit() {
   if (isPremium())  return PREMIUM_LIMIT;
   if (isStandard()) return STANDARD_LIMIT;
@@ -2190,23 +2157,62 @@ async function sendTaskToLine(task) {
 }
 
 // ========================================
-// PLAN: 決済リンク選択ロジック
+// PLAN: Edge Function経由でCheckoutセッション作成
 // ========================================
+// Payment Linkを使わずEdge Functionに plan を渡す方式。
+// トライアル付与（初回のみ14日）はサーバー側で完全制御。
 
-async function startCheckoutStandard() {
-  if (!currentUser) return;
-  const useTrial = !hasEverSubscribed();
-  const baseUrl = useTrial ? STRIPE_LINKS.standard.withTrial : STRIPE_LINKS.standard.noTrial;
-  const params = new URLSearchParams({ prefilled_email: currentUser.email, client_reference_id: currentUser.id });
-  window.location.href = `${baseUrl}?${params}`;
-}
+const CHECKOUT_FN = 'https://gdcnxuymqbzkqfrcvpbe.functions.supabase.co/create-checkout-session';
+const APP_URL     = 'https://app.gyomu-karugamo.com/app.html';
 
-async function startCheckoutPremium() {
+async function startCheckout(plan) {
   if (!currentUser) return;
-  const useTrial = !hasEverSubscribed();
-  const baseUrl = useTrial ? STRIPE_LINKS.premium.withTrial : STRIPE_LINKS.premium.noTrial;
-  const params = new URLSearchParams({ prefilled_email: currentUser.email, client_reference_id: currentUser.id });
-  window.location.href = `${baseUrl}?${params}`;
+
+  const { data: sess } = await sb.auth.getSession();
+  const token = sess?.session?.access_token;
+  if (!token) { showToast('ログインし直してください', 'error'); return; }
+
+  // ボタンを一時無効化
+  ['btnSubscribeStandard','btnSubscribePremium'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.disabled = true; btn.textContent = '準備中…'; }
+  });
+
+  try {
+    const res = await fetch(CHECKOUT_FN, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        user_id:     currentUser.id,
+        plan,
+        success_url: `${APP_URL}?checkout=success`,
+        cancel_url:  APP_URL,
+      }),
+    });
+
+    if (!res.ok) {
+      const msg = await res.text().catch(() => '');
+      console.error('create-checkout-session error:', res.status, msg);
+      showToast('決済の準備に失敗しました。時間をおいて再度お試しください。', 'error');
+      return;
+    }
+
+    const { url } = await res.json();
+    if (url) {
+      window.location.href = url;
+    } else {
+      showToast('決済URLが取得できませんでした', 'error');
+    }
+  } catch(e) {
+    console.error('startCheckout error:', e);
+    showToast('ネットワークエラーが発生しました', 'error');
+  } finally {
+    // ボタンを戻す（リダイレクト失敗時のため）
+    renderAccount();
+  }
 }
 
 async function openPortal() {
@@ -3107,8 +3113,16 @@ function escHtml(s) {
 }
 
 async function main() {
-  await loadBillingConfig(); 
   initTabs();
+
+  // Stripe Checkoutからの戻り時にトーストを表示
+  const urlParams = new URLSearchParams(location.search);
+  if (urlParams.get('checkout') === 'success') {
+    // URLパラメータを消す（リロード時に再表示しないよう）
+    history.replaceState({}, '', location.pathname);
+    // プロフィール更新がwebhook経由なので少し待ってから表示
+    setTimeout(() => showToast('ご登録ありがとうございます！✨', 'success'), 1200);
+  }
 
   document.addEventListener('click', (e) => {
     if (e.target?.id === 'reportUpgradeBtn') {
@@ -3533,8 +3547,8 @@ async function main() {
   document.getElementById('generateReportImgBtn')?.addEventListener('click', generateReportImage);
 
   // 購読・プラン変更ボタン
-  $('#btnSubscribeStandard')?.addEventListener('click', startCheckoutStandard);
-  $('#btnSubscribePremium')?.addEventListener('click', startCheckoutPremium);
+  $('#btnSubscribeStandard')?.addEventListener('click', () => startCheckout('standard'));
+  $('#btnSubscribePremium')?.addEventListener('click',  () => startCheckout('premium'));
   $('#btnUpgradePremium')?.addEventListener('click', openPortal);
   $('#btnDowngradeStandard')?.addEventListener('click', openPortal);
   $('#btnCancel')?.addEventListener('click', openPortal);
