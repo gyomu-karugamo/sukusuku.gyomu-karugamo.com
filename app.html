@@ -3298,25 +3298,6 @@ function renderAccount() {
   return isStandard() || isPremium();
 }
 
-  const locked = !isStandard() && !isPremium();
-
-  [...repeatSel.options].forEach(opt => {
-    if (opt.value === 'none') {
-      opt.disabled = false;
-    } else {
-      opt.disabled = locked;
-    }
-  });
-
-  if (locked && repeatSel.value !== 'none') {
-    repeatSel.value = 'none';
-  }
-
-  if (locked && addMsg) {
-    addMsg.textContent = '繰り返しタスクはStandardプラン以上で利用できます。';
-    addMsg.className = 'msg';
-  }
-}
 function renderNotifyGate() {
   const card = document.getElementById('notifySettingCard');
   const lock = document.getElementById('notifyPlanLock');
