@@ -2947,7 +2947,7 @@ function renderReport() {
         const pv = catPtCount[k] || 0;
         const tot = mv + pv;
         const myW = tot > 0 ? Math.round(mv / tot * 100) : 50;
-  
+
         return `
           <div style="margin-bottom:10px;">
             <div style="font-size:11px;color:var(--mist);margin-bottom:4px;">${getCategoryLabel(k)}</div>
@@ -2964,6 +2964,7 @@ function renderReport() {
       }).join('');
     }
   }
+}
 
 // ========================================
 // REPORT: 画像生成 & SNS共有
