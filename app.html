@@ -2964,33 +2964,6 @@ function renderReport() {
       }).join('');
     }
   }
-  const allCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
-  const catBalDiv = document.getElementById('catBalanceChart');
-  if (catBalDiv) {
-    if (allCatKeys.length === 0) {
-      catBalDiv.innerHTML = '<div style="font-size:13px;color:var(--mist);">データがありません</div>';
-    } else {
-      catBalDiv.innerHTML = allCatKeys.map(k => {
-        const mv = catMyCount[k] || 0;
-        const pv = catPtCount[k] || 0;
-        const tot = mv + pv;
-        const myW = tot > 0 ? Math.round(mv / tot * 100) : 50;
-        return `
-          <div style="margin-bottom:10px;">
-            <div style="font-size:11px;color:var(--mist);margin-bottom:4px;">${getCategoryLabel(k)}</div>
-            <div style="height:20px;border-radius:999px;overflow:hidden;display:flex;">
-              <div style="width:${myW}%;background:var(--duck);transition:width 0.4s;"></div>
-              <div style="flex:1;background:var(--partner-accent);"></div>
-            </div>
-            <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:3px;color:var(--mist);">
-              <span>${getMyLabel()} ${myW}% (${mv}件)</span>
-              <span>${100-myW}% (${pv}件) ${getPartnerLabel()}</span>
-            </div>
-          </div>`;
-      }).join('');
-    }
-  }
-}
 
 // ========================================
 // REPORT: 画像生成 & SNS共有
