@@ -2858,7 +2858,7 @@ function renderReport() {
       `<div style="flex:1;text-align:center;font-size:9px;color:var(--mist);">${w.label}</div>`).join('');
   }
 
-  // B: カテゴリ別（円グラフ）
+  // B: カテゴリ別（割合のみ）
   const catCount = {};
   days.forEach(ds => {
     const dayTasks = getTasksForDate(ds);
@@ -2894,22 +2894,7 @@ function renderReport() {
             border-radius:50%;
             background:conic-gradient(${segments});
             flex-shrink:0;
-            position:relative;
-          ">
-            <div style="
-              position:absolute;
-              inset:22px;
-              background:white;
-              border-radius:50%;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              font-size:12px;
-              color:var(--mist);
-              text-align:center;
-              line-height:1.4;
-            ">合計<br><strong style="font-size:20px;color:var(--brown);">${total}</strong></div>
-          </div>
+          "></div>
   
           <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;">
             ${entries.map(([key, value], i) => {
@@ -2920,7 +2905,7 @@ function renderReport() {
                     <span style="width:10px;height:10px;border-radius:50%;background:${colors[i % colors.length]};flex-shrink:0;"></span>
                     <span>${getCategoryLabel(key)}</span>
                   </div>
-                  <div style="color:var(--mist);white-space:nowrap;">${pct}% (${value}件)</div>
+                  <div style="color:var(--mist);white-space:nowrap;">${pct}%</div>
                 </div>
               `;
             }).join('')}
@@ -2930,14 +2915,18 @@ function renderReport() {
     }
   }
 
-  // カテゴリ別担当バランス（1本バー）
+  // カテゴリ別担当バランス（完了件数ベース）
   const catMyCount = {};
   const catPtCount = {};
   
   days.forEach(ds => {
     const dayTasks = getTasksForDate(ds);
+    const comp = completions_by_date?.[ds] || {};
+  
     dayTasks.forEach(t => {
       if (!t.category) return;
+      if (!comp[t.id]) return; // 完了したものだけ数える
+  
       if (t.assignee === 'me') {
         catMyCount[t.category] = (catMyCount[t.category] || 0) + 1;
       } else if (t.assignee === 'partner') {
@@ -2945,6 +2934,36 @@ function renderReport() {
       }
     });
   });
+  
+  const allCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
+  const catBalDiv = document.getElementById('catBalanceChart');
+  
+  if (catBalDiv) {
+    if (allCatKeys.length === 0) {
+      catBalDiv.innerHTML = '<div style="font-size:13px;color:var(--mist);">データがありません</div>';
+    } else {
+      catBalDiv.innerHTML = allCatKeys.map(k => {
+        const mv = catMyCount[k] || 0;
+        const pv = catPtCount[k] || 0;
+        const tot = mv + pv;
+        const myW = tot > 0 ? Math.round(mv / tot * 100) : 50;
+  
+        return `
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;color:var(--mist);margin-bottom:4px;">${getCategoryLabel(k)}</div>
+            <div style="height:20px;border-radius:999px;overflow:hidden;display:flex;">
+              <div style="width:${myW}%;background:var(--duck);transition:width 0.4s;"></div>
+              <div style="flex:1;background:var(--partner-accent);"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-top:3px;color:var(--mist);">
+              <span>${getMyLabel()} ${myW}%</span>
+              <span>${100 - myW}% ${getPartnerLabel()}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
   const allCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
   const catBalDiv = document.getElementById('catBalanceChart');
   if (catBalDiv) {
