@@ -1006,6 +1006,16 @@ footer a:hover { color: var(--duck); }
       </div>
     </div>
 
+    <!-- PW未設定アラート（Googleログイン以外・PW未設定の場合のみ表示） -->
+    <div id="pwAlertBanner" class="alert" style="display:none;background:#fdf6e3;border:1px solid rgba(200,140,0,0.25);">
+      <span class="alert-icon" style="color:#e8a030;">🔑</span>
+      <div>
+        <strong style="color:#7a5c00;">パスワードが設定されていません。</strong><br>
+        セキュリティのため、パスワードを設定してください。
+        <a href="#" id="goPwSetup" style="color:var(--duck);font-size:12px;margin-left:6px;">設定する →</a>
+      </div>
+    </div>
+
     <!-- ヒーローカード -->
     <div class="home-hero">
       <div class="home-hero-label">Today's Overview</div>
@@ -1541,17 +1551,6 @@ footer a:hover { color: var(--duck); }
         <div id="currentEmail" style="font-weight:500;font-size:14px;"></div>
       </div>
 
-      <!-- パスワード未設定バナー（メール登録かつPW未設定の場合のみ表示） -->
-      <div id="pwSetupBanner" style="display:none;background:#fdf6e3;border:1px solid rgba(200,140,0,0.25);border-left:3px solid #e8a030;border-radius:var(--radius-sm);padding:14px 16px;margin-top:12px;">
-        <div style="display:flex;align-items:flex-start;gap:10px;">
-          <span style="font-size:18px;flex-shrink:0;">🔑</span>
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:500;margin-bottom:4px;color:#7a5c00;">パスワードが設定されていません</div>
-            <div style="font-size:12px;color:var(--mist);line-height:1.6;">セキュリティのため、パスワードを設定することをおすすめします。下の「パスワードを変更する」から設定できます。</div>
-          </div>
-        </div>
-      </div>
-
       <!-- メールアドレス変更 -->
       <div id="emailChangeSection" style="margin-top:20px;">
         <hr class="soft">
@@ -1726,7 +1725,8 @@ footer a:hover { color: var(--duck); }
       </div>
     </div>
     <p style="font-size:12px;color:var(--mist);line-height:1.6;margin-bottom:4px;">
-      解約しても現在のトライアル・プラン期間終了まではご利用できます。<br>次のページで解約を完了してください。
+      ⚠️ 無料トライアル期間中に解約した場合、次回ご登録時に無料トライアルは適用されません。<br>
+      次のページで解約を完了してください。
     </p>
     <div class="modal-footer">
       <button class="btn" id="cancelPlanCancelBtn">戻る</button>
@@ -3101,12 +3101,11 @@ function renderAccount() {
     if (pwSec) pwSec.style.display = 'none';
   }
 
-  // PW未設定バナー: Googleログイン以外 かつ has_password が true でない場合に表示
-  // has_password が null（既存ユーザー）または false（新規）どちらも表示対象
-  const pwBanner = $('#pwSetupBanner');
+  // PW未設定バナー（ホームタブ）: Googleログイン以外 かつ has_password が true でない場合に表示
+  const pwBanner = $('#pwAlertBanner');
   if (pwBanner) {
     const showBanner = !isGoogle && !currentProfile?.has_password;
-    pwBanner.style.display = showBanner ? 'block' : 'none';
+    pwBanner.style.display = showBanner ? 'flex' : 'none';
   }
 }
 
@@ -3388,6 +3387,15 @@ async function mainInit(user) {
   $('#goLineSetup')?.addEventListener('click', (e) => { e.preventDefault(); goTab('settings'); });
   $('#upgradeLink')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
   $('#goAddTask')?.addEventListener('click', (e) => { e.preventDefault(); goTab('tasks'); });
+  $('#goPwSetup')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    goTab('account');
+    // 少し待ってからPWセクションにスクロール
+    setTimeout(() => {
+      const pwSec = document.getElementById('pwSection');
+      if (pwSec) pwSec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+  });
 
   // 日付ナビ（ホーム）
   $('#homePrevDay')?.addEventListener('click', () => {
@@ -3915,7 +3923,7 @@ async function mainInit(user) {
     // has_passwordをtrueに更新してバナーを消す
     await sb.from('profiles').update({ has_password: true }).eq('id', currentUser.id);
     if (currentProfile) currentProfile.has_password = true;
-    const pwBanner = $('#pwSetupBanner');
+    const pwBanner = $('#pwAlertBanner');
     if (pwBanner) pwBanner.style.display = 'none';
     showMsg(msgEl, 'パスワードを設定しました', 'success');
     $('#newPw1').value = ''; $('#newPw2').value = '';
