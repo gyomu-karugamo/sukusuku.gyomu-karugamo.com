@@ -1347,7 +1347,13 @@ footer a:hover { color: var(--duck); }
         <a id="downloadReportBtn" class="btn" style="font-size:13px;display:none;" download="karugamo-report.png">ダウンロード</a>
         <button id="shareNativeBtn" class="btn" style="font-size:13px;display:none;background:#000;color:#fff;border-color:#000;">シェア</button>
       </div>
-      <div id="reportScoreText" style="font-size:13px;font-weight:500;color:var(--brown);margin-top:8px;"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;">
+        <span style="font-size:12px;color:var(--mist);">シェア画像では名前を伏せる</span>
+        <label class="toggle-switch" for="shareHideNameToggle">
+          <input type="checkbox" id="shareHideNameToggle">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
       <p style="font-size:11px;color:var(--mist);margin-top:8px;" id="shareHint"></p>
     </div>
 
@@ -1445,16 +1451,6 @@ footer a:hover { color: var(--duck); }
           <label>パートナーの名前</label>
           <input type="text" id="partnerNameInput" placeholder="例：たろう" maxlength="20">
         </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding:10px 0;border-top:1px solid var(--border);">
-        <div>
-          <div style="font-size:13px;font-weight:500;">名前を伏せて表示する</div>
-          <div style="font-size:11px;color:var(--mist);margin-top:2px;">月次レポートや画面上で「自分」「パートナー」と表示します</div>
-        </div>
-        <label class="toggle-switch" for="hideNameToggle">
-          <input type="checkbox" id="hideNameToggle">
-          <span class="toggle-track"></span>
-        </label>
       </div>
       <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
       <p class="msg" id="namesMsg"></p>
@@ -1790,16 +1786,19 @@ let lineSentCount = 0;
 let homeViewDate = new Date();
 let myName = '';       // 自分の名前
 let partnerName = '';  // パートナーの名前
-let hideNames = false; // 名前を伏せるか
 
-function getMyLabel() {
-  if (hideNames) return '自分';
-  return myName || '自分';
+function getMyLabel()      { return myName      || '自分'; }
+
+function getPartnerLabel() { return partnerName || 'パートナー'; }
+
+function getShareMyLabel() {
+  const hidden = document.getElementById('shareHideNameToggle')?.checked;
+  return hidden ? '自分' : getMyLabel();
 }
 
-function getPartnerLabel() {
-  if (hideNames) return 'パートナー';
-  return partnerName || 'パートナー';
+function getSharePartnerLabel() {
+  const hidden = document.getElementById('shareHideNameToggle')?.checked;
+  return hidden ? 'パートナー' : getPartnerLabel();
 }
 
 function refreshNameLabels() {
@@ -2768,10 +2767,6 @@ function renderReport() {
   setEl('rptLineSent',     lineSentCount);
   setEl('rptLineSub',      '/ ' + getLimitLabel());
 
-  const score = myDone + partnerDone;
-  const scoreEl = document.getElementById('reportScoreText');
-  if (scoreEl) scoreEl.textContent = `今月のスコア：${score}点`;
-
   // タスク完了率（各自の棒グラフ）
   // 自分の担当タスク総数と完了数を計算
   const days = Object.keys(dayMap).sort();
@@ -2949,7 +2944,27 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-function generateReportImage() {
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+function drawCircleImage(ctx, img, x, y, size) {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  ctx.drawImage(img, x, y, size, size);
+  ctx.restore();
+}
+
+async function generateReportImage() {
   try {
     const canvas = document.getElementById('reportCanvas');
     if (!canvas) { showToast('canvasが見つかりません', 'error'); return; }
@@ -2957,137 +2972,226 @@ function generateReportImage() {
     if (!ctx) { showToast('このブラウザでは画像生成できません', 'error'); return; }
 
     const month  = document.getElementById('reportMonthLabel')?.textContent || '';
-    const myDone = Number(document.getElementById('rptMyTotal')?.textContent || '0');
-    const ptDone = Number(document.getElementById('rptPartnerTotal')?.textContent || '0');
-    const myPct  = document.getElementById('myLoadPct')?.textContent || '50%';
-    const ptPct  = document.getElementById('partnerLoadPct')?.textContent || '50%';
-    const myLbl  = getMyLabel();
-    const ptLbl  = getPartnerLabel();
-    const score  = myDone + ptDone;
+    const myDone = document.getElementById('rptMyTotal')?.textContent || '0';
+    const ptDone = document.getElementById('rptPartnerTotal')?.textContent || '0';
+    const totalDays = document.getElementById('rptTotalDays')?.textContent || '0';
+    const lineSent = document.getElementById('rptLineSent')?.textContent || '0';
+    const lineSub  = document.getElementById('rptLineSub')?.textContent || '';
+    const myRate   = document.getElementById('myRatePct')?.textContent || '0%';
+    const ptRate   = document.getElementById('partnerRatePct')?.textContent || '0%';
+    const myLoad   = document.getElementById('myLoadPct')?.textContent || '50%';
+    const ptLoad   = document.getElementById('partnerLoadPct')?.textContent || '50%';
 
-    canvas.width  = 1080;
-    canvas.height = 1350;
+    const myLbl = getShareMyLabel();
+    const ptLbl = getSharePartnerLabel();
+
+    const weeklyData = [...document.querySelectorAll('#weeklyLabels > div')].map((el, i) => {
+      const label = el.textContent || '';
+      const rateEl = document.querySelectorAll('#weeklyChart > div')[i]?.querySelector('div');
+      const rateText = rateEl?.textContent || '0%';
+      return { label, rate: rateText };
+    });
+
+    const categoryRows = [...document.querySelectorAll('#categoryChart .bar-row')].map(row => {
+      const cols = row.querySelectorAll('div');
+      return {
+        label: row.querySelector('.bar-label')?.textContent || '',
+        value: row.querySelector('.bar-val')?.textContent || ''
+      };
+    });
+
+    const categoryBalanceBlocks = [...document.querySelectorAll('#catBalanceChart > div')].map(block => {
+      const title = block.querySelector('div')?.textContent || '';
+      const foots = block.querySelectorAll('div[style*="justify-content:space-between"] span');
+      return {
+        title,
+        left: foots[0]?.textContent || '',
+        right: foots[1]?.textContent || ''
+      };
+    });
+
+    canvas.width = 1080;
+    canvas.height = 1600;
 
     // 背景
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
-    grad.addColorStop(0, '#4a7c6f');
-    grad.addColorStop(1, '#6a9e8f');
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1600);
+    grad.addColorStop(0, '#f5f0e8');
+    grad.addColorStop(1, '#e8f3ef');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 装飾の薄い円
-    ctx.fillStyle = 'rgba(255,255,255,0.06)';
-    ctx.beginPath();
-    ctx.arc(920, 180, 140, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(180, 1120, 180, 0, Math.PI * 2);
-    ctx.fill();
-
     // メインカード
-    ctx.fillStyle = 'rgba(255,255,255,0.14)';
-    roundRect(ctx, 70, 90, 940, 1170, 36);
+    ctx.fillStyle = '#ffffff';
+    roundRect(ctx, 40, 40, 1000, 1520, 32);
     ctx.fill();
 
     // タイトル
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.font = '500 30px sans-serif';
-    ctx.fillText('業務かるがも MONTHLY REPORT', 540, 170);
+    ctx.fillStyle = '#4a7c6f';
+    ctx.font = '600 26px sans-serif';
+    ctx.fillText('業務かるがも MONTHLY REPORT', 540, 95);
 
-    ctx.fillStyle = 'white';
-    ctx.font = '700 56px sans-serif';
-    ctx.fillText(`${month}のふたりの記録`, 540, 250);
+    ctx.fillStyle = '#1a1714';
+    ctx.font = '700 42px sans-serif';
+    ctx.fillText(month, 540, 140);
 
-    // スコア
-    ctx.fillStyle = 'rgba(255,255,255,0.72)';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText('今月のスコア', 540, 340);
-
-    ctx.fillStyle = 'white';
-    ctx.font = '700 90px sans-serif';
-    ctx.fillText(`${score}`, 540, 440);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.72)';
-    ctx.font = '500 28px sans-serif';
-    ctx.fillText('completed tasks', 540, 490);
-
-    // 数字エリア
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    roundRect(ctx, 120, 560, 360, 210, 28);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
-    roundRect(ctx, 600, 560, 360, 210, 28);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(myLbl, 300, 625);
-
-    ctx.fillStyle = 'white';
-    ctx.font = '700 72px sans-serif';
-    ctx.fillText(`${myDone}件`, 300, 715);
-
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(ptLbl, 780, 625);
-
-    ctx.fillStyle = 'white';
-    ctx.font = '700 72px sans-serif';
-    ctx.fillText(`${ptDone}件`, 780, 715);
-
-    // バランス見出し
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.font = '600 28px sans-serif';
-    ctx.fillText('担当バランス', 540, 860);
-
-    // バランスバー
-    const ratio = Math.max(0, Math.min(1, myDone + ptDone > 0 ? myDone / (myDone + ptDone) : 0.5));
-
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    roundRect(ctx, 160, 920, 760, 24, 12);
-    ctx.fill();
-
-    ctx.fillStyle = 'rgba(255,255,255,0.88)';
-    roundRect(ctx, 160, 920, 760 * ratio, 24, 12);
-    ctx.fill();
-
-    ctx.fillStyle = 'white';
-    ctx.font = '600 24px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${myLbl} ${myPct}`, 160, 985);
-
-    ctx.textAlign = 'right';
-    ctx.fillText(`${ptLbl} ${ptPct}`, 920, 985);
-
-    // コメント
-    let comment = '';
-    const diff = Math.abs(myDone - ptDone);
-
-    if (score === 0) {
-      comment = '来月は少しずつ始めていきましょう';
-    } else if (diff <= 3) {
-      comment = 'いいバランスで協力できています';
-    } else if (myDone > ptDone) {
-      comment = `${myLbl}が少し多めに頑張りました`;
-    } else {
-      comment = `${ptLbl}が少し多めに頑張りました`;
+    // アイコン画像
+    let iconImg = null;
+    try {
+      iconImg = await loadImage('/assets/icon.png');
+    } catch (e) {
+      console.warn('icon load failed', e);
+    }
+    if (iconImg) {
+      drawCircleImage(ctx, iconImg, 490, 165, 100);
     }
 
-    ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(comment, 540, 1110);
+    // 上部サマリーカード
+    const summaryY = 310;
+    const cardW = 220;
+    const cardH = 120;
+    const gap = 20;
+    const startX = 75;
 
-    // フッター
-    ctx.fillStyle = 'rgba(255,255,255,0.60)';
-    ctx.font = '500 22px sans-serif';
-    ctx.fillText('ふたりの毎日を、少しだけラクに。', 540, 1185);
+    const summaryCards = [
+      { title: myLbl, value: `${myDone}件` },
+      { title: ptLbl, value: `${ptDone}件` },
+      { title: '完了した日数', value: `${totalDays}日` },
+      { title: 'LINE送信', value: `${lineSent}件` }
+    ];
 
-    ctx.fillStyle = 'rgba(255,255,255,0.52)';
+    summaryCards.forEach((card, i) => {
+      const x = startX + i * (cardW + gap);
+      ctx.fillStyle = '#f8faf9';
+      roundRect(ctx, x, summaryY, cardW, cardH, 20);
+      ctx.fill();
+
+      ctx.fillStyle = '#6e675f';
+      ctx.font = '500 20px sans-serif';
+      ctx.fillText(card.title, x + cardW / 2, summaryY + 38);
+
+      ctx.fillStyle = '#1a1714';
+      ctx.font = '700 34px sans-serif';
+      ctx.fillText(card.value, x + cardW / 2, summaryY + 82);
+    });
+
+    // LINE補足
+    ctx.fillStyle = '#8a9a96';
+    ctx.font = '500 18px sans-serif';
+    ctx.fillText(lineSub, 540, 455);
+
+    // セクション描画関数
+    function drawSectionTitle(text, y) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#4a7c6f';
+      ctx.font = '700 24px sans-serif';
+      ctx.fillText(text, 80, y);
+    }
+
+    // 週ごとの完了率
+    drawSectionTitle('週ごとの完了率', 535);
+    const weekStartY = 570;
+    weeklyData.slice(0, 5).forEach((w, i) => {
+      const x = 90 + i * 190;
+      ctx.fillStyle = '#6e675f';
+      ctx.font = '500 18px sans-serif';
+      ctx.fillText(w.label, x, weekStartY);
+
+      ctx.fillStyle = '#4a7c6f';
+      ctx.font = '700 22px sans-serif';
+      ctx.fillText(w.rate, x + 95, weekStartY);
+    });
+
+    // タスク完了率
+    drawSectionTitle('タスク完了率', 645);
+
+    ctx.fillStyle = '#6e675f';
     ctx.font = '500 20px sans-serif';
-    ctx.fillText('app.gyomu-karugamo.com', 540, 1235);
+    ctx.fillText(`${myLbl} ${myRate}`, 90, 690);
+
+    ctx.fillStyle = '#eee7dc';
+    roundRect(ctx, 300, 672, 650, 16, 8);
+    ctx.fill();
+    ctx.fillStyle = '#4a7c6f';
+    roundRect(ctx, 300, 672, 650 * (parseInt(myRate) / 100 || 0), 16, 8);
+    ctx.fill();
+
+    ctx.fillStyle = '#6e675f';
+    ctx.font = '500 20px sans-serif';
+    ctx.fillText(`${ptLbl} ${ptRate}`, 90, 740);
+
+    ctx.fillStyle = '#eee7dc';
+    roundRect(ctx, 300, 722, 650, 16, 8);
+    ctx.fill();
+    ctx.fillStyle = '#06c755';
+    roundRect(ctx, 300, 722, 650 * (parseInt(ptRate) / 100 || 0), 16, 8);
+    ctx.fill();
+
+    // 担当バランス
+    drawSectionTitle('担当バランス', 830);
+
+    ctx.fillStyle = '#eee7dc';
+    roundRect(ctx, 90, 865, 860, 24, 12);
+    ctx.fill();
+
+    const myLoadNum = parseInt(myLoad) || 50;
+    ctx.fillStyle = '#4a7c6f';
+    roundRect(ctx, 90, 865, 860 * (myLoadNum / 100), 24, 12);
+    ctx.fill();
+
+    ctx.fillStyle = '#1a1714';
+    ctx.font = '600 20px sans-serif';
+    ctx.fillText(`${myLbl} ${myLoad}`, 90, 925);
+    ctx.textAlign = 'right';
+    ctx.fillText(`${ptLbl} ${ptLoad}`, 950, 925);
+    ctx.textAlign = 'left';
+
+    // カテゴリ別タスク数
+    drawSectionTitle('カテゴリ別タスク数', 1015);
+
+    if (categoryRows.length === 0) {
+      ctx.fillStyle = '#8a9a96';
+      ctx.font = '500 18px sans-serif';
+      ctx.fillText('データがありません', 90, 1055);
+    } else {
+      categoryRows.slice(0, 5).forEach((row, i) => {
+        const y = 1055 + i * 44;
+        ctx.fillStyle = '#6e675f';
+        ctx.font = '500 19px sans-serif';
+        ctx.fillText(row.label, 90, y);
+
+        ctx.fillStyle = '#1a1714';
+        ctx.textAlign = 'right';
+        ctx.font = '700 20px sans-serif';
+        ctx.fillText(`${row.value}件`, 950, y);
+        ctx.textAlign = 'left';
+      });
+    }
+
+    // カテゴリ別担当バランス
+    drawSectionTitle('カテゴリ別担当バランス', 1295);
+
+    if (categoryBalanceBlocks.length === 0) {
+      ctx.fillStyle = '#8a9a96';
+      ctx.font = '500 18px sans-serif';
+      ctx.fillText('データがありません', 90, 1335);
+    } else {
+      categoryBalanceBlocks.slice(0, 4).forEach((block, i) => {
+        const y = 1335 + i * 55;
+
+        ctx.fillStyle = '#1a1714';
+        ctx.font = '600 18px sans-serif';
+        ctx.fillText(block.title, 90, y);
+
+        ctx.fillStyle = '#6e675f';
+        ctx.font = '500 15px sans-serif';
+        ctx.fillText(block.left, 90, y + 24);
+
+        ctx.textAlign = 'right';
+        ctx.fillText(block.right, 950, y + 24);
+        ctx.textAlign = 'left';
+      });
+    }
 
     canvas.style.display = 'block';
 
@@ -3100,9 +3204,8 @@ function generateReportImage() {
     }
 
     const shareText =
-      `${month}のタスクレポート\n` +
+      `${month}の月次レポート\n` +
       `${myLbl}: ${myDone}件 / ${ptLbl}: ${ptDone}件\n` +
-      `今月のスコア: ${score}\n` +
       `#業務かるがも\nhttps://app.gyomu-karugamo.com`;
 
     const nativeBtn = document.getElementById('shareNativeBtn');
@@ -3133,6 +3236,7 @@ function generateReportImage() {
         ? '「シェア」で画像付き投稿が選べます'
         : '画像をダウンロードしてSNSに添付してください';
     }
+
   } catch (e) {
     console.error('generateReportImage error:', e);
     showToast('画像生成に失敗しました: ' + e.message, 'error');
@@ -3193,10 +3297,6 @@ function renderAccount() {
   function canViewReport() {
   return isStandard() || isPremium();
 }
-function renderRepeatGate() {
-  const repeatSel = document.getElementById('repeatType');
-  const addMsg = document.getElementById('taskAddMsg');
-  if (!repeatSel) return;
 
   const locked = !isStandard() && !isPremium();
 
@@ -3420,11 +3520,9 @@ async function mainInit(user) {
     const parts = dn.split(',');
     myName      = parts[0]?.trim() || localStorage.getItem('kamo_myname_'      + currentUser.id) || '';
     partnerName = parts[1]?.trim() || localStorage.getItem('kamo_partnername_' + currentUser.id) || '';
-    hideNames   = localStorage.getItem('kamo_hide_names_' + currentUser.id) === '1';
   
     if (document.getElementById('myNameInput'))      document.getElementById('myNameInput').value      = myName;
     if (document.getElementById('partnerNameInput')) document.getElementById('partnerNameInput').value = partnerName;
-    if (document.getElementById('hideNameToggle'))   document.getElementById('hideNameToggle').checked = hideNames;
   
     refreshNameLabels();
     renderHome();
@@ -3956,11 +4054,9 @@ async function mainInit(user) {
   $('#saveNamesBtn')?.addEventListener('click', async () => {
     myName      = ($('#myNameInput')?.value || '').trim();
     partnerName = ($('#partnerNameInput')?.value || '').trim();
-    hideNames   = $('#hideNameToggle')?.checked === true;
   
     localStorage.setItem('kamo_myname_' + currentUser.id, myName);
     localStorage.setItem('kamo_partnername_' + currentUser.id, partnerName);
-    localStorage.setItem('kamo_hide_names_' + currentUser.id, hideNames ? '1' : '0');
   
     await sb.from('profiles')
       .update({ display_name: myName + ',' + partnerName })
