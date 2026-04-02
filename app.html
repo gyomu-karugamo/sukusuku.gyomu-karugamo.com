@@ -3121,8 +3121,8 @@ async function generateReportImage() {
     ctx.font = '500 28px sans-serif';
     ctx.fillText('Monthly Report', 540, 96);
 
-    ctx.fillStyle = '#1a1714';
-    ctx.font = '700 48px sans-serif';
+    ctx.fillStyle = '#4a7c6f';
+    ctx.font = '600 40px sans-serif';
     ctx.fillText(monthText, 540, 154);
 
     function drawSectionTitle(text, subtext, y) {
@@ -3157,9 +3157,9 @@ async function generateReportImage() {
     }
 
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#1a1714';
+    ctx.fillStyle = '#8a9a96';
     ctx.font = '500 21px sans-serif';
-    ctx.fillText(myRate, 995, 306);
+    ctx.fillText(myRate, 1030, 306);
 
     ctx.textAlign = 'left';
     ctx.fillStyle = '#8a9a96';
@@ -3176,9 +3176,9 @@ async function generateReportImage() {
     }
 
     ctx.textAlign = 'right';
-    ctx.fillStyle = '#1a1714';
+    ctx.fillStyle = '#8a9a96';
     ctx.font = '500 21px sans-serif';
-    ctx.fillText(ptRate, 995, 372);
+    ctx.fillText(ptRate, 1030, 372);
 
     // 担当バランス
     drawSectionTitle('担当バランス', '完了件数ベース', 500);
@@ -3213,10 +3213,10 @@ async function generateReportImage() {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#8a9a96';
     ctx.font = '500 19px sans-serif';
-    ctx.fillText(`${myLabelDisplay} ${myLoad}`, 70, 622);
-
+    ctx.fillText(`${myLabelDisplay} ${myLoad}`, 70, 604);
+    
     ctx.textAlign = 'right';
-    ctx.fillText(`${ptLoad} ${ptLabelDisplay}`, 1000, 622);
+    ctx.fillText(`${ptLoad} ${ptLabelDisplay}`, 1000, 604);
 
     // カテゴリ割合
     drawSectionTitle('カテゴリ割合', '', 740);
@@ -3249,10 +3249,10 @@ async function generateReportImage() {
       });
 
       const legendCols = 2;
-      const legendStartX = 340;
-      const legendStartY = 830;
-      const colWidth = 300;
-      const rowGap = 62;
+      const legendStartX = 320;
+      const legendStartY = 828;
+      const colWidth = 245;
+      const rowGap = 52;
 
       categoryEntries.forEach(([key, value], i) => {
         const pct = Math.round((value / total) * 100);
@@ -3274,7 +3274,7 @@ async function generateReportImage() {
 
         ctx.fillStyle = '#8a9a96';
         ctx.font = '500 18px sans-serif';
-        ctx.fillText(`${pct}%`, baseX + 150, baseY);
+        ctx.fillText(`${pct}%`, baseX + 118, baseY);
       });
     }
 
@@ -3340,42 +3340,32 @@ async function generateReportImage() {
       });
     }
 
-    // 右下ブランド
+    // 下中央ブランド
     let iconImg = null;
     try {
       iconImg = await loadImage('/assets/icon.png');
     } catch (e) {
       console.warn('icon load failed', e);
     }
-
+    
+    const brandCenterX = 540;
+    const brandBaseY = 1492;
+    
     if (iconImg) {
       ctx.save();
       ctx.globalAlpha = 0.96;
-      drawCircleImage(ctx, iconImg, 760, 1450, 56);
+      drawCircleImage(ctx, iconImg, brandCenterX - 120, brandBaseY - 38, 60);
       ctx.restore();
     }
-
+    
     ctx.textAlign = 'left';
     ctx.fillStyle = '#4a7c6f';
-    ctx.font = '700 24px sans-serif';
-    ctx.fillText('業務かるがも', 830, 1478);
-
+    ctx.font = '700 26px sans-serif';
+    ctx.fillText('業務かるがも', brandCenterX - 45, brandBaseY - 4);
+    
     ctx.fillStyle = '#8a9a96';
     ctx.font = '500 16px sans-serif';
-    ctx.fillText('https://gyomu-karugamo.com', 830, 1506);
-
-    canvas.style.display = 'block';
-
-    const dl = document.getElementById('downloadReportBtn');
-    const hint = document.getElementById('shareHint');
-
-    if (dl) {
-      dl.href = canvas.toDataURL('image/png');
-      dl.style.display = 'inline-block';
-    }
-
-    const shareText =
-      `${monthText} Monthly Report\n#業務かるがも\nhttps://gyomu-karugamo.com`;
+    ctx.fillText('https://gyomu-karugamo.com', brandCenterX - 45, brandBaseY + 24);
 
     const nativeBtn = document.getElementById('shareNativeBtn');
     if (nativeBtn) {
