@@ -48,7 +48,7 @@
 
   --line-green: #06c755;
   --line-pale: #e8f9ef;
-  --partner-accent: #06c755;
+  --partner-accent: #4f668f;
 
   --border: rgba(26,23,20,0.08);
   --shadow: 0 4px 24px rgba(26,23,20,0.08);
@@ -2881,7 +2881,7 @@ function renderReport() {
       catChart.innerHTML = `<div style="font-size:13px;color:var(--mist);">データがありません</div>`;
     } else {
       const total = entries.reduce((sum, [, v]) => sum + v, 0);
-      const colors = ['#c97b63', '#e0b36a', '#a78bc2', '#d98c9f', '#8fa7c6'];
+      const colors = ['#c97b63', '#ddb064', '#a487c8', '#d88fa2', '#8ea6c8'];
   
       let cumulative = 0;
       const segments = entries.map(([key, value], i) => {
@@ -3016,50 +3016,291 @@ async function generateReportImage() {
     if (!ctx) { showToast('このブラウザでは画像生成できません', 'error'); return; }
 
     const monthText = document.getElementById('reportMonthLabel')?.textContent || '';
-    const myLbl = getShareMyLabel();
-    const ptLbl = getSharePartnerLabel();
+
+    const myLabelDisplay = getShareMyLabel();
+    const ptLabelDisplay = getSharePartnerLabel();
+
+    const myActualLabel = getMyLabel();
+    const ptActualLabel = getPartnerLabel();
 
     const myRate = document.getElementById('myRatePct')?.textContent || '0%';
     const ptRate = document.getElementById('partnerRatePct')?.textContent || '0%';
     const myLoad = document.getElementById('myLoadPct')?.textContent || '50%';
     const ptLoad = document.getElementById('partnerLoadPct')?.textContent || '50%';
 
-    const categoryBalanceBlocks = [...document.querySelectorAll('#catBalanceChart > div')].map(block => {
-      const title = block.querySelector('div')?.textContent || '';
-      const spans = block.querySelectorAll('span');
-      return {
-        title,
-        left: spans[0]?.textContent || '',
-        right: spans[1]?.textContent || ''
-      };
+    const myRateNum = Math.max(0, Math.min(100, parseInt(myRate, 10) || 0));
+    const ptRateNum = Math.max(0, Math.min(100, parseInt(ptRate, 10) || 0));
+    const myLoadNum = Math.max(0, Math.min(100, parseInt(myLoad, 10) || 0));
+
+    // カテゴリ割合（画面の内容をそのまま使う）
+    const categoryRows = [...document.querySelectorAll('#categoryChart > div > div:last-child > div')].map(row => {
+      const name = row.querySelector('span:nth-child(2)')?.textContent || '';
+      const pct = row.querySelector('div:last-child')?.textContent || '';
+      const colorDot = row.querySelector('span')?.style.background || '#ccc';
+      return { name, pct, color: colorDot };
     });
 
+    // 円グラフ自体の比率は renderReport と同じ集計で計算
+    const y = reportMonth.getFullYear();
+    const m = reportMonth.getMonth();
+    const from = new Date(y, m, 1);
+    const to = new Date(y, m + 1, 0);
+    const todayStr = getTodayStr();
+
+    const days = [];
+    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+      const ds = d.toISOString().slice(0, 10);
+      if (ds > todayStr) break;
+      days.push(ds);
+    }
+
+    const catCount = {};
+    days.forEach(ds => {
+      const dayTasks = getTasksForDate(ds);
+      dayTasks.forEach(t => {
+        if (!t.category) return;
+        catCount[t.category] = (catCount[t.category] || 0) + 1;
+      });
+    });
+
+    const categoryEntries = Object.entries(catCount).sort((a, b) => b[1] - a[1]);
+    const pieColors = ['#c97b63', '#ddb064', '#a487c8', '#d88fa2', '#8ea6c8'];
+
+    // カテゴリ別担当バランス（完了件数ベースをここで再計算）
+    const catMyCount = {};
+    const catPtCount = {};
+
+    days.forEach(ds => {
+      const dayTasks = getTasksForDate(ds);
+      const comp = completions_by_date?.[ds] || {};
+
+      dayTasks.forEach(t => {
+        if (!t.category) return;
+        if (!comp[t.id]) return;
+
+        if (t.assignee === 'me') {
+          catMyCount[t.category] = (catMyCount[t.category] || 0) + 1;
+        } else if (t.assignee === 'partner') {
+          catPtCount[t.category] = (catPtCount[t.category] || 0) + 1;
+        }
+      });
+    });
+
+    const allCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
+
     canvas.width = 1080;
-    canvas.height = 1180;
+    canvas.height = 1480;
 
     // 背景
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1180);
-    grad.addColorStop(0, '#f7f3ec');
-    grad.addColorStop(1, '#eef3f1');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1080, 1180);
+    const bg = ctx.createLinearGradient(0, 0, 1080, 1480);
+    bg.addColorStop(0, '#f6f2eb');
+    bg.addColorStop(1, '#eef3f1');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1080, 1480);
 
-    // 本体カード
-    ctx.fillStyle = 'rgba(255,255,255,0.92)';
-    roundRect(ctx, 40, 40, 1000, 1100, 32);
+    // 本体
+    ctx.fillStyle = 'rgba(255,255,255,0.94)';
+    roundRect(ctx, 34, 34, 1012, 1412, 30);
     ctx.fill();
 
     // 上部タイトル
     ctx.textAlign = 'center';
     ctx.fillStyle = '#8a9a96';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(monthText, 540, 105);
+    ctx.font = '500 28px sans-serif';
+    ctx.fillText('Monthly Report', 540, 100);
 
     ctx.fillStyle = '#1a1714';
-    ctx.font = '700 42px sans-serif';
-    ctx.fillText('月刊レポート', 540, 160);
+    ctx.font = '700 46px sans-serif';
+    ctx.fillText(monthText, 540, 156);
 
-    // ロゴ + サービス名 + URL
+    function drawSectionTitle(text, subtext, y) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#4a7c6f';
+      ctx.font = '700 26px sans-serif';
+      ctx.fillText(text, 70, y);
+
+      if (subtext) {
+        const titleWidth = ctx.measureText(text).width;
+        ctx.fillStyle = '#8a9a96';
+        ctx.font = '500 18px sans-serif';
+        ctx.fillText(subtext, 70 + titleWidth + 12, y);
+      }
+    }
+
+    // タスク完了率
+    drawSectionTitle('タスク完了率', '', 245);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8a9a96';
+    ctx.font = '500 20px sans-serif';
+    ctx.fillText(myLabelDisplay, 70, 300);
+
+    ctx.fillStyle = '#e7e0d5';
+    roundRect(ctx, 170, 284, 780, 16, 8);
+    ctx.fill();
+
+    if (myRateNum > 0) {
+      ctx.fillStyle = '#4a7c6f';
+      roundRect(ctx, 170, 284, 780 * (myRateNum / 100), 16, 8);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#1a1714';
+    ctx.font = '500 20px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(myRate, 995, 300);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#8a9a96';
+    ctx.font = '500 20px sans-serif';
+    ctx.fillText(ptLabelDisplay, 70, 355);
+
+    ctx.fillStyle = '#e7e0d5';
+    roundRect(ctx, 170, 339, 780, 16, 8);
+    ctx.fill();
+
+    if (ptRateNum > 0) {
+      ctx.fillStyle = '#4f668f';
+      roundRect(ctx, 170, 339, 780 * (ptRateNum / 100), 16, 8);
+      ctx.fill();
+    }
+
+    ctx.fillStyle = '#1a1714';
+    ctx.font = '500 20px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(ptRate, 995, 355);
+
+    // 担当バランス
+    drawSectionTitle('担当バランス', '完了件数ベース', 470);
+
+    ctx.fillStyle = '#e7e0d5';
+    roundRect(ctx, 70, 510, 930, 28, 14);
+    ctx.fill();
+
+    if (myLoadNum > 0) {
+      ctx.fillStyle = '#4a7c6f';
+      roundRect(ctx, 70, 510, 930 * (myLoadNum / 100), 28, 14);
+      ctx.fill();
+    }
+
+    if (myLoadNum < 100) {
+      ctx.fillStyle = '#4f668f';
+      roundRect(ctx, 70 + 930 * (myLoadNum / 100), 510, 930 * ((100 - myLoadNum) / 100), 28, 14);
+      ctx.fill();
+    }
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#1a1714';
+    ctx.font = '600 18px sans-serif';
+    ctx.fillText(`■ ${myLabelDisplay} ${myLoad}`, 70, 585);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(`${ptLoad} ${ptLabelDisplay} ■`, 1000, 585);
+
+    // カテゴリ割合
+    drawSectionTitle('カテゴリ割合', '', 700);
+
+    if (categoryEntries.length === 0) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#8a9a96';
+      ctx.font = '500 20px sans-serif';
+      ctx.fillText('データがありません', 70, 760);
+    } else {
+      const total = categoryEntries.reduce((sum, [, v]) => sum + v, 0);
+
+      let startAngle = -Math.PI / 2;
+      const cx = 170;
+      const cy = 865;
+      const radius = 115;
+
+      categoryEntries.forEach(([key, value], i) => {
+        const ratio = value / total;
+        const endAngle = startAngle + Math.PI * 2 * ratio;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = pieColors[i % pieColors.length];
+        ctx.fill();
+
+        startAngle = endAngle;
+      });
+
+      let legendY = 815;
+      categoryEntries.forEach(([key, value], i) => {
+        const pct = Math.round((value / total) * 100);
+
+        ctx.fillStyle = pieColors[i % pieColors.length];
+        ctx.beginPath();
+        ctx.arc(340, legendY - 6, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#1a1714';
+        ctx.font = '500 18px sans-serif';
+        ctx.fillText(getCategoryLabel(key), 362, legendY);
+
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#8a9a96';
+        ctx.fillText(`${pct}%`, 1000, legendY);
+
+        legendY += 56;
+      });
+    }
+
+    // カテゴリ別担当バランス
+    drawSectionTitle('カテゴリ別担当バランス', '完了件数ベース', 1110);
+
+    if (allCatKeys.length === 0) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#8a9a96';
+      ctx.font = '500 20px sans-serif';
+      ctx.fillText('データがありません', 70, 1170);
+    } else {
+      let rowY = 1170;
+
+      allCatKeys.slice(0, 4).forEach(k => {
+        const mv = catMyCount[k] || 0;
+        const pv = catPtCount[k] || 0;
+        const tot = mv + pv;
+        const myW = tot > 0 ? Math.round(mv / tot * 100) : 50;
+        const ptW = 100 - myW;
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#8a9a96';
+        ctx.font = '500 18px sans-serif';
+        ctx.fillText(getCategoryLabel(k), 70, rowY);
+
+        ctx.fillStyle = '#e7e0d5';
+        roundRect(ctx, 70, rowY + 18, 930, 24, 12);
+        ctx.fill();
+
+        if (myW > 0) {
+          ctx.fillStyle = '#4a7c6f';
+          roundRect(ctx, 70, rowY + 18, 930 * (myW / 100), 24, 12);
+          ctx.fill();
+        }
+
+        if (ptW > 0) {
+          ctx.fillStyle = '#4f668f';
+          roundRect(ctx, 70 + 930 * (myW / 100), rowY + 18, 930 * (ptW / 100), 24, 12);
+          ctx.fill();
+        }
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#8a9a96';
+        ctx.font = '500 16px sans-serif';
+        ctx.fillText(`${myLabelDisplay} ${myW}%`, 70, rowY + 72);
+
+        ctx.textAlign = 'right';
+        ctx.fillText(`${ptW}% ${ptLabelDisplay}`, 1000, rowY + 72);
+
+        rowY += 132;
+      });
+    }
+
+    // 右下ブランド
     let iconImg = null;
     try {
       iconImg = await loadImage('/assets/icon.png');
@@ -3068,103 +3309,20 @@ async function generateReportImage() {
     }
 
     if (iconImg) {
-      drawCircleImage(ctx, iconImg, 110, 205, 58);
+      ctx.save();
+      ctx.globalAlpha = 0.92;
+      drawCircleImage(ctx, iconImg, 760, 1360, 42);
+      ctx.restore();
     }
 
     ctx.textAlign = 'left';
     ctx.fillStyle = '#4a7c6f';
-    ctx.font = '700 26px sans-serif';
-    ctx.fillText('業務かるがも', 185, 240);
+    ctx.font = '700 20px sans-serif';
+    ctx.fillText('業務かるがも', 815, 1383);
 
     ctx.fillStyle = '#8a9a96';
-    ctx.font = '500 18px sans-serif';
-    ctx.fillText('app.gyomu-karugamo.com', 185, 270);
-
-    function drawSectionTitle(text, y) {
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#4a7c6f';
-      ctx.font = '700 28px sans-serif';
-      ctx.fillText(text, 90, y);
-    }
-
-    // タスク完了率
-    drawSectionTitle('タスク完了率', 360);
-
-    const myRateNum = Math.max(0, Math.min(100, parseInt(myRate, 10) || 0));
-    const ptRateNum = Math.max(0, Math.min(100, parseInt(ptRate, 10) || 0));
-
-    ctx.fillStyle = '#6e675f';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(`${myLbl} ${myRate}`, 90, 420);
-
-    ctx.fillStyle = '#e7e0d5';
-    roundRect(ctx, 90, 440, 900, 20, 10);
-    ctx.fill();
-
-    ctx.fillStyle = '#4a7c6f';
-    roundRect(ctx, 90, 440, 900 * (myRateNum / 100), 20, 10);
-    ctx.fill();
-
-    ctx.fillStyle = '#6e675f';
-    ctx.font = '500 24px sans-serif';
-    ctx.fillText(`${ptLbl} ${ptRate}`, 90, 520);
-
-    ctx.fillStyle = '#e7e0d5';
-    roundRect(ctx, 90, 540, 900, 20, 10);
-    ctx.fill();
-
-    ctx.fillStyle = '#06c755';
-    roundRect(ctx, 90, 540, 900 * (ptRateNum / 100), 20, 10);
-    ctx.fill();
-
-    // 担当バランス
-    drawSectionTitle('担当バランス', 660);
-
-    const myLoadNum = Math.max(0, Math.min(100, parseInt(myLoad, 10) || 0));
-
-    ctx.fillStyle = '#e7e0d5';
-    roundRect(ctx, 90, 700, 900, 28, 14);
-    ctx.fill();
-
-    if (myLoadNum > 0) {
-      ctx.fillStyle = '#4a7c6f';
-      roundRect(ctx, 90, 700, 900 * (myLoadNum / 100), 28, 14);
-      ctx.fill();
-    }
-
-    ctx.fillStyle = '#1a1714';
-    ctx.font = '600 22px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText(`${myLbl} ${myLoad}`, 90, 770);
-
-    ctx.textAlign = 'right';
-    ctx.fillText(`${ptLbl} ${ptLoad}`, 990, 770);
-
-    // カテゴリ別担当バランス
-    drawSectionTitle('カテゴリ別担当バランス', 890);
-
-    if (categoryBalanceBlocks.length === 0) {
-      ctx.textAlign = 'left';
-      ctx.fillStyle = '#8a9a96';
-      ctx.font = '500 20px sans-serif';
-      ctx.fillText('データがありません', 90, 945);
-    } else {
-      categoryBalanceBlocks.slice(0, 4).forEach((block, i) => {
-        const y = 945 + i * 72;
-
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#1a1714';
-        ctx.font = '700 20px sans-serif';
-        ctx.fillText(block.title, 90, y);
-
-        ctx.fillStyle = '#6e675f';
-        ctx.font = '500 17px sans-serif';
-        ctx.fillText(block.left, 90, y + 28);
-
-        ctx.textAlign = 'right';
-        ctx.fillText(block.right, 990, y + 28);
-      });
-    }
+    ctx.font = '500 14px sans-serif';
+    ctx.fillText('https://gyomu-karugamo.com', 815, 1406);
 
     canvas.style.display = 'block';
 
@@ -3177,7 +3335,7 @@ async function generateReportImage() {
     }
 
     const shareText =
-      `${monthText} 月刊レポート\n#業務かるがも\nhttps://app.gyomu-karugamo.com`;
+      `${monthText} Monthly Report\n#業務かるがも\nhttps://gyomu-karugamo.com`;
 
     const nativeBtn = document.getElementById('shareNativeBtn');
     if (nativeBtn) {
