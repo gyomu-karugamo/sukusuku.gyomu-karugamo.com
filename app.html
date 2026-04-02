@@ -1051,18 +1051,14 @@ footer a:hover { color: var(--duck); }
     </div>
 
     <!-- 今日のクイック統計 -->
-    <div class="quick-stats">
+    <div class="quick-stats" style="grid-template-columns:repeat(2,1fr);">
       <div class="stat-card">
-        <div class="stat-num" id="statMyDone">0</div>
-        <div class="stat-label">自分 完了</div>
+        <div class="stat-num" id="statMyProgress">0/0件</div>
+        <div class="stat-label" id="statMyProgressLabel">自分</div>
       </div>
       <div class="stat-card">
-        <div class="stat-num" id="statMyTotal">0</div>
-        <div class="stat-label">自分 合計</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statPartnerDone">0</div>
-        <div class="stat-label">相手 完了</div>
+        <div class="stat-num" id="statPartnerProgress">0/0件</div>
+        <div class="stat-label" id="statPartnerProgressLabel">パートナー</div>
       </div>
     </div>
 
@@ -1811,13 +1807,12 @@ function refreshNameLabels() {
   const aPt = document.getElementById('assigneePartnerLabel');
   if (aMe) aMe.textContent = getMyLabel();
   if (aPt) aPt.textContent = getPartnerLabel();
+  
   // 統計ラベル
-  const statMyLabel = document.querySelector('.stat-card:nth-child(1) .stat-label');
-  const statMyLabel2 = document.querySelector('.stat-card:nth-child(2) .stat-label');
-  const statPtLabel = document.querySelector('.stat-card:nth-child(3) .stat-label');
-  if (statMyLabel)  statMyLabel.textContent  = getMyLabel() + ' 完了';
-  if (statMyLabel2) statMyLabel2.textContent = getMyLabel() + ' 合計';
-  if (statPtLabel)  statPtLabel.textContent  = getPartnerLabel() + ' 完了';
+  const statMyProgressLabel = document.getElementById('statMyProgressLabel');
+  const statPartnerProgressLabel = document.getElementById('statPartnerProgressLabel');
+  if (statMyProgressLabel) statMyProgressLabel.textContent = getMyLabel();
+  if (statPartnerProgressLabel) statPartnerProgressLabel.textContent = getPartnerLabel();
 }
 
 const FREE_LIMIT      = 10;   // Freeプランの月間LINE送信上限
@@ -2443,9 +2438,8 @@ async function renderDateTasks(dateStr) {
 
   const myDone = myTasks.filter(t => dayCompletions[t.id]).length;
   const partnerDone = partnerTasks.filter(t => dayCompletions[t.id]).length;
-  $('#statMyDone').textContent = myDone;
-  $('#statMyTotal').textContent = myTasks.length;
-  $('#statPartnerDone').textContent = partnerDone;
+  $('#statMyProgress').textContent = `${myDone}/${myTasks.length}件`;
+  $('#statPartnerProgress').textContent = `${partnerDone}/${partnerTasks.length}件`;
 
   const total = myTasks.length + partnerTasks.length;
   const done = myDone + partnerDone;
@@ -2864,7 +2858,7 @@ function renderReport() {
       `<div style="flex:1;text-align:center;font-size:9px;color:var(--mist);">${w.label}</div>`).join('');
   }
 
-  // B: カテゴリ別（登録タスク数ベース・安定表示）
+  // B: カテゴリ別（円グラフ）
   const catCount = {};
   days.forEach(ds => {
     const dayTasks = getTasksForDate(ds);
@@ -2873,15 +2867,67 @@ function renderReport() {
       catCount[t.category] = (catCount[t.category] || 0) + 1;
     });
   });
-  const maxCat = Math.max(1, ...Object.values(catCount).map(Number));
+  
   const catChart = document.getElementById('categoryChart');
   if (catChart) {
-    catChart.innerHTML = Object.entries(catCount).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-      <div class="bar-row">
-        <div class="bar-label" style="font-size:11px;">${getCategoryLabel(k)}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${v/maxCat*100}%"></div></div>
-        <div class="bar-val">${v}</div>
-      </div>`).join('') || `<div style="font-size:13px;color:var(--mist);">データがありません</div>`;
+    const entries = Object.entries(catCount).sort((a, b) => b[1] - a[1]);
+  
+    if (entries.length === 0) {
+      catChart.innerHTML = `<div style="font-size:13px;color:var(--mist);">データがありません</div>`;
+    } else {
+      const total = entries.reduce((sum, [, v]) => sum + v, 0);
+      const colors = ['#4a7c6f', '#06c755', '#8a9a96', '#d9cdbb', '#a89f93'];
+  
+      let cumulative = 0;
+      const segments = entries.map(([key, value], i) => {
+        const percent = (value / total) * 100;
+        const start = cumulative;
+        cumulative += percent;
+        return `${colors[i % colors.length]} ${start}% ${cumulative}%`;
+      }).join(', ');
+  
+      catChart.innerHTML = `
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+          <div style="
+            width:140px;
+            height:140px;
+            border-radius:50%;
+            background:conic-gradient(${segments});
+            flex-shrink:0;
+            position:relative;
+          ">
+            <div style="
+              position:absolute;
+              inset:22px;
+              background:white;
+              border-radius:50%;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              font-size:12px;
+              color:var(--mist);
+              text-align:center;
+              line-height:1.4;
+            ">合計<br><strong style="font-size:20px;color:var(--brown);">${total}</strong></div>
+          </div>
+  
+          <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:8px;">
+            ${entries.map(([key, value], i) => {
+              const pct = Math.round((value / total) * 100);
+              return `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;">
+                  <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+                    <span style="width:10px;height:10px;border-radius:50%;background:${colors[i % colors.length]};flex-shrink:0;"></span>
+                    <span>${getCategoryLabel(key)}</span>
+                  </div>
+                  <div style="color:var(--mist);white-space:nowrap;">${pct}% (${value}件)</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
   }
 
   // カテゴリ別担当バランス（1本バー）
@@ -2971,71 +3017,40 @@ async function generateReportImage() {
     const ctx = canvas.getContext('2d');
     if (!ctx) { showToast('このブラウザでは画像生成できません', 'error'); return; }
 
-    const month  = document.getElementById('reportMonthLabel')?.textContent || '';
-    const myDone = document.getElementById('rptMyTotal')?.textContent || '0';
-    const ptDone = document.getElementById('rptPartnerTotal')?.textContent || '0';
-    const totalDays = document.getElementById('rptTotalDays')?.textContent || '0';
-    const lineSent = document.getElementById('rptLineSent')?.textContent || '0';
-    const lineSub  = document.getElementById('rptLineSub')?.textContent || '';
-    const myRate   = document.getElementById('myRatePct')?.textContent || '0%';
-    const ptRate   = document.getElementById('partnerRatePct')?.textContent || '0%';
-    const myLoad   = document.getElementById('myLoadPct')?.textContent || '50%';
-    const ptLoad   = document.getElementById('partnerLoadPct')?.textContent || '50%';
-
     const myLbl = getShareMyLabel();
     const ptLbl = getSharePartnerLabel();
 
-    const weeklyData = [...document.querySelectorAll('#weeklyLabels > div')].map((el, i) => {
-      const label = el.textContent || '';
-      const rateEl = document.querySelectorAll('#weeklyChart > div')[i]?.querySelector('div');
-      const rateText = rateEl?.textContent || '0%';
-      return { label, rate: rateText };
-    });
-
-    const categoryRows = [...document.querySelectorAll('#categoryChart .bar-row')].map(row => {
-      const cols = row.querySelectorAll('div');
-      return {
-        label: row.querySelector('.bar-label')?.textContent || '',
-        value: row.querySelector('.bar-val')?.textContent || ''
-      };
-    });
+    const myRate = document.getElementById('myRatePct')?.textContent || '0%';
+    const ptRate = document.getElementById('partnerRatePct')?.textContent || '0%';
+    const myLoad = document.getElementById('myLoadPct')?.textContent || '50%';
+    const ptLoad = document.getElementById('partnerLoadPct')?.textContent || '50%';
 
     const categoryBalanceBlocks = [...document.querySelectorAll('#catBalanceChart > div')].map(block => {
       const title = block.querySelector('div')?.textContent || '';
-      const foots = block.querySelectorAll('div[style*="justify-content:space-between"] span');
+      const spans = block.querySelectorAll('span');
       return {
         title,
-        left: foots[0]?.textContent || '',
-        right: foots[1]?.textContent || ''
+        left: spans[0]?.textContent || '',
+        right: spans[1]?.textContent || ''
       };
     });
 
     canvas.width = 1080;
-    canvas.height = 1600;
+    canvas.height = 1080;
 
     // 背景
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1600);
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
     grad.addColorStop(0, '#f5f0e8');
-    grad.addColorStop(1, '#e8f3ef');
+    grad.addColorStop(1, '#eef5f2');
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, 1080, 1080);
 
-    // メインカード
-    ctx.fillStyle = '#ffffff';
-    roundRect(ctx, 40, 40, 1000, 1520, 32);
+    // 本体カード
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    roundRect(ctx, 40, 40, 1000, 1000, 32);
     ctx.fill();
 
-    // タイトル
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#4a7c6f';
-    ctx.font = '600 26px sans-serif';
-    ctx.fillText('業務かるがも MONTHLY REPORT', 540, 95);
-
-    ctx.fillStyle = '#1a1714';
-    ctx.font = '700 42px sans-serif';
-    ctx.fillText(month, 540, 140);
-
-    // アイコン画像
+    // ロゴを右下に小さく透かし気味で配置
     let iconImg = null;
     try {
       iconImg = await loadImage('/assets/icon.png');
@@ -3043,153 +3058,95 @@ async function generateReportImage() {
       console.warn('icon load failed', e);
     }
     if (iconImg) {
-      drawCircleImage(ctx, iconImg, 490, 165, 100);
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      drawCircleImage(ctx, iconImg, 900, 900, 90);
+      ctx.restore();
     }
 
-    // 上部サマリーカード
-    const summaryY = 310;
-    const cardW = 220;
-    const cardH = 120;
-    const gap = 20;
-    const startX = 75;
-
-    const summaryCards = [
-      { title: myLbl, value: `${myDone}件` },
-      { title: ptLbl, value: `${ptDone}件` },
-      { title: '完了した日数', value: `${totalDays}日` },
-      { title: 'LINE送信', value: `${lineSent}件` }
-    ];
-
-    summaryCards.forEach((card, i) => {
-      const x = startX + i * (cardW + gap);
-      ctx.fillStyle = '#f8faf9';
-      roundRect(ctx, x, summaryY, cardW, cardH, 20);
-      ctx.fill();
-
-      ctx.fillStyle = '#6e675f';
-      ctx.font = '500 20px sans-serif';
-      ctx.fillText(card.title, x + cardW / 2, summaryY + 38);
-
-      ctx.fillStyle = '#1a1714';
-      ctx.font = '700 34px sans-serif';
-      ctx.fillText(card.value, x + cardW / 2, summaryY + 82);
-    });
-
-    // LINE補足
-    ctx.fillStyle = '#8a9a96';
-    ctx.font = '500 18px sans-serif';
-    ctx.fillText(lineSub, 540, 455);
-
-    // セクション描画関数
     function drawSectionTitle(text, y) {
       ctx.textAlign = 'left';
       ctx.fillStyle = '#4a7c6f';
-      ctx.font = '700 24px sans-serif';
-      ctx.fillText(text, 80, y);
+      ctx.font = '700 28px sans-serif';
+      ctx.fillText(text, 90, y);
     }
 
-    // 週ごとの完了率
-    drawSectionTitle('週ごとの完了率', 535);
-    const weekStartY = 570;
-    weeklyData.slice(0, 5).forEach((w, i) => {
-      const x = 90 + i * 190;
-      ctx.fillStyle = '#6e675f';
-      ctx.font = '500 18px sans-serif';
-      ctx.fillText(w.label, x, weekStartY);
-
-      ctx.fillStyle = '#4a7c6f';
-      ctx.font = '700 22px sans-serif';
-      ctx.fillText(w.rate, x + 95, weekStartY);
-    });
-
     // タスク完了率
-    drawSectionTitle('タスク完了率', 645);
+    drawSectionTitle('タスク完了率', 130);
+
+    const myRateNum = Math.max(0, Math.min(100, parseInt(myRate, 10) || 0));
+    const ptRateNum = Math.max(0, Math.min(100, parseInt(ptRate, 10) || 0));
 
     ctx.fillStyle = '#6e675f';
-    ctx.font = '500 20px sans-serif';
-    ctx.fillText(`${myLbl} ${myRate}`, 90, 690);
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText(`${myLbl} ${myRate}`, 90, 190);
 
-    ctx.fillStyle = '#eee7dc';
-    roundRect(ctx, 300, 672, 650, 16, 8);
+    ctx.fillStyle = '#e7e0d5';
+    roundRect(ctx, 90, 210, 900, 20, 10);
     ctx.fill();
+
     ctx.fillStyle = '#4a7c6f';
-    roundRect(ctx, 300, 672, 650 * (parseInt(myRate) / 100 || 0), 16, 8);
+    roundRect(ctx, 90, 210, 900 * (myRateNum / 100), 20, 10);
     ctx.fill();
 
     ctx.fillStyle = '#6e675f';
-    ctx.font = '500 20px sans-serif';
-    ctx.fillText(`${ptLbl} ${ptRate}`, 90, 740);
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText(`${ptLbl} ${ptRate}`, 90, 290);
 
-    ctx.fillStyle = '#eee7dc';
-    roundRect(ctx, 300, 722, 650, 16, 8);
+    ctx.fillStyle = '#e7e0d5';
+    roundRect(ctx, 90, 310, 900, 20, 10);
     ctx.fill();
+
     ctx.fillStyle = '#06c755';
-    roundRect(ctx, 300, 722, 650 * (parseInt(ptRate) / 100 || 0), 16, 8);
+    roundRect(ctx, 90, 310, 900 * (ptRateNum / 100), 20, 10);
     ctx.fill();
 
     // 担当バランス
-    drawSectionTitle('担当バランス', 830);
+    drawSectionTitle('担当バランス', 430);
 
-    ctx.fillStyle = '#eee7dc';
-    roundRect(ctx, 90, 865, 860, 24, 12);
+    const myLoadNum = Math.max(0, Math.min(100, parseInt(myLoad, 10) || 0));
+
+    ctx.fillStyle = '#e7e0d5';
+    roundRect(ctx, 90, 470, 900, 28, 14);
     ctx.fill();
 
-    const myLoadNum = parseInt(myLoad) || 50;
-    ctx.fillStyle = '#4a7c6f';
-    roundRect(ctx, 90, 865, 860 * (myLoadNum / 100), 24, 12);
-    ctx.fill();
-
-    ctx.fillStyle = '#1a1714';
-    ctx.font = '600 20px sans-serif';
-    ctx.fillText(`${myLbl} ${myLoad}`, 90, 925);
-    ctx.textAlign = 'right';
-    ctx.fillText(`${ptLbl} ${ptLoad}`, 950, 925);
-    ctx.textAlign = 'left';
-
-    // カテゴリ別タスク数
-    drawSectionTitle('カテゴリ別タスク数', 1015);
-
-    if (categoryRows.length === 0) {
-      ctx.fillStyle = '#8a9a96';
-      ctx.font = '500 18px sans-serif';
-      ctx.fillText('データがありません', 90, 1055);
-    } else {
-      categoryRows.slice(0, 5).forEach((row, i) => {
-        const y = 1055 + i * 44;
-        ctx.fillStyle = '#6e675f';
-        ctx.font = '500 19px sans-serif';
-        ctx.fillText(row.label, 90, y);
-
-        ctx.fillStyle = '#1a1714';
-        ctx.textAlign = 'right';
-        ctx.font = '700 20px sans-serif';
-        ctx.fillText(`${row.value}件`, 950, y);
-        ctx.textAlign = 'left';
-      });
+    if (myLoadNum > 0) {
+      ctx.fillStyle = '#4a7c6f';
+      roundRect(ctx, 90, 470, 900 * (myLoadNum / 100), 28, 14);
+      ctx.fill();
     }
 
+    ctx.fillStyle = '#1a1714';
+    ctx.font = '600 22px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(`${myLbl} ${myLoad}`, 90, 540);
+
+    ctx.textAlign = 'right';
+    ctx.fillText(`${ptLbl} ${ptLoad}`, 990, 540);
+
     // カテゴリ別担当バランス
-    drawSectionTitle('カテゴリ別担当バランス', 1295);
+    drawSectionTitle('カテゴリ別担当バランス', 660);
 
     if (categoryBalanceBlocks.length === 0) {
+      ctx.textAlign = 'left';
       ctx.fillStyle = '#8a9a96';
-      ctx.font = '500 18px sans-serif';
-      ctx.fillText('データがありません', 90, 1335);
+      ctx.font = '500 20px sans-serif';
+      ctx.fillText('データがありません', 90, 715);
     } else {
-      categoryBalanceBlocks.slice(0, 4).forEach((block, i) => {
-        const y = 1335 + i * 55;
+      categoryBalanceBlocks.slice(0, 5).forEach((block, i) => {
+        const y = 715 + i * 90;
 
+        ctx.textAlign = 'left';
         ctx.fillStyle = '#1a1714';
-        ctx.font = '600 18px sans-serif';
+        ctx.font = '700 20px sans-serif';
         ctx.fillText(block.title, 90, y);
 
         ctx.fillStyle = '#6e675f';
-        ctx.font = '500 15px sans-serif';
-        ctx.fillText(block.left, 90, y + 24);
+        ctx.font = '500 17px sans-serif';
+        ctx.fillText(block.left, 90, y + 32);
 
         ctx.textAlign = 'right';
-        ctx.fillText(block.right, 950, y + 24);
-        ctx.textAlign = 'left';
+        ctx.fillText(block.right, 990, y + 32);
       });
     }
 
@@ -3204,9 +3161,7 @@ async function generateReportImage() {
     }
 
     const shareText =
-      `${month}の月次レポート\n` +
-      `${myLbl}: ${myDone}件 / ${ptLbl}: ${ptDone}件\n` +
-      `#業務かるがも\nhttps://app.gyomu-karugamo.com`;
+      `月次レポート\n#業務かるがも\nhttps://app.gyomu-karugamo.com`;
 
     const nativeBtn = document.getElementById('shareNativeBtn');
     if (nativeBtn) {
