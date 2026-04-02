@@ -1347,6 +1347,7 @@ footer a:hover { color: var(--duck); }
         <a id="downloadReportBtn" class="btn" style="font-size:13px;display:none;" download="karugamo-report.png">ダウンロード</a>
         <button id="shareNativeBtn" class="btn" style="font-size:13px;display:none;background:#000;color:#fff;border-color:#000;">シェア</button>
       </div>
+      <div id="reportScoreText" style="font-size:13px;font-weight:500;color:var(--brown);margin-top:8px;"></div>
       <p style="font-size:11px;color:var(--mist);margin-top:8px;" id="shareHint"></p>
     </div>
 
@@ -1444,6 +1445,16 @@ footer a:hover { color: var(--duck); }
           <label>パートナーの名前</label>
           <input type="text" id="partnerNameInput" placeholder="例：たろう" maxlength="20">
         </div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding:10px 0;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:13px;font-weight:500;">名前を伏せて表示する</div>
+          <div style="font-size:11px;color:var(--mist);margin-top:2px;">月次レポートや画面上で「自分」「パートナー」と表示します</div>
+        </div>
+        <label class="toggle-switch" for="hideNameToggle">
+          <input type="checkbox" id="hideNameToggle">
+          <span class="toggle-track"></span>
+        </label>
       </div>
       <button class="btn btn-primary" id="saveNamesBtn" style="font-size:13px;margin-top:4px;">保存する</button>
       <p class="msg" id="namesMsg"></p>
@@ -1779,9 +1790,17 @@ let lineSentCount = 0;
 let homeViewDate = new Date();
 let myName = '';       // 自分の名前
 let partnerName = '';  // パートナーの名前
+let hideNames = false; // 名前を伏せるか
 
-function getMyLabel()      { return myName      || '自分'; }
-function getPartnerLabel() { return partnerName || 'パートナー'; }
+function getMyLabel() {
+  if (hideNames) return '自分';
+  return myName || '自分';
+}
+
+function getPartnerLabel() {
+  if (hideNames) return 'パートナー';
+  return partnerName || 'パートナー';
+}
 
 function refreshNameLabels() {
   const myEl = document.getElementById('myGroupLabel');
@@ -2749,6 +2768,10 @@ function renderReport() {
   setEl('rptLineSent',     lineSentCount);
   setEl('rptLineSub',      '/ ' + getLimitLabel());
 
+  const score = myDone + partnerDone;
+  const scoreEl = document.getElementById('reportScoreText');
+  if (scoreEl) scoreEl.textContent = `今月のスコア：${score}点`;
+
   // タスク完了率（各自の棒グラフ）
   // 自分の担当タスク総数と完了数を計算
   const days = Object.keys(dayMap).sort();
@@ -2934,97 +2957,154 @@ function generateReportImage() {
     if (!ctx) { showToast('このブラウザでは画像生成できません', 'error'); return; }
 
     const month  = document.getElementById('reportMonthLabel')?.textContent || '';
-    const myDone = document.getElementById('rptMyTotal')?.textContent || '0';
-    const ptDone = document.getElementById('rptPartnerTotal')?.textContent || '0';
-    const best   = document.getElementById('rptBestStreak')?.textContent || '–';
+    const myDone = Number(document.getElementById('rptMyTotal')?.textContent || '0');
+    const ptDone = Number(document.getElementById('rptPartnerTotal')?.textContent || '0');
     const myPct  = document.getElementById('myLoadPct')?.textContent || '50%';
     const ptPct  = document.getElementById('partnerLoadPct')?.textContent || '50%';
     const myLbl  = getMyLabel();
     const ptLbl  = getPartnerLabel();
+    const score  = myDone + ptDone;
 
-    canvas.width  = 800;
-    canvas.height = 420;
+    canvas.width  = 1080;
+    canvas.height = 1350;
 
     // 背景
-    const grad = ctx.createLinearGradient(0, 0, 800, 420);
-    grad.addColorStop(0, '#e8632a');
-    grad.addColorStop(1, '#f5a06e');
+    const grad = ctx.createLinearGradient(0, 0, 1080, 1350);
+    grad.addColorStop(0, '#4a7c6f');
+    grad.addColorStop(1, '#6a9e8f');
     ctx.fillStyle = grad;
-    roundRect(ctx, 0, 0, 800, 420, 0);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 装飾の薄い円
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.beginPath();
+    ctx.arc(920, 180, 140, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(180, 1120, 180, 0, Math.PI * 2);
     ctx.fill();
 
-    // 白パネル
-    ctx.fillStyle = 'rgba(255,255,255,0.13)';
-    roundRect(ctx, 30, 85, 740, 300, 12);
+    // メインカード
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    roundRect(ctx, 70, 90, 940, 1170, 36);
     ctx.fill();
 
-    // アプリ名
-    ctx.fillStyle = 'rgba(255,255,255,0.75)';
-    ctx.font = '500 15px sans-serif';
+    // タイトル
     ctx.textAlign = 'center';
-    ctx.fillText('業務かるがも', 400, 34);
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '500 30px sans-serif';
+    ctx.fillText('業務かるがも MONTHLY REPORT', 540, 170);
 
-    // 月タイトル
     ctx.fillStyle = 'white';
-    ctx.font = '700 28px sans-serif';
-    ctx.fillText(month + ' のレポート', 400, 70);
+    ctx.font = '700 56px sans-serif';
+    ctx.fillText(`${month}のふたりの記録`, 540, 250);
 
-    // 数値カード3つ
-    const cards = [
-      { label: myLbl + ' 完了', val: myDone + '件', x: 90 },
-      { label: ptLbl + ' 完了', val: ptDone + '件', x: 320 },
-      { label: '最長連続',       val: best,           x: 550 },
-    ];
-    cards.forEach(({ label, val, x }) => {
-      ctx.fillStyle = 'rgba(255,255,255,0.6)';
-      ctx.font = '500 13px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(label, x, 125);
-      ctx.fillStyle = 'white';
-      ctx.font = '700 40px sans-serif';
-      ctx.fillText(val, x, 175);
-    });
+    // スコア
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText('今月のスコア', 540, 340);
+
+    ctx.fillStyle = 'white';
+    ctx.font = '700 90px sans-serif';
+    ctx.fillText(`${score}`, 540, 440);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.72)';
+    ctx.font = '500 28px sans-serif';
+    ctx.fillText('completed tasks', 540, 490);
+
+    // 数字エリア
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    roundRect(ctx, 120, 560, 360, 210, 28);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    roundRect(ctx, 600, 560, 360, 210, 28);
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText(myLbl, 300, 625);
+
+    ctx.fillStyle = 'white';
+    ctx.font = '700 72px sans-serif';
+    ctx.fillText(`${myDone}件`, 300, 715);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText(ptLbl, 780, 625);
+
+    ctx.fillStyle = 'white';
+    ctx.font = '700 72px sans-serif';
+    ctx.fillText(`${ptDone}件`, 780, 715);
+
+    // バランス見出し
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '600 28px sans-serif';
+    ctx.fillText('担当バランス', 540, 860);
 
     // バランスバー
-    const ratio = Math.max(0, Math.min(1, parseInt(myPct) / 100 || 0.5));
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    roundRect(ctx, 60, 210, 680, 10, 5);
+    const ratio = Math.max(0, Math.min(1, myDone + ptDone > 0 ? myDone / (myDone + ptDone) : 0.5));
+
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    roundRect(ctx, 160, 920, 760, 24, 12);
     ctx.fill();
-    if (ratio > 0) {
-      ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      roundRect(ctx, 60, 210, 680 * ratio, 10, 5);
-      ctx.fill();
-    }
-    ctx.fillStyle = 'rgba(255,255,255,0.85)';
-    ctx.font = '400 12px sans-serif';
+
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    roundRect(ctx, 160, 920, 760 * ratio, 24, 12);
+    ctx.fill();
+
+    ctx.fillStyle = 'white';
+    ctx.font = '600 24px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(myLbl + ' ' + myPct + '  ' + ptLbl + ' ' + ptPct, 60, 238);
+    ctx.fillText(`${myLbl} ${myPct}`, 160, 985);
 
-    // 区切り
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(60, 252); ctx.lineTo(740, 252); ctx.stroke();
+    ctx.textAlign = 'right';
+    ctx.fillText(`${ptLbl} ${ptPct}`, 920, 985);
 
-    // タグライン
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.font = '400 13px sans-serif';
+    // コメント
+    let comment = '';
+    const diff = Math.abs(myDone - ptDone);
+
+    if (score === 0) {
+      comment = '来月は少しずつ始めていきましょう';
+    } else if (diff <= 3) {
+      comment = 'いいバランスで協力できています';
+    } else if (myDone > ptDone) {
+      comment = `${myLbl}が少し多めに頑張りました`;
+    } else {
+      comment = `${ptLbl}が少し多めに頑張りました`;
+    }
+
     ctx.textAlign = 'center';
-    ctx.fillText('2人のタスクを一緒に管理', 400, 278);
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.font = '400 12px sans-serif';
-    ctx.fillText('app.gyomu-karugamo.com', 400, 300);
+    ctx.fillStyle = 'rgba(255,255,255,0.82)';
+    ctx.font = '500 24px sans-serif';
+    ctx.fillText(comment, 540, 1110);
 
-    // 表示
+    // フッター
+    ctx.fillStyle = 'rgba(255,255,255,0.60)';
+    ctx.font = '500 22px sans-serif';
+    ctx.fillText('ふたりの毎日を、少しだけラクに。', 540, 1185);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.52)';
+    ctx.font = '500 20px sans-serif';
+    ctx.fillText('app.gyomu-karugamo.com', 540, 1235);
+
     canvas.style.display = 'block';
-    const dl   = document.getElementById('downloadReportBtn');
+
+    const dl = document.getElementById('downloadReportBtn');
     const hint = document.getElementById('shareHint');
-    if (dl) { dl.href = canvas.toDataURL('image/png'); dl.style.display = 'inline-block'; }
 
-    const shareText = month + ' のタスクレポート📊\n'
-      + myLbl + ': ' + myDone + '件完了 / ' + ptLbl + ': ' + ptDone + '件完了\n'
-      + '#業務かるがも\nhttps://app.gyomu-karugamo.com';
+    if (dl) {
+      dl.href = canvas.toDataURL('image/png');
+      dl.style.display = 'inline-block';
+    }
 
-    // シェアボタン（Web Share API対応 / 非対応時はXリンク）
+    const shareText =
+      `${month}のタスクレポート\n` +
+      `${myLbl}: ${myDone}件 / ${ptLbl}: ${ptDone}件\n` +
+      `今月のスコア: ${score}\n` +
+      `#業務かるがも\nhttps://app.gyomu-karugamo.com`;
+
     const nativeBtn = document.getElementById('shareNativeBtn');
     if (nativeBtn) {
       nativeBtn.style.display = 'inline-block';
@@ -3038,21 +3118,22 @@ function generateReportImage() {
               } else {
                 await navigator.share({ text: shareText });
               }
-            } catch(e2) {
+            } catch (e2) {
               if (e2.name !== 'AbortError') showToast('シェアに失敗しました', 'error');
             }
           } else {
-            // PC等: Xを開く
             window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText), '_blank');
           }
         }, 'image/png');
       };
     }
 
-    if (hint) hint.textContent = navigator.share
-      ? '「シェア」で画像付き投稿が選べます（iPhone推奨）'
-      : '画像をダウンロードしてXに添付してください';
-  } catch(e) {
+    if (hint) {
+      hint.textContent = navigator.share
+        ? '「シェア」で画像付き投稿が選べます'
+        : '画像をダウンロードしてSNSに添付してください';
+    }
+  } catch (e) {
     console.error('generateReportImage error:', e);
     showToast('画像生成に失敗しました: ' + e.message, 'error');
   }
@@ -3339,9 +3420,12 @@ async function mainInit(user) {
     const parts = dn.split(',');
     myName      = parts[0]?.trim() || localStorage.getItem('kamo_myname_'      + currentUser.id) || '';
     partnerName = parts[1]?.trim() || localStorage.getItem('kamo_partnername_' + currentUser.id) || '';
+    hideNames   = localStorage.getItem('kamo_hide_names_' + currentUser.id) === '1';
+  
     if (document.getElementById('myNameInput'))      document.getElementById('myNameInput').value      = myName;
     if (document.getElementById('partnerNameInput')) document.getElementById('partnerNameInput').value = partnerName;
-    refreshNameLabels();
+    if (document.getElementById('hideNameToggle'))   document.getElementById('hideNameToggle').checked = hideNames;
+  
     refreshNameLabels();
     renderHome();
     renderAllTasks();
@@ -3872,14 +3956,21 @@ async function mainInit(user) {
   $('#saveNamesBtn')?.addEventListener('click', async () => {
     myName      = ($('#myNameInput')?.value || '').trim();
     partnerName = ($('#partnerNameInput')?.value || '').trim();
-    localStorage.setItem('kamo_myname_'      + currentUser.id, myName);
+    hideNames   = $('#hideNameToggle')?.checked === true;
+  
+    localStorage.setItem('kamo_myname_' + currentUser.id, myName);
     localStorage.setItem('kamo_partnername_' + currentUser.id, partnerName);
-    // Supabase に保存（task-liff.htmlからも参照）
+    localStorage.setItem('kamo_hide_names_' + currentUser.id, hideNames ? '1' : '0');
+  
     await sb.from('profiles')
       .update({ display_name: myName + ',' + partnerName })
       .eq('id', currentUser.id);
+  
     refreshNameLabels();
     renderHome();
+    renderAllTasks();
+    if (canViewReport()) renderReport();
+  
     showMsg($('#namesMsg'), '保存しました', 'success');
     setTimeout(() => showMsg($('#namesMsg'), ''), 2000);
   });
