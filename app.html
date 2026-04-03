@@ -2975,7 +2975,12 @@ function renderReport() {
     });
   });
   
-  const allCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
+  const rawCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
+
+  const allCatKeys = [
+    ...categories.map(c => c.id).filter(id => rawCatKeys.includes(id)),
+    ...rawCatKeys.filter(id => !categories.some(c => c.id === id))
+  ];
   const catBalDiv = document.getElementById('catBalanceChart');
   const catFilterWrap = document.getElementById('catBalanceFilter');
   
@@ -3186,10 +3191,18 @@ async function generateReportImage() {
         }
       });
     });
-    const allCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
+    const rawCatKeys = [...new Set([...Object.keys(catMyCount), ...Object.keys(catPtCount)])];
 
+    const allCatKeys = [
+      ...categories.map(c => c.id).filter(id => rawCatKeys.includes(id)),
+      ...rawCatKeys.filter(id => !categories.some(c => c.id === id))
+    ];
+    
+    const visibleCatKeys = allCatKeys.filter(k => selectedReportCategories.includes(k));
+
+    const visibleCountForImage = Math.max(1, visibleCatKeys.slice(0, 4).length);
     canvas.width = 1080;
-    canvas.height = 1560;
+    canvas.height = Math.max(1560, 1242 + visibleCountForImage * 118 + 120);
 
     const bg = ctx.createLinearGradient(0, 0, 1080, 1560);
     bg.addColorStop(0, '#f6f2eb');
@@ -3368,8 +3381,14 @@ async function generateReportImage() {
       ctx.fillText('データがありません', 70, 1245);
     } else {
       let rowY = 1242;
+      visibleCatKeys.slice(0, 4).forEach(k => {
+        ...
+        rowY += 118;
+      });
+      
+      const brandBaseY = rowY + 10;
 
-      allCatKeys.slice(0, 4).forEach(k => {
+      visibleCatKeys.slice(0, 4).forEach(k => {
         const mv = catMyCount[k] || 0;
         const pv = catPtCount[k] || 0;
         const tot = mv + pv;
@@ -3426,9 +3445,6 @@ async function generateReportImage() {
     } catch (e) {
       console.warn('icon load failed', e);
     }
-
-    const brandCenterX = 540;
-    const brandBaseY = 1492;
 
     if (iconImg) {
       ctx.save();
