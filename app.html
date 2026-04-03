@@ -3500,8 +3500,12 @@ async function generateReportImage() {
         ? '「シェア」で画像付き投稿が選べます'
         : '画像をダウンロードしてSNSに添付してください';
     }
-}
 
+  } catch (e) {
+    console.error('generateReportImage error:', e);
+    showToast('画像生成に失敗しました: ' + e.message, 'error');
+  }
+}
 // ========================================
 // UI: ACCOUNT
 // ========================================
