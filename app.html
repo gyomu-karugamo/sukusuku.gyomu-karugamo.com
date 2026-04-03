@@ -3205,8 +3205,8 @@ async function generateReportImage() {
     canvas.width = 1080;
     
     const contentBottomY = 1242 + visibleCountForImage * 118;
-    const brandBlockH = 120;
-    const canvasH = Math.max(1560, contentBottomY + brandBlockH + 80);
+    const brandBlockH = 90;
+    const canvasH = Math.max(1500, contentBottomY + brandBlockH + 28);
     
     canvas.height = canvasH;
     
@@ -3440,7 +3440,7 @@ async function generateReportImage() {
 
     // ブランド表示はカテゴリ別担当バランスの下に配置
     const brandCenterX = 540;
-    const brandBaseY = rowY + 20;
+    const brandBaseY = rowY + 8;
 
     let iconImg = null;
     try {
