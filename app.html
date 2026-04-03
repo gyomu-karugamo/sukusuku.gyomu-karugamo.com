@@ -3201,17 +3201,23 @@ async function generateReportImage() {
     const visibleCatKeys = allCatKeys.filter(k => selectedReportCategories.includes(k));
 
     const visibleCountForImage = Math.max(1, visibleCatKeys.slice(0, 4).length);
+    
     canvas.width = 1080;
-    canvas.height = Math.max(1560, 1242 + visibleCountForImage * 118 + 120);
-
-    const bg = ctx.createLinearGradient(0, 0, 1080, 1560);
+    
+    const contentBottomY = 1242 + visibleCountForImage * 118;
+    const brandBlockH = 120;
+    const canvasH = Math.max(1560, contentBottomY + brandBlockH + 80);
+    
+    canvas.height = canvasH;
+    
+    const bg = ctx.createLinearGradient(0, 0, 1080, canvasH);
     bg.addColorStop(0, '#f6f2eb');
     bg.addColorStop(1, '#eef3f1');
     ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, 1080, 1560);
-
+    ctx.fillRect(0, 0, 1080, canvasH);
+    
     ctx.fillStyle = 'rgba(255,255,255,0.96)';
-    roundRect(ctx, 34, 34, 1012, 1492, 30);
+    roundRect(ctx, 34, 34, 1012, canvasH - 68, 30);
     ctx.fill();
 
     ctx.textAlign = 'center';
@@ -3434,7 +3440,7 @@ async function generateReportImage() {
 
     // ブランド表示はカテゴリ別担当バランスの下に配置
     const brandCenterX = 540;
-    const brandBaseY = rowY + 10;
+    const brandBaseY = rowY + 20;
 
     let iconImg = null;
     try {
