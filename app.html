@@ -3373,21 +3373,14 @@ async function generateReportImage() {
     }
 
     drawSectionTitle('カテゴリ別担当バランス', '完了件数ベース', 1185);
-
-    if (allCatKeys.length === 0) {
+    let rowY = 1242;
+    if (visibleCatKeys.length === 0) {
       ctx.textAlign = 'left';
       ctx.fillStyle = '#8a9a96';
       ctx.font = '500 20px sans-serif';
-      ctx.fillText('データがありません', 70, 1245);
+      ctx.fillText('データがありません', 70, rowY);
+      rowY += 40;
     } else {
-      let rowY = 1242;
-      visibleCatKeys.slice(0, 4).forEach(k => {
-        ...
-        rowY += 118;
-      });
-      
-      const brandBaseY = rowY + 10;
-
       visibleCatKeys.slice(0, 4).forEach(k => {
         const mv = catMyCount[k] || 0;
         const pv = catPtCount[k] || 0;
@@ -3438,6 +3431,10 @@ async function generateReportImage() {
         rowY += 118;
       });
     }
+
+    // ブランド表示はカテゴリ別担当バランスの下に配置
+    const brandCenterX = 540;
+    const brandBaseY = rowY + 10;
 
     let iconImg = null;
     try {
@@ -3503,11 +3500,6 @@ async function generateReportImage() {
         ? '「シェア」で画像付き投稿が選べます'
         : '画像をダウンロードしてSNSに添付してください';
     }
-
-  } catch (e) {
-    console.error('generateReportImage error:', e);
-    showToast('画像生成に失敗しました: ' + e.message, 'error');
-  }
 }
 
 // ========================================
