@@ -2118,18 +2118,29 @@ async function deleteTaskDB(id) {
 }
 
 // ========== DB: completions ==========
-async function loadCompletions() {
+async function loadCompletions(targetMonth) {
   const today = getTodayStr();
-  // 今月分をまとめて取得（レポートに使用）
-  const firstDay = today.slice(0,7) + '-01';
+  // targetMonthがあればその月、なければ今月
+  const ref = targetMonth || new Date();
+  const y = ref.getFullYear();
+  const m = String(ref.getMonth() + 1).padStart(2, '0');
+  const firstDay = `${y}-${m}-01`;
+  const lastDay  = new Date(y, ref.getMonth() + 1, 0).toISOString().slice(0, 10);
+
   const { data, error } = await sb.from('task_completions')
     .select('task_id, date, done')
     .eq('user_id', currentUser.id)
     .gte('date', firstDay)
+    .lte('date', lastDay)
     .eq('done', true);
-  if (error) { console.error('loadCompletions', error); completions = {}; return; }
-  completions = {};
-  completions_by_date = {};
+  if (error) { console.error('loadCompletions', error); return; }
+
+  if (!targetMonth) {
+    // 初回ロード（今月）はグローバル変数を更新
+    completions = {};
+    completions_by_date = {};
+  }
+
   (data || []).forEach(r => {
     if (!completions_by_date[r.date]) completions_by_date[r.date] = {};
     completions_by_date[r.date][r.task_id] = true;
@@ -2190,15 +2201,11 @@ async function refreshLineStatus() {
 }
 
 // ========== DB: LINE送信数 ==========
-async function countLineSentThisMonth() {
-  // JST基準で「今月」を判定し、その境界をUTCに変換してDB検索する
-  const now = new Date();
-  const jstNow = new Date(now.getTime() + 9 * 60 * 60 * 1000);
-
-  const jstYear = jstNow.getUTCFullYear();
-  const jstMonth = jstNow.getUTCMonth(); // 0-11
-
-  // JSTの月初 00:00 を UTC に直す
+async function countLineSentThisMonth(targetMonth) {
+  const ref = targetMonth || new Date();
+  const jstRef = new Date(ref.getTime() + 9 * 60 * 60 * 1000);
+  const jstYear = jstRef.getUTCFullYear();
+  const jstMonth = jstRef.getUTCMonth();
   const monthStartUtc = new Date(Date.UTC(jstYear, jstMonth, 1, 0, 0, 0) - 9 * 60 * 60 * 1000);
   const nextMonthStartUtc = new Date(Date.UTC(jstYear, jstMonth + 1, 1, 0, 0, 0) - 9 * 60 * 60 * 1000);
 
@@ -2755,6 +2762,8 @@ async function addTask(name, assignee, repeat, category, note, taskDate, repeatS
 // UI: REPORT
 // ========================================
 function renderReport() {
+  await loadCompletions(reportMonth);
+  const reportLineSent = await countLineSentThisMonth(reportMonth);
   const monthLabel = document.getElementById('reportMonthLabel');
   if (monthLabel) monthLabel.textContent = formatMonthLabel(reportMonth);
 
@@ -2793,8 +2802,8 @@ function renderReport() {
   setEl('rptMyTotal',      myDone);
   setEl('rptPartnerTotal', partnerDone);
   setEl('rptTotalDays',    daysWithAnyDone);
-  setEl('rptLineSent',     lineSentCount);
-  setEl('rptLineSub',      '/ ' + getLimitLabel());
+  setEl('rptLineSent', reportLineSent);
+  setEl('rptLineSub',  '/ ' + getLimitLabel());
 
   // タスク完了率（各自の棒グラフ）
   // 自分の担当タスク総数と完了数を計算
