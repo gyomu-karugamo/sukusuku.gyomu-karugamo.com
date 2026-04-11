@@ -2761,7 +2761,7 @@ async function addTask(name, assignee, repeat, category, note, taskDate, repeatS
 // ========================================
 // UI: REPORT
 // ========================================
-function renderReport() {
+async function renderReport() {
   await loadCompletions(reportMonth);
   const reportLineSent = await countLineSentThisMonth(reportMonth);
   const monthLabel = document.getElementById('reportMonthLabel');
@@ -4131,7 +4131,7 @@ async function mainInit(user) {
   // レポート月移動
   $('#prevMonth').addEventListener('click', () => {
     reportMonth = new Date(reportMonth.getFullYear(), reportMonth.getMonth()-1, 1);
-    renderReport();
+    renderReport().catch(e => console.error('renderReport error:', e));
     // 画像プレビューリセット
     const cv = document.getElementById('reportCanvas');
     if (cv) cv.style.display = 'none';
