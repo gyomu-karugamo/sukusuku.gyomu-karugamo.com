@@ -962,9 +962,155 @@ footer a:hover { color: var(--duck); }
   color: var(--duck);
   font-weight: 500;
 }
+
+/* ========== 手順書生成タブ ========== */
+.manual-drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  background: var(--cream);
+  user-select: none;
+}
+.manual-drop-zone:hover,
+.manual-drop-zone.dragging {
+  border-color: var(--duck);
+  background: var(--duck-pale);
+}
+.manual-drop-icon { font-size: 36px; margin-bottom: 8px; }
+.manual-drop-text { font-size: 14px; color: var(--brown-mid); }
+.manual-drop-sub  { font-size: 12px; color: var(--brown-light); margin-top: 4px; }
+
+.manual-img-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.manual-img-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background: var(--cream-dark);
+  cursor: grab;
+}
+.manual-img-item:hover { border-color: var(--duck); }
+.manual-img-item.drag-over { border-color: var(--duck); box-shadow: 0 0 0 2px var(--duck); }
+.manual-img-num {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: var(--duck);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  pointer-events: none;
+}
+.manual-img-del {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(26,23,20,0.55);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  line-height: 1;
+  padding: 0;
+}
+.manual-img-del:hover { background: var(--error); }
+
+.manual-fmt-row {
+  display: flex;
+  gap: 10px;
+}
+.manual-fmt-opt {
+  flex: 1;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.manual-fmt-opt:has(input:checked) {
+  border-color: var(--duck);
+  background: var(--duck-pale);
+}
+.manual-fmt-opt input[type="radio"] {
+  width: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  flex-shrink: 0;
+  accent-color: var(--duck);
+}
+.manual-fmt-icon { font-size: 20px; flex-shrink: 0; }
+.manual-fmt-name { font-size: 14px; font-weight: 500; line-height: 1.3; }
+.manual-fmt-sub  { font-size: 11px; color: var(--mist); margin-top: 2px; }
+
+.manual-api-wrap { position: relative; }
+.manual-api-wrap input { padding-right: 44px; }
+.manual-api-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--mist);
+  padding: 4px 6px;
+  line-height: 1;
+}
+
+.manual-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--duck-pale);
+  border: 1px solid rgba(74,124,111,0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+.manual-status-bar.error {
+  background: var(--error-pale);
+  border-color: rgba(179,38,30,0.2);
+  color: var(--error);
+}
+.manual-status-bar.success {
+  background: var(--success-pale);
+  border-color: rgba(74,124,111,0.25);
+  color: var(--success);
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<!-- 手順書生成ライブラリ -->
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 </head>
 
 <body>
@@ -996,6 +1142,7 @@ footer a:hover { color: var(--duck); }
       <button class="tab-btn" data-tab="report" id="reportTabBtn">月次レポート</button>
       <button class="tab-btn" data-tab="settings">設定</button>
       <button class="tab-btn" data-tab="account">アカウント</button>
+      <button class="tab-btn" data-tab="manual">📄 手順書生成</button>
     </nav>
   </div>
 </header>
@@ -1622,6 +1769,120 @@ footer a:hover { color: var(--duck); }
         <button class="btn btn-danger" id="deleteAccountBtn">アカウントを削除する</button>
         <p id="deleteMsg" class="msg"></p>
       </div>
+    </div>
+
+  </section>
+
+  <!-- ========== 手順書生成 ========== -->
+  <section id="tab-manual" class="tab-pane">
+
+    <!-- ゲスト向けバナー（未ログイン時） -->
+    <div id="manualGuestBanner" class="alert info" style="display:none;">
+      <span class="alert-icon">👋</span>
+      <div>
+        <strong>ログインなしでFreeプランの機能をお試しいただけます。</strong><br>
+        <a href="/index.html" style="color:var(--duck);font-size:12px;">ログインするとより多くの機能が使えます →</a>
+      </div>
+    </div>
+
+    <!-- Freeプラン制限バナー -->
+    <div id="manualUpgradeBanner" style="display:none;background:var(--duck-pale);border:1px solid rgba(74,124,111,0.2);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:16px;display:none;align-items:center;gap:12px;">
+      <span style="font-size:18px;flex-shrink:0;">🔒</span>
+      <div style="flex:1;font-size:13px;">
+        <strong>Freeプラン：3枚まで・Word出力のみ</strong><br>
+        <span style="color:var(--mist);">Standardプランなら10枚・Excel出力にも対応。</span>
+      </div>
+      <a href="#" id="manualUpgradeLink" class="btn btn-primary" style="flex-shrink:0;font-size:12px;text-decoration:none;">プランを見る</a>
+    </div>
+
+    <!-- Claude APIキー -->
+    <div class="card">
+      <div class="sec-label">API Key</div>
+      <div class="card-title" style="margin-bottom:4px;">Claude APIキー</div>
+      <p class="card-desc">
+        <a href="https://console.anthropic.com/" target="_blank" rel="noopener" style="color:var(--duck);">Anthropic Console</a> で取得したAPIキーを入力してください。キーはこのページ内のみで使用し、外部に送信・保存されません。
+      </p>
+      <div class="field" style="margin-bottom:4px;">
+        <div class="manual-api-wrap">
+          <input type="password" id="manualApiKey" placeholder="sk-ant-api03-..." autocomplete="off">
+          <button class="manual-api-eye" id="manualApiEye" type="button" title="表示/非表示">👁</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 手順書設定 -->
+    <div class="card">
+      <div class="sec-label">Document Settings</div>
+      <div class="card-title" style="margin-bottom:16px;">手順書の設定</div>
+
+      <div class="field">
+        <label>手順書タイトル</label>
+        <input type="text" id="manualTitle" placeholder="例：受注管理システム 操作手順書" maxlength="60">
+      </div>
+
+      <div class="field">
+        <label>出力形式</label>
+        <div class="manual-fmt-row">
+          <label class="manual-fmt-opt">
+            <input type="radio" name="manualFmt" id="manualFmtWord" value="word" checked>
+            <span class="manual-fmt-icon">📝</span>
+            <div>
+              <div class="manual-fmt-name">Word</div>
+              <div class="manual-fmt-sub">.docx 形式</div>
+            </div>
+          </label>
+          <label class="manual-fmt-opt" id="manualFmtExcelWrap">
+            <input type="radio" name="manualFmt" id="manualFmtExcel" value="excel">
+            <span class="manual-fmt-icon">📊</span>
+            <div>
+              <div class="manual-fmt-name">
+                Excel
+                <span id="manualExcelLock" style="display:none;font-size:10px;background:var(--cream-dark);color:var(--mist);padding:1px 6px;border-radius:999px;margin-left:4px;">Standard以上</span>
+              </div>
+              <div class="manual-fmt-sub">.xlsx 形式</div>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 画像アップロード -->
+    <div class="card">
+      <div class="sec-label">Screenshots</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="card-title">スクリーンショット</div>
+        <span id="manualImgCounter" style="font-size:12px;color:var(--mist);">0 / 3枚</span>
+      </div>
+      <p class="card-desc">手順書に含めたい画面キャプチャをアップロードしてください。ドラッグで順番を変更できます。</p>
+
+      <div class="manual-drop-zone" id="manualDropZone" role="button" tabindex="0" aria-label="画像をアップロード">
+        <div class="manual-drop-icon">🖼️</div>
+        <div class="manual-drop-text">クリックまたはドラッグ＆ドロップで追加</div>
+        <div class="manual-drop-sub">PNG・JPG・GIF 対応 ／ 複数枚可</div>
+      </div>
+      <input type="file" id="manualFileInput" accept="image/*" multiple style="display:none;">
+
+      <div id="manualImageEmpty" style="text-align:center;padding:16px 0;font-size:13px;color:var(--mist);display:none;">
+        画像がまだありません
+      </div>
+      <div class="manual-img-grid" id="manualImageGrid"></div>
+    </div>
+
+    <!-- 生成ボタン -->
+    <div class="card" style="text-align:center;">
+      <button class="btn btn-primary" id="manualGenerateBtn"
+        style="width:100%;padding:14px 20px;font-size:15px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:8px;">
+        <span>✨</span>
+        <span>手順書を生成してダウンロード</span>
+      </button>
+      <div id="manualStatusBar" style="display:none;" class="manual-status-bar">
+        <span id="manualStatusIcon" style="font-size:18px;flex-shrink:0;">⏳</span>
+        <span id="manualStatusText"></span>
+      </div>
+      <p style="font-size:11px;color:var(--mist);margin-top:12px;line-height:1.8;">
+        ※ AIによる処理は画像1枚あたり数秒かかります。<br>
+        ※ APIキーの利用料金はご自身のAnthropicアカウントに請求されます。
+      </p>
     </div>
 
   </section>
@@ -2403,6 +2664,9 @@ function initTabs() {
         if (canViewReport()) {
           renderReport();
         }
+      }
+      if (tabName === 'manual') {
+        updateManualPlanInfo();
       }
     });
   });
@@ -3662,6 +3926,486 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ============================================================
+// 手順書生成 (MANUAL GENERATOR)
+// ============================================================
+
+// アップロード済み画像: { dataUrl, base64, mediaType, name }
+let manualImages = [];
+let manualDragSrcIdx = null;
+
+// --- プラン制限 ---
+function getManualPlanTier() {
+  if (isPremium()) return 'premium';
+  if (isStandard()) return 'standard';
+  return 'free';
+}
+
+function getManualMaxImages() {
+  const t = getManualPlanTier();
+  if (t === 'premium') return 20;
+  if (t === 'standard') return 10;
+  return 3;
+}
+
+function canUseExcelOutput() {
+  return getManualPlanTier() !== 'free';
+}
+
+// --- UIの更新 ---
+function updateManualPlanInfo() {
+  const max = getManualMaxImages();
+  const tier = getManualPlanTier();
+
+  // 枚数カウンター
+  const counter = document.getElementById('manualImgCounter');
+  if (counter) {
+    counter.textContent = manualImages.length + ' / ' + max + '枚';
+    counter.style.color = manualImages.length >= max ? 'var(--error)' : 'var(--mist)';
+  }
+
+  // Excelオプション制御
+  const excelInput = document.getElementById('manualFmtExcel');
+  const excelLock  = document.getElementById('manualExcelLock');
+  if (excelInput && excelLock) {
+    const locked = !canUseExcelOutput();
+    excelInput.disabled = locked;
+    excelLock.style.display = locked ? 'inline' : 'none';
+    if (locked && excelInput.checked) {
+      document.getElementById('manualFmtWord').checked = true;
+    }
+  }
+
+  // Freeプラン制限バナー
+  const banner = document.getElementById('manualUpgradeBanner');
+  if (banner) banner.style.display = tier === 'free' ? 'flex' : 'none';
+}
+
+// --- FileReader: File → base64 ---
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      resolve({
+        dataUrl,
+        base64: dataUrl.split(',')[1],
+        mediaType: file.type || 'image/png',
+      });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// --- 画像グリッド描画 ---
+function renderManualImages() {
+  const grid  = document.getElementById('manualImageGrid');
+  const empty = document.getElementById('manualImageEmpty');
+  if (!grid) return;
+
+  if (manualImages.length === 0) {
+    grid.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    updateManualPlanInfo();
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  grid.innerHTML = manualImages.map((img, i) => `
+    <div class="manual-img-item" draggable="true" data-idx="${i}">
+      <div class="manual-img-num">${i + 1}</div>
+      <img src="${img.dataUrl}" alt="Step ${i + 1}"
+        style="width:100%;height:100px;object-fit:cover;border-radius:6px 6px 0 0;display:block;pointer-events:none;">
+      <div style="font-size:11px;color:var(--mist);padding:4px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(img.name || '')}</div>
+      <button class="manual-img-del" data-idx="${i}" title="削除">✕</button>
+    </div>
+  `).join('');
+
+  // ドラッグ並び替え
+  grid.querySelectorAll('.manual-img-item').forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      manualDragSrcIdx = parseInt(item.dataset.idx);
+      setTimeout(() => item.style.opacity = '0.4', 0);
+    });
+    item.addEventListener('dragend', () => { item.style.opacity = '1'; });
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      const toIdx = parseInt(item.dataset.idx);
+      if (manualDragSrcIdx === null || manualDragSrcIdx === toIdx) return;
+      const moved = manualImages.splice(manualDragSrcIdx, 1)[0];
+      manualImages.splice(toIdx, 0, moved);
+      manualDragSrcIdx = null;
+      renderManualImages();
+    });
+  });
+
+  // 削除ボタン
+  grid.querySelectorAll('.manual-img-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      manualImages.splice(parseInt(btn.dataset.idx), 1);
+      renderManualImages();
+    });
+  });
+
+  updateManualPlanInfo();
+}
+
+// --- ファイル追加 ---
+async function addManualFiles(fileList) {
+  const max       = getManualMaxImages();
+  const remaining = max - manualImages.length;
+  if (remaining <= 0) {
+    showToast('画像は最大' + max + '枚まで（現在のプラン）', 'error');
+    return;
+  }
+  const files = Array.from(fileList)
+    .filter(f => f.type.startsWith('image/'))
+    .slice(0, remaining);
+  if (files.length === 0) {
+    showToast('画像ファイルを選択してください', 'error');
+    return;
+  }
+  for (const file of files) {
+    const result = await fileToBase64(file);
+    manualImages.push({ ...result, name: file.name });
+  }
+  renderManualImages();
+}
+
+// --- Claude API呼び出し ---
+async function callClaudeForImage(apiKey, base64, mediaType) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 512,
+      messages: [{
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: { type: 'base64', media_type: mediaType, data: base64 },
+          },
+          {
+            type: 'text',
+            text: 'これはシステムや業務アプリのスクリーンショットです。この画面で行う操作内容（クリック・入力・選択など）と操作対象を含めて、1〜3文の簡潔な日本語で説明してください。説明文のみ出力し、番号・前置きは不要です。',
+          },
+        ],
+      }],
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err.error?.message || 'APIエラー (' + res.status + ')';
+    if (res.status === 401) throw new Error('APIキーが無効です。正しいキーを確認してください。');
+    if (res.status === 429) throw new Error('APIの利用制限に達しました。しばらく待ってから再試行してください。');
+    throw new Error(msg);
+  }
+
+  const data = await res.json();
+  return (data.content?.[0]?.text || '').trim() || '説明を取得できませんでした。';
+}
+
+// --- base64 → Uint8Array ---
+function base64ToUint8Array(b64) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+// --- Word生成 ---
+async function generateWordDoc(title, steps) {
+  const {
+    Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel,
+    AlignmentType, BorderStyle,
+  } = docx;
+
+  const children = [
+    new Paragraph({
+      text: title || '手順書',
+      heading: HeadingLevel.HEADING_1,
+    }),
+    new Paragraph({ text: '' }),
+  ];
+
+  for (const step of steps) {
+    // ステップ見出し
+    children.push(new Paragraph({
+      children: [
+        new TextRun({
+          text: 'ステップ ' + step.stepNum,
+          bold: true,
+          size: 26,
+          color: '4a7c6f',
+        }),
+      ],
+    }));
+    // 説明文
+    children.push(new Paragraph({
+      children: [new TextRun({ text: step.description, size: 22 })],
+      spacing: { after: 100 },
+    }));
+    // 画像
+    try {
+      const imgData = base64ToUint8Array(step.base64);
+      const ext = step.mediaType === 'image/jpeg' ? 'jpg'
+                : step.mediaType === 'image/gif'  ? 'gif'
+                : 'png';
+      children.push(new Paragraph({
+        children: [
+          new ImageRun({
+            data: imgData,
+            transformation: { width: 480, height: 300 },
+            type: ext,
+          }),
+        ],
+      }));
+    } catch (e) {
+      console.warn('Word image embed error:', e);
+    }
+    children.push(new Paragraph({ text: '', spacing: { after: 200 } }));
+  }
+
+  const doc = new Document({ sections: [{ children }] });
+  return await Packer.toBlob(doc);
+}
+
+// --- Excel生成 ---
+async function generateExcelFile(title, steps) {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = '業務かるがも';
+
+  // Sheet1: テキストデータ
+  const ws = wb.addWorksheet('手順一覧');
+  ws.columns = [
+    { key: 'step', width: 14 },
+    { key: 'desc', width: 55 },
+    { key: 'note', width: 20 },
+  ];
+
+  // タイトル行
+  ws.addRow([title || '手順書', '', '']);
+  const titleRow = ws.lastRow;
+  titleRow.font = { bold: true, size: 16 };
+  ws.mergeCells('A1:C1');
+  titleRow.height = 32;
+
+  ws.addRow([]);
+
+  // ヘッダー行
+  const hRow = ws.addRow(['ステップ番号', '操作説明', '備考']);
+  hRow.font = { bold: true };
+  hRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD4E8E2' } };
+  hRow.height = 22;
+
+  for (const step of steps) {
+    const row = ws.addRow(['ステップ ' + step.stepNum, step.description, '']);
+    row.getCell(2).alignment = { wrapText: true, vertical: 'top' };
+    row.height = 36;
+  }
+
+  // Sheet2: スクリーンショット
+  const wsImg = wb.addWorksheet('スクリーンショット');
+  wsImg.getColumn('A').width = 70;
+
+  const titleCellImg = wsImg.getCell('A1');
+  titleCellImg.value = title || '手順書';
+  titleCellImg.font = { bold: true, size: 14 };
+  wsImg.getRow(1).height = 28;
+
+  let currentRow = 3;
+  for (const step of steps) {
+    // ステップラベル
+    const labelCell = wsImg.getCell('A' + currentRow);
+    labelCell.value = 'ステップ ' + step.stepNum;
+    labelCell.font = { bold: true, color: { argb: 'FF4a7c6f' } };
+    wsImg.getRow(currentRow).height = 20;
+    currentRow++;
+
+    // 説明文
+    const descCell = wsImg.getCell('A' + currentRow);
+    descCell.value = step.description;
+    descCell.alignment = { wrapText: true };
+    wsImg.getRow(currentRow).height = 40;
+    currentRow++;
+
+    // 画像
+    try {
+      const imgId = wb.addImage({
+        base64: step.base64,
+        extension: step.mediaType === 'image/jpeg' ? 'jpeg'
+                 : step.mediaType === 'image/gif'  ? 'gif'
+                 : 'png',
+      });
+      wsImg.addImage(imgId, {
+        tl: { col: 0, row: currentRow - 1 },
+        ext: { width: 520, height: 320 },
+        editAs: 'oneCell',
+      });
+      // 画像の高さ分の行を確保（約20行 ≒ 320px）
+      for (let r = 0; r < 20; r++) {
+        wsImg.getRow(currentRow + r).height = 16;
+      }
+      currentRow += 21;
+    } catch (e) {
+      console.warn('Excel image embed error:', e);
+      wsImg.getCell('A' + currentRow).value = '（画像の埋め込みに失敗しました）';
+      currentRow += 2;
+    }
+  }
+
+  const buffer = await wb.xlsx.writeBuffer();
+  return new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  });
+}
+
+// --- 生成ボタン処理 ---
+async function runManualGenerate() {
+  const apiKey = (document.getElementById('manualApiKey')?.value || '').trim();
+  const title  = (document.getElementById('manualTitle')?.value || '').trim() || '手順書';
+  const fmt    = document.querySelector('input[name="manualFmt"]:checked')?.value || 'word';
+  const btn    = document.getElementById('manualGenerateBtn');
+  const bar    = document.getElementById('manualStatusBar');
+  const icon   = document.getElementById('manualStatusIcon');
+  const text   = document.getElementById('manualStatusText');
+
+  function setStatus(msg, type = '') {
+    if (!bar) return;
+    bar.style.display = msg ? 'flex' : 'none';
+    bar.className = 'manual-status-bar' + (type ? ' ' + type : '');
+    if (icon) icon.textContent = type === 'error' ? '❌' : type === 'success' ? '✅' : '⏳';
+    if (text) text.textContent = msg;
+  }
+
+  // バリデーション
+  if (!apiKey) {
+    showToast('Claude APIキーを入力してください', 'error');
+    return;
+  }
+  if (manualImages.length === 0) {
+    showToast('スクリーンショットをアップロードしてください', 'error');
+    return;
+  }
+  if (fmt === 'excel' && !canUseExcelOutput()) {
+    showToast('Excel出力はStandard以上のプランで利用できます', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  setStatus('AIが画像を解析中... (1/' + manualImages.length + '枚目)');
+
+  const steps = [];
+  try {
+    for (let i = 0; i < manualImages.length; i++) {
+      setStatus('AIが画像を解析中... (' + (i + 1) + '/' + manualImages.length + '枚目)');
+      const img = manualImages[i];
+      const description = await callClaudeForImage(apiKey, img.base64, img.mediaType);
+      steps.push({
+        stepNum: i + 1,
+        description,
+        base64: img.base64,
+        mediaType: img.mediaType,
+        dataUrl: img.dataUrl,
+      });
+    }
+
+    setStatus('ファイルを生成中...');
+
+    let blob, filename;
+    if (fmt === 'excel') {
+      blob     = await generateExcelFile(title, steps);
+      filename = title + '.xlsx';
+    } else {
+      blob     = await generateWordDoc(title, steps);
+      filename = title + '.docx';
+    }
+
+    // ダウンロード
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href    = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+
+    setStatus('完了しました！ファイルがダウンロードされます。', 'success');
+    showToast('手順書を生成しました！', 'success');
+
+  } catch (e) {
+    console.error('Generate error:', e);
+    setStatus('エラー: ' + (e.message || '生成に失敗しました'), 'error');
+    showToast('手順書の生成に失敗しました', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// --- 初期化 ---
+function initManualGenerator() {
+  const dropZone  = document.getElementById('manualDropZone');
+  const fileInput = document.getElementById('manualFileInput');
+  if (!dropZone || !fileInput) return;
+
+  // ドロップゾーン: ドラッグ&ドロップ
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragging');
+  });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+  dropZone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragging');
+    await addManualFiles(e.dataTransfer.files);
+  });
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') fileInput.click();
+  });
+
+  fileInput.addEventListener('change', async (e) => {
+    await addManualFiles(e.target.files);
+    fileInput.value = '';
+  });
+
+  // APIキー表示トグル
+  document.getElementById('manualApiEye')?.addEventListener('click', () => {
+    const input = document.getElementById('manualApiKey');
+    if (!input) return;
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+
+  // 生成ボタン
+  document.getElementById('manualGenerateBtn')?.addEventListener('click', runManualGenerate);
+
+  // アップグレードリンク
+  document.getElementById('manualUpgradeLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    goTab('account');
+  });
+
+  renderManualImages();
+  updateManualPlanInfo();
+}
+
 async function main() {
   initTabs();
 
@@ -3721,10 +4465,39 @@ async function main() {
     // （onAuthStateChange(SIGNED_IN)が来なければ未ログイン表示）
     setTimeout(() => {
       if (!currentUser) {
-        $('#notLoggedAlert').classList.add('show');
-        document.querySelector('.site-header').style.display = 'none';
-        document.querySelector('footer').style.display = 'none';
-        document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
+        // 未ログイン: 手順書生成タブのみ利用可能にする
+        document.querySelectorAll('.tab-pane').forEach(el => {
+          el.style.display = 'none';
+          el.classList.remove('active');
+        });
+        const manualPane = document.getElementById('tab-manual');
+        if (manualPane) {
+          manualPane.style.removeProperty('display');
+          manualPane.classList.add('active');
+        }
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          const isManual = b.dataset.tab === 'manual';
+          b.classList.toggle('active', isManual);
+          b.style.opacity = isManual ? '1' : '0.35';
+          b.style.pointerEvents = isManual ? '' : 'none';
+        });
+        // ゲスト向けバナーを表示
+        const guestBanner = document.getElementById('manualGuestBanner');
+        if (guestBanner) guestBanner.style.display = 'flex';
+        // ログアウトボタン・メールを非表示
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        // ログインリンクをヘッダーに追加
+        const userArea = document.querySelector('.user-area');
+        if (userArea && !userArea.querySelector('.btn-primary')) {
+          const loginBtn = document.createElement('a');
+          loginBtn.href = '/index.html';
+          loginBtn.className = 'btn btn-primary';
+          loginBtn.style.fontSize = '12px';
+          loginBtn.textContent = 'ログイン';
+          userArea.appendChild(loginBtn);
+        }
+        updateManualPlanInfo();
       }
     }, 1500);
   }
@@ -3772,6 +4545,7 @@ async function mainInit(user) {
   renderAccount();
   renderReportGate();
   renderRepeatGate();
+  updateManualPlanInfo(); // 手順書生成タブのプラン制限を更新
 
   // 名前読み込み（Supabase優先、なければlocalStorage）
   {
@@ -4488,6 +5262,7 @@ async function mainInit(user) {
   
 
 main();
+initManualGenerator();
 </script>
 
 </body>
