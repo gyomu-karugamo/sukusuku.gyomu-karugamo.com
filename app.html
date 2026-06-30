@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>業務かるがも</title>
+<title>すくすくかるがもアルバム</title>
 <link rel="icon" type="image/png" href="/assets/icon.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#4a7c6f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="業務かるがも">
+<meta name="apple-mobile-web-app-title" content="すくすくかるがも">
 <link rel="apple-touch-icon" href="/assets/icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 
 <!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-D74K33M791"></script>
@@ -26,1592 +26,2205 @@
 </script>
 
 <style>
+/* ===== CSS変数（デザイントークン） ===== */
 :root {
-  --ink: #1a1714;
-  --cream: #f5f0e8;
-  --cream-dark: #eee7dc;
-  --warm: #e8dfd0;
-  --duck: #4a7c6f;
+  --duck:       #4a7c6f;
+  --duck-dark:  #3a6359;
   --duck-light: #6a9e8f;
-  --duck-pale: #d4e8e2;
-  --brown: #1a1714;
-  --brown-mid: #6e675f;
-  --brown-light: #a89f93;
-  --mist: #8a9a96;
-  --success: #4a7c6f;
-  --success-pale: #e8f3ef;
-  --error: #b3261e;
-  --error-pale: #fde8e6;
-  --border: rgba(26,23,20,0.08);
-  --shadow: 0 4px 24px rgba(26,23,20,0.08);
-  --shadow-lg: 0 12px 48px rgba(26,23,20,0.14);
-  --radius: 16px;
-  --radius-sm: 10px;
+  --duck-pale:  #e8f0ee;
+  --cream:      #f2ede6;
+  --cream-light:#f8f5f0;
+  --warm:       #ece5da;
+  --brown:      #3d2b1f;
+  --brown-mid:  #7a5c4a;
+  --brown-light:#c4a882;
+  --ink:        #1a1714;
+  --mist:       #8a9a96;
+  --line:       rgba(26,23,20,0.08);
+  --line-strong:rgba(26,23,20,0.14);
+  --error:      #b3261e;
+  --error-bg:   #fde8e7;
+  --success:    #4a7c6f;
+  --shadow-sm:  0 2px 8px rgba(61,43,31,0.08);
+  --shadow:     0 8px 28px rgba(61,43,31,0.10);
+  --shadow-lg:  0 16px 48px rgba(61,43,31,0.14);
+  --radius:     16px;
+  --radius-sm:  10px;
+  --nav-h:      60px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
   min-height: 100vh;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  touch-action: manipulation;
-}
-
-body {
-  font-family: 'Noto Sans JP', 'DM Sans', sans-serif;
-  font-weight: 300;
+  font-family: 'Noto Sans JP', sans-serif;
   background: var(--cream);
   color: var(--brown);
-  line-height: 1.7;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
-/* ========== HEADER ========== */
-.site-header {
-  position: sticky;
-  top: 0;
-  z-index: 200;
-  background: rgba(250,247,242,0.96);
-  backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+/* ===== ナビゲーション ===== */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: rgba(255,255,255,0.96);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  z-index: 100;
 }
 
-.header-inner {
-  max-width: 960px;
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brown);
+  flex-shrink: 0;
+}
+
+.nav-logo img { width: 32px; height: 32px; object-fit: contain; }
+.nav-logo-text { display: none; }
+@media(min-width:500px){ .nav-logo-text { display: block; } }
+
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.nav-tab {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--mist);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.nav-tab.active {
+  background: var(--duck-pale);
+  color: var(--duck-dark);
+}
+
+.nav-tab:hover:not(.active) {
+  background: var(--warm);
+  color: var(--brown);
+}
+
+/* ===== メインコンテンツ ===== */
+#main {
+  padding-top: calc(var(--nav-h) + 20px);
+  padding-bottom: 40px;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 860px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
 }
 
-.topbar {
+/* ===== ページヘッダー ===== */
+.page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
-  gap: 16px;
+  margin-bottom: 20px;
+  gap: 12px;
 }
 
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: var(--brown);
-}
-.brand img { width: 32px; height: 32px; object-fit: contain; }
-.brand-name {
+.page-title {
   font-family: 'Noto Serif JP', serif;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.user-area { display: flex; align-items: center; gap: 10px; }
-.user-email {
-  font-size: 12px;
-  color: var(--mist);
-  background: var(--cream-dark);
-  padding: 4px 12px;
-  border-radius: 999px;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.btn {
-  border: 1px solid var(--border);
-  background: white;
-  border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 13px;
-  font-family: inherit;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--brown);
-  cursor: pointer;
-  transition: all 0.18s;
-  font-weight: 400;
-  text-decoration: none;
+}
+
+.back-btn {
   display: inline-flex;
   align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  font-size: 0.85rem;
+  color: var(--brown-mid);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
 }
-.btn:hover:not(:disabled) { background: var(--cream-dark); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.back-btn:hover { background: var(--warm); }
+
+/* ===== ボタン ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  border: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
 
 .btn-primary {
   background: var(--duck);
-  border-color: transparent;
-  color: white;
-  font-weight: 500;
+  color: #fff;
 }
-.btn-primary:hover:not(:disabled) { background: var(--ink); }
+.btn-primary:hover { background: var(--duck-dark); }
+.btn-primary:disabled { background: var(--mist); cursor: not-allowed; opacity: 0.7; }
+
+.btn-secondary {
+  background: #fff;
+  color: var(--duck);
+  border: 1.5px solid var(--duck);
+}
+.btn-secondary:hover { background: var(--duck-pale); }
 
 .btn-danger {
-  background: var(--error-pale);
-  border-color: rgba(192,57,43,0.3);
+  background: #fff;
   color: var(--error);
-  font-weight: 500;
+  border: 1.5px solid var(--error);
+}
+.btn-danger:hover { background: var(--error-bg); }
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.82rem;
 }
 
-/* ========== TABS ========== */
-.tabs-wrap {
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-.tabs {
-  display: flex;
-  padding: 0 24px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-.tab-btn {
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
-  padding: 12px 20px;
-  font-size: 13px;
-  font-family: inherit;
-  font-weight: 400;
-  color: var(--mist);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.18s;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.tab-btn:hover { color: var(--brown); }
-.tab-btn.active { color: var(--duck); border-bottom-color: var(--duck); font-weight: 500; }
-
-/* ========== PAGE ========== */
-.page {
-  max-width: 960px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 28px 24px 80px;
-  overflow-x: hidden;
-}
-.tab-pane { display: none; }
-.tab-pane.active { display: block; }
-
-/* ========== CARDS ========== */
+/* ===== カード ===== */
 .card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  box-shadow: var(--shadow);
-  margin-bottom: 16px;
-}
-.card-title {
-  font-family: 'Noto Serif JP', serif;
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.card-desc { font-size: 13px; color: var(--mist); margin-bottom: 20px; line-height: 1.6; }
-.sec-label {
-  font-size: 11px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--duck);
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-/* ========== FORM ========== */
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 12px; color: var(--mist); margin-bottom: 4px; letter-spacing: 0.04em; }
-
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="date"],
-input[type="time"],
-select, textarea {
-  width: 100%;
-  padding: 10px 14px;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--brown);
-  background: var(--cream);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-input:focus, select:focus, textarea:focus {
-  border-color: var(--duck);
-  box-shadow: 0 0 0 3px rgba(74,124,111,0.1);
-  background: white;
-}
-input::placeholder, textarea::placeholder { color: #c4b8aa; }
-
-/* ========== BADGE ========== */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 500;
-}
-.badge-orange { background: var(--duck-pale); color: var(--duck); }
-.badge-mist   { background: var(--cream-dark); color: var(--mist); }
-
-/* ========== STATUS BOX ========== */
-.status-box {
-  background: var(--cream-dark);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  font-size: 13px;
-  margin: 12px 0;
-}
-.status-box.success { background: var(--success-pale); border-color: rgba(61,153,112,0.25); }
-.status-box.error   { background: var(--error-pale); border-color: rgba(192,57,43,0.2); color: var(--error); }
-
-/* ========== ALERT ========== */
-.alert {
-  padding: 14px 16px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  margin-bottom: 16px;
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-}
-.alert.info { background: var(--duck-pale); border: 1px solid rgba(74,124,111,0.2); }
-.alert-icon { color: var(--duck); font-size: 16px; flex-shrink: 0; }
-
-/* ========== MSG ========== */
-.msg { font-size: 12px; margin-top: 6px; line-height: 1.5; min-height: 1.2em; }
-.msg.error   { color: var(--error); }
-.msg.success { color: var(--success); }
-
-/* ========== DIVIDER ========== */
-hr.soft { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-
-/* ========== PLAN BOX ========== */
-.plan-box {
-  border: 2px solid var(--border);
+  background: #fff;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===== 生徒グリッド ===== */
+.student-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+@media(min-width:600px){
+  .student-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}
+
+.student-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: var(--shadow-sm);
+}
+
+.student-card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  border-color: var(--duck-light);
+}
+
+.student-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 12px;
+  border: 2.5px solid var(--duck-pale);
+}
+
+.student-avatar img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.avatar-initial {
+  width: 100%; height: 100%;
+  background: var(--duck-pale);
+  color: var(--duck);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.student-name {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--brown);
+  margin-bottom: 4px;
+}
+
+.student-since {
+  font-size: 0.78rem;
+  color: var(--mist);
+}
+
+/* ===== 生徒詳細 ===== */
+.student-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.student-detail-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2.5px solid var(--duck-pale);
+}
+
+.student-detail-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.student-detail-info { flex: 1; min-width: 0; }
+.student-detail-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--brown);
+  margin-bottom: 4px;
+}
+
+.student-detail-meta { font-size: 0.82rem; color: var(--mist); }
+
+.student-detail-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ===== タイムライン ===== */
+.timeline { display: flex; flex-direction: column; gap: 16px; }
+
+.timeline-item {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.timeline-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--cream-light);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--duck-dark);
+}
+
+.timeline-photos {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.timeline-photos::-webkit-scrollbar { height: 4px; }
+.timeline-photos::-webkit-scrollbar-track { background: transparent; }
+.timeline-photos::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 2px; }
+
+.timeline-photo {
+  flex-shrink: 0;
+  width: 140px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  background: var(--warm);
+}
+
+.timeline-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.timeline-photo img:hover { transform: scale(1.04); }
+
+.timeline-memo {
+  padding: 10px 16px 14px;
+  font-size: 0.9rem;
+  color: var(--brown-mid);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.timeline-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+/* ===== アルバムエディター ===== */
+.album-editor-header {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.album-title-input {
+  width: 100%;
+  padding: 12px 14px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--brown);
+  background: var(--cream-light);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+
+.album-title-input:focus { border-color: var(--duck); background: #fff; }
+.album-title-input::placeholder { color: var(--mist); }
+
+.album-hint {
+  font-size: 0.82rem;
+  color: var(--mist);
+}
+
+.album-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+@media(min-width:600px){
+  .album-photo-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+}
+
+.album-photo-item {
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  cursor: grab;
+}
+
+.album-photo-item.excluded {
+  opacity: 0.4;
+  border-style: dashed;
+}
+
+.album-photo-item:active { cursor: grabbing; }
+
+.album-photo-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+}
+
+.album-photo-meta {
+  padding: 10px 12px;
+}
+
+.album-photo-date {
+  font-size: 0.78rem;
+  color: var(--duck-dark);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.album-photo-memo {
+  font-size: 0.82rem;
+  color: var(--brown-mid);
+  line-height: 1.55;
+  max-height: 3.1em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.album-photo-actions {
+  padding: 0 12px 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--mist);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+/* ===== 完成アルバムビュー ===== */
+.album-view-header {
+  background: linear-gradient(135deg, var(--duck) 0%, var(--duck-dark) 100%);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  margin-bottom: 24px;
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+
+.album-view-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.album-view-student { font-size: 0.9rem; opacity: 0.85; margin-bottom: 16px; }
+
+.album-view-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.btn-white {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,0.45);
+}
+.btn-white:hover { background: rgba(255,255,255,0.30); }
+
+.album-photo-list { display: flex; flex-direction: column; gap: 20px; }
+
+.album-photo-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.album-photo-card img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  background: var(--ink);
+}
+
+.album-photo-card-meta {
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.album-photo-card-date {
+  font-size: 0.82rem;
+  color: var(--duck-dark);
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.album-photo-card-memo {
+  font-size: 0.92rem;
+  color: var(--brown-mid);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+/* ===== 共有ページ ===== */
+.share-header {
+  background: linear-gradient(135deg, var(--duck) 0%, var(--duck-dark) 100%);
+  padding: 32px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+.share-header-logo {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.85rem;
+  opacity: 0.75;
   margin-bottom: 16px;
 }
-.plan-box.current { border-color: var(--duck); }
-.plan-name {
+
+.share-header-title {
   font-family: 'Noto Serif JP', serif;
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 12px;
 }
-.plan-price { font-size: 13px; color: var(--mist); margin-bottom: 12px; }
-.plan-price strong { font-family: 'DM Sans', sans-serif; font-size: 22px; color: var(--duck); font-weight: 300; }
 
-.feature-list { list-style: none; padding: 0; }
-.feature-list li {
+.share-header-student { font-size: 0.9rem; opacity: 0.85; }
+
+.share-page { max-width: 700px; margin: 0 auto; padding: 0 0 60px; }
+
+.share-actions {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 13px;
-  padding: 5px 0;
-  color: var(--brown-mid);
+  justify-content: center;
+  padding: 20px 16px;
 }
-.feature-list li::before { content: '✓'; color: var(--success); font-weight: 600; flex-shrink: 0; margin-top: 2px; }
-.feature-list li.disabled { color: var(--brown-light); }
-.feature-list li.disabled::before { content: '—'; color: var(--brown-light); }
 
-.cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
+.share-photo-list { padding: 0 16px; display: flex; flex-direction: column; gap: 20px; }
 
-/* ========== USAGE METER ========== */
-.usage-meter { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; margin-bottom: 12px; }
-.usage-label { font-size: 12px; color: var(--mist); margin-bottom: 6px; display: flex; justify-content: space-between; }
-.usage-track { height: 6px; background: var(--cream-dark); border-radius: 999px; overflow: hidden; }
-.usage-fill { height: 100%; border-radius: 999px; background: var(--duck); transition: width 0.4s ease; }
-.usage-fill.warn { background: #e8a030; }
-.usage-fill.over { background: var(--error); }
-
-/* ========== TOAST ========== */
-.toast-wrap {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 999;
+/* ===== アカウントタブ ===== */
+.account-section {
+  max-width: 580px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+}
+
+.plan-card {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.plan-card.current { border-color: var(--duck); }
+
+.plan-badge {
+  display: inline-flex;
   align-items: center;
-  pointer-events: none;
-}
-.toast {
-  background: var(--brown);
-  color: white;
-  padding: 10px 20px;
+  gap: 6px;
+  background: var(--duck-pale);
+  color: var(--duck-dark);
+  border: 1px solid rgba(74,124,111,.2);
   border-radius: 999px;
-  font-size: 13px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  animation: toastIn 0.3s ease;
-  pointer-events: none;
-  white-space: nowrap;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
 }
-.toast.success { background: var(--success); }
-.toast.error   { background: var(--error); }
-@keyframes toastIn {
-  from { opacity: 0; transform: translateY(10px); }
+
+.plan-name {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--brown);
+  margin-bottom: 6px;
+}
+
+.plan-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--duck);
+  margin-bottom: 14px;
+}
+
+.plan-price span { font-size: 0.85rem; color: var(--mist); font-weight: 400; }
+
+.plan-features { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+
+.plan-feature {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--brown-mid);
+}
+
+.plan-feature::before { content: '✓'; color: var(--duck); font-weight: 700; flex-shrink: 0; }
+
+/* ===== モーダル ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,23,20,0.5);
+  backdrop-filter: blur(3px);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media(min-width:600px){
+  .modal-overlay { align-items: center; padding: 20px; }
+}
+
+.modal {
+  background: #fff;
+  width: 100%;
+  max-width: 520px;
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px 32px;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(40px);
+  transition: transform 0.22s;
+}
+
+.modal-overlay.open .modal {
+  transform: translateY(0);
+}
+
+@media(min-width:600px){
+  .modal { border-radius: 20px; }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--brown);
+}
+
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--warm);
+  color: var(--brown-mid);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.modal-close:hover { background: var(--line-strong); }
+
+/* ===== フォーム ===== */
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--brown-mid);
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 11px 13px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 15px;
+  color: var(--brown);
+  background: var(--cream-light);
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-input:focus { border-color: var(--duck); background: #fff; box-shadow: 0 0 0 3px rgba(74,124,111,0.10); }
+
+textarea.form-input {
+  resize: vertical;
+  min-height: 90px;
+  line-height: 1.65;
+}
+
+/* 定型文ボタン */
+.quick-phrases {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.quick-phrase-btn {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--duck-light);
+  background: var(--duck-pale);
+  color: var(--duck-dark);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.quick-phrase-btn:hover { background: var(--duck); color: #fff; }
+
+/* 写真アップロードエリア */
+.photo-upload-area {
+  border: 2px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  background: var(--cream-light);
+  color: var(--mist);
+  font-size: 0.9rem;
+}
+
+.photo-upload-area:hover, .photo-upload-area.dragover {
+  border-color: var(--duck);
+  background: var(--duck-pale);
+  color: var(--duck-dark);
+}
+
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.photo-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.photo-preview-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.photo-preview-remove {
+  position: absolute;
+  top: 4px; right: 4px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(26,23,20,0.65);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* プロフィール写真 */
+.avatar-upload-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.avatar-upload-preview {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--duck-pale);
+  background: var(--warm);
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--mist);
+}
+
+.avatar-upload-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ===== 状態表示 ===== */
+.loading {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--mist);
+  font-size: 0.9rem;
+}
+
+.loading::before {
+  content: '';
+  display: block;
+  width: 32px; height: 32px;
+  border: 3px solid var(--duck-pale);
+  border-top-color: var(--duck);
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--mist);
+  font-size: 0.9rem;
+  grid-column: 1 / -1;
+}
+
+.empty-state-icon {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+}
+
+.notice {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+.notice-info { background: var(--duck-pale); color: var(--duck-dark); border: 1px solid rgba(74,124,111,.2); }
+.notice-warn { background: #fff8e8; color: #7a5c00; border: 1px solid rgba(122,92,0,.2); }
+.notice-error { background: var(--error-bg); color: var(--error); border: 1px solid rgba(179,38,30,.2); }
+
+/* ===== 画像ライトボックス ===== */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 500;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.lightbox.open { display: flex; }
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 16px; right: 16px;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ===== アルバム画像PDF生成用（非表示） ===== */
+#pdf-render-area {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  width: 794px; /* A4 at 96dpi approx */
+  background: #fff;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: #1a1714;
+}
+
+/* ===== ユーティリティ ===== */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.mt-16 { margin-top: 16px; }
+.text-mist { color: var(--mist); }
+.text-sm { font-size: 0.85rem; }
+.text-center { text-align: center; }
+
+/* ===== アニメーション ===== */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ========== MODAL ========== */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(45,30,19,0.4);
-  z-index: 500;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.show { display: flex; }
-.modal {
-  background: white;
-  border-radius: var(--radius);
-  padding: 28px;
-  width: 100%;
-  max-width: 440px;
-  box-shadow: var(--shadow-lg);
-  animation: modalIn 0.2s ease;
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-.modal-title { font-family: 'Noto Serif JP', serif; font-size: 18px; font-weight: 600; margin-bottom: 16px; }
-.modal-footer { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+.fade-up { animation: fadeUp 0.3s ease forwards; }
 
-/* ========== FOOTER ========== */
-footer {
-  border-top: 1px solid var(--border);
-  padding: 16px 24px;
-  text-align: center;
-  font-size: 11px;
-  color: var(--mist);
-  max-width: 960px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-}
-footer a { color: var(--mist); text-decoration: none; }
-footer a:hover { color: var(--duck); }
-
-/* ========== 手順書生成タブ ========== */
-.manual-drop-zone {
-  border: 2px dashed var(--border);
-  border-radius: var(--radius);
-  padding: 32px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.18s;
-  background: var(--cream);
-  user-select: none;
-}
-.manual-drop-zone:hover,
-.manual-drop-zone.dragging { border-color: var(--duck); background: var(--duck-pale); }
-.manual-drop-icon { font-size: 36px; margin-bottom: 8px; }
-.manual-drop-text { font-size: 14px; color: var(--brown-mid); }
-.manual-drop-sub  { font-size: 12px; color: var(--brown-light); margin-top: 4px; }
-
-.manual-img-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-.manual-img-item {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  background: var(--cream-dark);
-  cursor: grab;
-}
-.manual-img-item:hover { border-color: var(--duck); }
-.manual-img-item.drag-over { border-color: var(--duck); box-shadow: 0 0 0 2px var(--duck); }
-.manual-img-num {
-  position: absolute;
-  top: 4px; left: 4px;
-  background: var(--duck);
-  color: white;
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  font-size: 11px; font-weight: 500;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 1; pointer-events: none;
-}
-.manual-img-del {
-  position: absolute;
-  top: 4px; right: 4px;
-  background: rgba(26,23,20,0.55);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 20px; height: 20px;
-  font-size: 10px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 2; line-height: 1; padding: 0;
-}
-.manual-img-del:hover { background: var(--error); }
-
-.manual-fmt-row { display: flex; gap: 10px; flex-wrap: wrap; }
-.manual-fmt-opt {
-  flex: 1;
-  min-width: 100px;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 12px 14px;
-  cursor: pointer;
-  transition: all 0.18s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.manual-fmt-opt:has(input:checked) { border-color: var(--duck); background: var(--duck-pale); }
-.manual-fmt-opt input[type="radio"] { width: auto; padding: 0; background: none; border: none; flex-shrink: 0; accent-color: var(--duck); }
-.manual-fmt-icon { font-size: 20px; flex-shrink: 0; }
-.manual-fmt-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
-.manual-fmt-sub  { font-size: 11px; color: var(--mist); margin-top: 2px; }
-.manual-fmt-opt.locked { opacity: 0.5; cursor: not-allowed; }
-
-.manual-status-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--duck-pale);
-  border: 1px solid rgba(74,124,111,0.2);
-  border-radius: var(--radius-sm);
-  padding: 12px 16px;
-  font-size: 13px;
-  margin-top: 12px;
-}
-.manual-status-bar.error   { background: var(--error-pale); border-color: rgba(179,38,30,0.2); color: var(--error); }
-.manual-status-bar.success { background: var(--success-pale); border-color: rgba(74,124,111,0.25); color: var(--success); }
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 600px) {
-  .page { padding: 20px 16px 80px; }
-  .user-email { display: none; }
+/* ===== タブレット向け調整 ===== */
+@media(min-width:768px){
+  .page { padding: 0 24px; }
+  .modal { padding: 28px 28px 36px; }
+  .student-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+  .album-photo-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .student-detail-header { padding: 24px; }
 }
 </style>
-
-<!-- Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
-
 <body>
 
-<!-- TOAST -->
-<div class="toast-wrap" id="toastWrap"></div>
-
-<!-- ========== HEADER ========== -->
-<header class="site-header">
-  <div class="header-inner">
-    <div class="topbar">
-      <a href="/" class="brand">
-        <img src="/assets/icon.png" alt="業務かるがも">
-        <span class="brand-name">業務かるがも</span>
-      </a>
-      <div class="user-area" id="userArea">
-        <span id="userEmail" class="user-email"></span>
-        <button id="logoutBtn" class="btn" style="font-size:12px;display:none;">ログアウト</button>
-      </div>
-    </div>
+<!-- ===== ナビゲーション（ログイン時のみ表示） ===== -->
+<nav class="nav" id="nav" style="display:none">
+  <a class="nav-logo" href="#/students">
+    <img src="/assets/icon.png" alt="かるがも">
+    <span class="nav-logo-text">すくすくかるがも</span>
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab" id="tab-students" onclick="location.hash='#/students'">生徒一覧</button>
+    <button class="nav-tab" id="tab-account" onclick="location.hash='#/account'">アカウント</button>
   </div>
-  <div class="tabs-wrap">
-    <nav class="tabs" id="mainTabs">
-      <button class="tab-btn active" data-tab="manual">📄 手順書生成</button>
-      <button class="tab-btn" data-tab="account" id="accountTabBtn" style="display:none;">アカウント</button>
-    </nav>
-  </div>
-</header>
+</nav>
 
-<!-- ========== MAIN ========== -->
-<div class="page">
+<!-- ===== メインコンテンツ ===== -->
+<div id="main">
+  <div class="loading">読み込み中...</div>
+</div>
 
-  <!-- ========== 手順書生成 ========== -->
-  <section id="tab-manual" class="tab-pane active">
-
-    <!-- ゲスト向けバナー（未ログイン時） -->
-    <div id="manualGuestBanner" class="alert info" style="display:none;">
-      <span class="alert-icon">👋</span>
-      <div style="flex:1;">
-        <strong>ログインなしでもFreeプランをお試しいただけます。</strong><br>
-        <a href="/index.html" style="color:var(--duck);font-size:12px;">アカウント登録で月20件まで・Excelにも対応 →</a>
-      </div>
-    </div>
-
-    <!-- 今月の利用状況 -->
-    <div id="usageMeterWrap" class="usage-meter" style="display:none;">
-      <div class="usage-label">
-        <span>今月の手順書生成数</span>
-        <span id="usageCountLabel">0 / 3件</span>
-      </div>
-      <div class="usage-track">
-        <div class="usage-fill" id="usageFill" style="width:0%"></div>
-      </div>
-      <div style="font-size:11px;color:var(--mist);margin-top:6px;">
-        <span id="usagePlanHint">Freeプラン：月3件まで。</span>
-        <a href="#" id="usageUpgradeLink" style="color:var(--duck);">プランを見る →</a>
-      </div>
-    </div>
-
-    <!-- 手順書設定 -->
-    <div class="card">
-      <div class="sec-label">Document Settings</div>
-      <div class="card-title" style="margin-bottom:16px;">手順書の設定</div>
-
-      <div class="field">
-        <label>手順書タイトル</label>
-        <input type="text" id="manualTitle" placeholder="例：受注管理システム 操作手順書" maxlength="60">
-      </div>
-
-      <div class="field">
-        <label>出力形式</label>
-        <div class="manual-fmt-row" id="fmtRow">
-          <label class="manual-fmt-opt">
-            <input type="radio" name="manualFmt" id="manualFmtWord" value="word" checked>
-            <span class="manual-fmt-icon">📝</span>
-            <div>
-              <div class="manual-fmt-name">Word</div>
-              <div class="manual-fmt-sub">.docx</div>
-            </div>
-          </label>
-          <label class="manual-fmt-opt" id="excelOptLabel">
-            <input type="radio" name="manualFmt" id="manualFmtExcel" value="excel">
-            <span class="manual-fmt-icon">📊</span>
-            <div>
-              <div class="manual-fmt-name">Excel <span id="excelLockBadge" style="display:none;font-size:10px;background:var(--cream-dark);color:var(--mist);padding:1px 6px;border-radius:999px;margin-left:4px;">Standard以上</span></div>
-              <div class="manual-fmt-sub">.xlsx</div>
-            </div>
-          </label>
-          <label class="manual-fmt-opt" id="pdfOptLabel">
-            <input type="radio" name="manualFmt" id="manualFmtPdf" value="pdf">
-            <span class="manual-fmt-icon">📑</span>
-            <div>
-              <div class="manual-fmt-name">PDF <span id="pdfLockBadge" style="display:none;font-size:10px;background:var(--cream-dark);color:var(--mist);padding:1px 6px;border-radius:999px;margin-left:4px;">Premium</span></div>
-              <div class="manual-fmt-sub">.pdf</div>
-            </div>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- 画像アップロード -->
-    <div class="card">
-      <div class="sec-label">Screenshots</div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <div class="card-title">スクリーンショット</div>
-        <span id="manualImgCounter" style="font-size:12px;color:var(--mist);">0枚</span>
-      </div>
-      <p class="card-desc">手順書に含める画面キャプチャをアップロードしてください。ドラッグで順番を並び替えられます。</p>
-
-      <div class="manual-drop-zone" id="manualDropZone" role="button" tabindex="0">
-        <div class="manual-drop-icon">🖼️</div>
-        <div class="manual-drop-text">クリックまたはドラッグ＆ドロップで追加</div>
-        <div class="manual-drop-sub">PNG・JPG・GIF 対応 ／ 複数枚可</div>
-      </div>
-      <input type="file" id="manualFileInput" accept="image/*" multiple style="display:none;">
-
-      <div id="manualImageGrid" class="manual-img-grid"></div>
-    </div>
-
-    <!-- 生成ボタン -->
-    <div class="card" style="text-align:center;">
-      <button class="btn btn-primary" id="manualGenerateBtn"
-        style="width:100%;padding:14px 20px;font-size:15px;border-radius:var(--radius);justify-content:center;gap:8px;">
-        ✨ 手順書を生成してダウンロード
-      </button>
-      <div id="manualStatusBar" style="display:none;" class="manual-status-bar">
-        <span id="manualStatusIcon" style="font-size:18px;flex-shrink:0;">⏳</span>
-        <span id="manualStatusText"></span>
-      </div>
-      <p style="font-size:11px;color:var(--mist);margin-top:12px;line-height:1.8;">
-        ※ AIによる解析は画像1枚あたり数秒かかります。<br>
-        ※ Freeプランの出力にはロゴ透かしが入ります。
-      </p>
-    </div>
-
-  </section>
-
-  <!-- ========== アカウント ========== -->
-  <section id="tab-account" class="tab-pane">
-
-    <!-- プラン -->
-    <div class="card">
-      <div class="sec-label">Plan</div>
-      <div class="card-title" style="margin-bottom:16px;">現在のプラン</div>
-
-      <!-- Freeプラン -->
-      <div id="planFreeBox" class="plan-box" style="display:none;">
-        <div class="plan-name">Freeプラン <span class="badge badge-mist">現在のプラン</span></div>
-        <div class="plan-price">¥0 / 月</div>
-        <ul class="feature-list">
-          <li>手順書生成：月3件まで</li>
-          <li>出力形式：Word のみ</li>
-          <li>画像：1件につき10枚まで</li>
-          <li>透かし（ロゴ）あり</li>
-          <li class="disabled">手順書の保存・履歴</li>
-          <li class="disabled">テンプレート</li>
-          <li class="disabled">Excel・PDF出力（Standard / Premium）</li>
-        </ul>
-        <div class="cta-row">
-          <button class="btn btn-primary" id="btnSubscribeStandard">Standardへ（7日間無料）</button>
-          <button class="btn" id="btnSubscribePremium">Premiumへ（7日間無料）</button>
-        </div>
-        <p id="trialNote" style="font-size:11px;color:var(--mist);margin-top:8px;"></p>
-      </div>
-
-      <!-- Standardプラン -->
-      <div id="planStandardBox" class="plan-box current" style="display:none;">
-        <div class="plan-name">Standardプラン <span class="badge badge-orange">現在のプラン</span></div>
-        <div class="plan-price"><strong>¥980</strong> / 月</div>
-        <ul class="feature-list" style="margin-bottom:14px;">
-          <li>手順書生成：月20件まで</li>
-          <li>出力形式：Word ＋ Excel</li>
-          <li>画像：1件につき30枚まで</li>
-          <li>手順書保存：30日間</li>
-          <li>テンプレート：3種類</li>
-          <li>透かしなし</li>
-          <li class="disabled">PDF出力・無制限保存（Premium）</li>
-        </ul>
-        <div class="cta-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" id="btnUpgradePremium" style="flex:1;">Premiumへアップグレード →</button>
-          <button class="btn btn-danger" id="btnCancel">解約する</button>
-        </div>
-      </div>
-
-      <!-- Premiumプラン -->
-      <div id="planPremiumBox" class="plan-box current" style="display:none;">
-        <div class="plan-name">Premiumプラン <span class="badge badge-orange">現在のプラン</span></div>
-        <div class="plan-price"><strong>¥1,980</strong> / 月</div>
-        <ul class="feature-list" style="margin-bottom:14px;">
-          <li>手順書生成：無制限</li>
-          <li>出力形式：Word ＋ Excel ＋ PDF</li>
-          <li>画像：無制限</li>
-          <li>手順書保存：無制限</li>
-          <li>テンプレート：10種類以上</li>
-          <li>透かしなし</li>
-        </ul>
-        <div class="cta-row" style="gap:8px;flex-wrap:wrap;">
-          <button class="btn" id="btnDowngradeStandard" style="flex:1;">Standardへダウングレード</button>
-          <button class="btn btn-danger" id="btnCancelPremium">解約する</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- アカウント情報 -->
-    <div class="card">
-      <div class="sec-label">Account</div>
-      <div class="card-title" style="margin-bottom:16px;">アカウント情報</div>
-
-      <div class="status-box">
-        <div style="margin-bottom:4px;font-size:12px;color:var(--mist);">現在のメールアドレス</div>
-        <div id="currentEmail" style="font-weight:500;font-size:14px;"></div>
-      </div>
-
-      <div id="emailChangeSection" style="margin-top:20px;">
-        <hr class="soft">
-        <div style="margin-top:16px;margin-bottom:6px;font-size:14px;font-weight:500;">メールアドレスを変更する</div>
-        <p style="font-size:12px;color:var(--mist);margin-bottom:10px;line-height:1.6;">新しいアドレスを入力すると確認メールを送信します。</p>
-        <div class="field">
-          <input type="email" id="newEmailInput" placeholder="新しいメールアドレス">
-        </div>
-        <button class="btn" id="changeEmailBtn">確認メールを送信する</button>
-        <p id="emailChangeMsg" class="msg"></p>
-      </div>
-
-      <div id="pwSection" style="margin-top:4px;">
-        <hr class="soft" style="margin-top:20px;">
-        <div style="margin-top:16px;margin-bottom:10px;font-size:14px;font-weight:500;">パスワードを変更する</div>
-        <div class="field">
-          <input type="password" id="newPw1" placeholder="新しいパスワード（8文字以上）">
-        </div>
-        <div class="field">
-          <input type="password" id="newPw2" placeholder="確認のためもう一度">
-        </div>
-        <button class="btn" id="changePwBtn">パスワードを変更する</button>
-        <p id="pwMsg" class="msg"></p>
-      </div>
-
-      <hr class="soft" style="margin-top:24px;">
-      <div id="deleteSection" style="margin-top:16px;">
-        <div style="font-size:14px;font-weight:500;margin-bottom:8px;color:var(--error);">アカウントを削除する</div>
-        <p style="font-size:12px;color:var(--mist);margin-bottom:10px;">この操作は取り消せません。全てのデータが削除されます。</p>
-        <button class="btn btn-danger" id="deleteAccountBtn">アカウントを削除する</button>
-        <p id="deleteMsg" class="msg"></p>
-      </div>
-    </div>
-
-  </section>
-
-</div><!-- /.page -->
-
-<footer>
-  <a href="https://gyomu-karugamo.com/terms.html">利用規約</a>
-  <a href="https://gyomu-karugamo.com/privacy.html">プライバシーポリシー</a>
-  <a href="https://gyomu-karugamo.com/legal.html">特定商取引法</a>
-  <a href="https://gyomu-karugamo.com/contact.html">お問い合わせ</a>
-  <span>© 2026 業務かるがも</span>
-</footer>
-
-<!-- 解約確認モーダル -->
-<div id="cancelPlanModal" class="modal-overlay">
+<!-- ===== 生徒追加モーダル ===== -->
+<div class="modal-overlay" id="modal-student">
   <div class="modal">
-    <div class="modal-title">解約する前に確認</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
-      <div style="background:var(--error-pale);border-radius:var(--radius-sm);padding:12px 14px;font-size:13px;line-height:1.6;">
-        <strong>Freeプランに戻ります。</strong><br>
-        <span style="color:var(--mist);">月3件・Wordのみ・透かしありの制限が適用されます。</span>
+    <div class="modal-header">
+      <div class="modal-title" id="modal-student-title">生徒を追加</div>
+      <button class="modal-close" onclick="closeModal('modal-student')">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">プロフィール写真（任意）</label>
+      <div class="avatar-upload-wrap">
+        <div class="avatar-upload-preview" id="student-avatar-preview" onclick="document.getElementById('student-avatar-file').click()">
+          <span>📷</span>
+        </div>
+        <div>
+          <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('student-avatar-file').click()">写真を選択</button>
+          <input type="file" id="student-avatar-file" accept="image/*" style="display:none" onchange="previewStudentAvatar(this)">
+          <div class="text-sm text-mist mt-16" style="margin-top:6px">JPG・PNG・GIF</div>
+        </div>
       </div>
     </div>
-    <p style="font-size:12px;color:var(--mist);line-height:1.6;margin-bottom:4px;">
-      ※ 無料トライアル期間中に解約した場合、次回ご登録時にトライアルは適用されません。
+
+    <div class="form-group">
+      <label class="form-label">お名前 <span style="color:var(--error)">*</span></label>
+      <input type="text" class="form-input" id="student-name-input" placeholder="例：田中さくらちゃん" maxlength="50">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">入会日（任意）</label>
+      <input type="date" class="form-input" id="student-joined-input">
+    </div>
+
+    <button class="btn btn-primary" style="width:100%" onclick="saveStudent()">
+      <span id="student-save-label">追加する</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== 記録追加モーダル ===== -->
+<div class="modal-overlay" id="modal-record">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">記録を追加</div>
+      <button class="modal-close" onclick="closeModal('modal-record')">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">日付</label>
+      <input type="date" class="form-input" id="record-date-input">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">写真（複数選択可）</label>
+      <div class="photo-upload-area" id="record-drop-area"
+        onclick="document.getElementById('record-photo-file').click()"
+        ondragover="handleDragOver(event,'record-drop-area')"
+        ondragleave="handleDragLeave(event,'record-drop-area')"
+        ondrop="handleDrop(event,'record-photos')">
+        📸 タップして選択、またはドラッグ＆ドロップ
+        <input type="file" id="record-photo-file" accept="image/*" multiple style="display:none"
+          onchange="addPhotoPreviews(this.files,'record-photos')">
+      </div>
+      <div class="photo-preview-grid" id="record-photos"></div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">ひとことメモ（任意）</label>
+      <textarea class="form-input" id="record-memo-input" placeholder="今日の様子を記録しましょう"></textarea>
+      <div class="quick-phrases">
+        <button class="quick-phrase-btn" onclick="insertPhrase('今日も頑張りました！')">今日も頑張りました！</button>
+        <button class="quick-phrase-btn" onclick="insertPhrase('初めてできました🎉')">初めてできました🎉</button>
+        <button class="quick-phrase-btn" onclick="insertPhrase('新しい技に挑戦しました')">新しい技に挑戦</button>
+        <button class="quick-phrase-btn" onclick="insertPhrase('とても上手になりました✨')">とても上手に✨</button>
+        <button class="quick-phrase-btn" onclick="insertPhrase('笑顔いっぱいのレッスンでした😊')">笑顔いっぱい😊</button>
+        <button class="quick-phrase-btn" onclick="insertPhrase('目標に向かって練習中です！')">目標に向かって練習中！</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" style="width:100%" id="record-save-btn" onclick="saveRecord()">記録を保存</button>
+  </div>
+</div>
+
+<!-- ===== 共有リンク発行モーダル ===== -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">共有リンクを発行</div>
+      <button class="modal-close" onclick="closeModal('modal-share')">✕</button>
+    </div>
+    <p style="font-size:0.9rem;color:var(--brown-mid);margin-bottom:16px;line-height:1.7">
+      このリンクを知っている人は誰でもアルバムを閲覧できます。<br>
+      保護者の方への共有にご利用ください。
     </p>
-    <div class="modal-footer">
-      <button class="btn" id="cancelPlanCancelBtn">戻る</button>
-      <button class="btn btn-danger" id="cancelPlanConfirmBtn">解約手続きへ進む</button>
+    <div id="share-link-display" style="background:var(--cream-light);border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:12px 14px;word-break:break-all;font-size:0.88rem;color:var(--brown);margin-bottom:14px;"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="copyShareLink()">リンクをコピー</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-share')">閉じる</button>
     </div>
   </div>
 </div>
 
-<!-- アカウント削除確認モーダル -->
-<div id="deleteModal" class="modal-overlay">
-  <div class="modal">
-    <div class="modal-title">⚠️ アカウントを削除しますか？</div>
-    <p style="font-size:13px;color:var(--mist);margin-bottom:4px;">この操作は取り消せません。全てのデータが削除されます。</p>
-    <div class="modal-footer">
-      <button class="btn" id="deleteCancelBtn">キャンセル</button>
-      <button class="btn btn-danger" id="deleteConfirmBtn">削除する</button>
-    </div>
-  </div>
+<!-- ===== ライトボックス ===== -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
 </div>
 
-<!-- ログインプロンプトモーダル（保存時） -->
-<div id="loginPromptModal" class="modal-overlay">
-  <div class="modal">
-    <div class="modal-title">💾 手順書を保存するには</div>
-    <p style="font-size:13px;color:var(--brown-mid);margin-bottom:16px;line-height:1.7;">
-      無料アカウントを作成すると、生成した手順書の保存・履歴管理ができます。<br>
-      Standardプランなら30日間保存、Premiumなら無制限で保存可能です。
-    </p>
-    <a href="/index.html" class="btn btn-primary" style="width:100%;justify-content:center;margin-bottom:8px;">無料アカウントを作成する</a>
-    <div class="modal-footer" style="justify-content:center;margin-top:8px;">
-      <button class="btn" id="loginPromptClose">後で</button>
-    </div>
-  </div>
-</div>
+<!-- ===== PDF生成用非表示エリア ===== -->
+<div id="pdf-render-area"></div>
+
+<!-- ===== CDNライブラリ ===== -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <script>
+'use strict';
+
 // ============================================================
-// SUPABASE INIT
+// 設定（Supabase接続情報）
 // ============================================================
 const SUPABASE_URL      = "https://gdcnxuymqbzkqfrcvpbe.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkY254dXltcWJ6a3FmcmN2cGJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MjAxMTUsImV4cCI6MjA5MDA5NjExNX0.2DGITsYpMg94XaVAfEma_rv71njzyCb445Kcvkj1SyQ";
-const ANALYZE_FN        = `${SUPABASE_URL}/functions/v1/analyze-screenshot`;
+const STORAGE_BUCKET    = "album-photos";  // Supabaseストレージバケット名
 const CHECKOUT_FN       = `${SUPABASE_URL}/functions/v1/create-checkout-session`;
 const APP_URL           = "https://app.gyomu-karugamo.com/app.html";
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-});
-
-// フォアグラウンド復帰時のセッション確認
-document.addEventListener('visibilitychange', async () => {
-  if (document.visibilityState !== 'visible') return;
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (!session && window._karuLoggedIn) location.replace('/index.html');
-  } catch(e) { console.warn('session check error:', e); }
-});
-
 // ============================================================
-// STATE
+// プラン設定
 // ============================================================
-let currentUser    = null;
-let currentProfile = null;
-let manualImages   = [];
-let manualDragIdx  = null;
-
-// ============================================================
-// PLAN UTILS
-// ============================================================
-function isPremium()  { return !!(currentProfile?.is_active && currentProfile?.tier === 'premium'); }
-function isStandard() { return !!(currentProfile?.is_active && currentProfile?.tier === 'standard'); }
-function isPro()      { return isStandard() || isPremium(); }
-function hasEverSubscribed() { return !!(currentProfile?.stripe_subscription_id); }
-
-const PLAN_LIMITS = {
-  free:     { maxImages: 10, maxMonthly: 3,   formats: ['word'],                   watermark: true  },
-  standard: { maxImages: 30, maxMonthly: 20,  formats: ['word', 'excel'],          watermark: false },
-  premium:  { maxImages: 999, maxMonthly: 999, formats: ['word', 'excel', 'pdf'],  watermark: false },
+const PLANS = {
+  free:     { name: 'ライトプラン（無料）', maxStudents: 15, maxAlbumsPerMonth: 1, canShare: false },
+  light:    { name: 'ライトプラン',         maxStudents: 15, maxAlbumsPerMonth: 1, canShare: false },
+  standard: { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true },
+  premium:  { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true },
 };
 
-function getPlanTier()   { return isPremium() ? 'premium' : isStandard() ? 'standard' : 'free'; }
-function getPlanLimits() { return PLAN_LIMITS[getPlanTier()]; }
-
-// 月間生成数（localStorage）
-function getMonthKey()      { const d = new Date(); return `kamo_gen_${d.getFullYear()}_${d.getMonth()+1}`; }
-function getMonthlyCount()  { return parseInt(localStorage.getItem(getMonthKey()) || '0'); }
-function incMonthlyCount()  { localStorage.setItem(getMonthKey(), String(getMonthlyCount() + 1)); }
+// ============================================================
+// グローバル状態
+// ============================================================
+let sb, currentUser, currentProfile;
+let recordPhotoFiles = []; // 記録追加モーダルの一時写真リスト
+let studentAvatarFile = null; // 生徒追加モーダルの一時アバター
+let editingStudentId = null;  // 生徒編集時のID
+let currentStudentId = null;  // 詳細ページで表示中の生徒ID
+let currentAlbumId   = null;  // アルバムエディター・ビューのID
+let albumSortable    = null;  // SortableJSインスタンス
+let currentShareLink = '';    // 発行済み共有リンク
 
 // ============================================================
-// UTILS
+// 初期化
 // ============================================================
-const $ = (s) => document.querySelector(s);
-
-function showToast(msg, type = '') {
-  const w = $('#toastWrap');
-  const t = document.createElement('div');
-  t.className = 'toast' + (type ? ' ' + type : '');
-  t.textContent = msg;
-  w.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-function showMsg(el, text, type = '') {
-  if (!el) return;
-  el.textContent = text || '';
-  el.className = 'msg' + (type ? ' ' + type : '');
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = (e) => {
-      const dataUrl = e.target.result;
-      resolve({ dataUrl, base64: dataUrl.split(',')[1], mediaType: file.type || 'image/png' });
-    };
-    r.onerror = reject;
-    r.readAsDataURL(file);
+window.addEventListener('DOMContentLoaded', async () => {
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
-}
 
-function base64ToUint8Array(b64) {
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return arr;
-}
-
-// ============================================================
-// TABS
-// ============================================================
-function initTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const name = btn.dataset.tab;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-      document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
-      if (name === 'manual') updateManualUI();
-    });
-  });
-}
-
-function goTab(name) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
-  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${name}`));
-}
-
-// ============================================================
-// MANUAL GENERATOR — UI
-// ============================================================
-function updateManualUI() {
-  const limits   = getPlanLimits();
-  const count    = getMonthlyCount();
-  const maxCount = limits.maxMonthly;
-  const maxImg   = limits.maxImages;
-  const tier     = getPlanTier();
-
-  // 枚数カウンター
-  const counter = $('#manualImgCounter');
-  if (counter) {
-    counter.textContent = manualImages.length + ' / ' + (maxImg >= 999 ? '∞' : maxImg) + '枚';
-    counter.style.color = manualImages.length >= maxImg ? 'var(--error)' : 'var(--mist)';
-  }
-
-  // 利用数メーター
-  const meterWrap = $('#usageMeterWrap');
-  if (meterWrap) {
-    meterWrap.style.display = 'block';
-    const maxLabel = maxCount >= 999 ? '無制限' : maxCount + '件';
-    $('#usageCountLabel').textContent = count + ' / ' + maxLabel;
-    const pct = maxCount >= 999 ? 0 : Math.min(100, count / maxCount * 100);
-    const fill = $('#usageFill');
-    fill.style.width = pct + '%';
-    fill.className = 'usage-fill' + (pct >= 100 ? ' over' : pct >= 80 ? ' warn' : '');
-    $('#usagePlanHint').textContent = tier === 'free' ? 'Freeプラン：月3件まで。'
-      : tier === 'standard' ? 'Standardプラン：月20件まで。'
-      : 'Premiumプラン：無制限。';
-  }
-
-  // 出力形式ロック
-  const excelInput = $('#manualFmtExcel');
-  const excelLock  = $('#excelLockBadge');
-  const excelLabel = $('#excelOptLabel');
-  const pdfInput   = $('#manualFmtPdf');
-  const pdfLock    = $('#pdfLockBadge');
-  const pdfLabel   = $('#pdfOptLabel');
-
-  if (excelInput) {
-    const canExcel = limits.formats.includes('excel');
-    excelInput.disabled = !canExcel;
-    if (excelLock) excelLock.style.display = canExcel ? 'none' : 'inline';
-    if (excelLabel) excelLabel.classList.toggle('locked', !canExcel);
-    if (!canExcel && excelInput.checked) $('#manualFmtWord').checked = true;
-  }
-  if (pdfInput) {
-    const canPdf = limits.formats.includes('pdf');
-    pdfInput.disabled = !canPdf;
-    if (pdfLock) pdfLock.style.display = canPdf ? 'none' : 'inline';
-    if (pdfLabel) pdfLabel.classList.toggle('locked', !canPdf);
-    if (!canPdf && pdfInput.checked) $('#manualFmtWord').checked = true;
-  }
-}
-
-function renderManualImages() {
-  const grid = $('#manualImageGrid');
-  if (!grid) return;
-  if (manualImages.length === 0) {
-    grid.innerHTML = '';
-    updateManualUI();
+  // 共有ページは認証不要
+  const hash = location.hash;
+  if (hash.startsWith('#/share/')) {
+    const token = hash.replace('#/share/', '').split('/')[0];
+    renderSharePage(token);
     return;
   }
-  grid.innerHTML = manualImages.map((img, i) => `
-    <div class="manual-img-item" draggable="true" data-idx="${i}">
-      <div class="manual-img-num">${i + 1}</div>
-      <img src="${img.dataUrl}" alt="Step ${i+1}"
-        style="width:100%;height:100px;object-fit:cover;border-radius:6px 6px 0 0;display:block;pointer-events:none;">
-      <div style="font-size:10px;color:var(--mist);padding:3px 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(img.name || '')}</div>
-      <button class="manual-img-del" data-idx="${i}" title="削除">✕</button>
-    </div>
-  `).join('');
 
-  grid.querySelectorAll('.manual-img-item').forEach(item => {
-    item.addEventListener('dragstart', () => {
-      manualDragIdx = parseInt(item.dataset.idx);
-      setTimeout(() => item.style.opacity = '0.4', 0);
-    });
-    item.addEventListener('dragend',  () => { item.style.opacity = '1'; });
-    item.addEventListener('dragover', (e) => { e.preventDefault(); item.classList.add('drag-over'); });
-    item.addEventListener('dragleave',() => item.classList.remove('drag-over'));
-    item.addEventListener('drop', (e) => {
-      e.preventDefault();
-      item.classList.remove('drag-over');
-      const to = parseInt(item.dataset.idx);
-      if (manualDragIdx === null || manualDragIdx === to) return;
-      const moved = manualImages.splice(manualDragIdx, 1)[0];
-      manualImages.splice(to, 0, moved);
-      manualDragIdx = null;
-      renderManualImages();
-    });
-  });
-
-  grid.querySelectorAll('.manual-img-del').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      manualImages.splice(parseInt(btn.dataset.idx), 1);
-      renderManualImages();
-    });
-  });
-
-  updateManualUI();
-}
-
-async function addManualFiles(fileList) {
-  const limits    = getPlanLimits();
-  const remaining = limits.maxImages - manualImages.length;
-  if (remaining <= 0) {
-    showToast('画像は最大' + limits.maxImages + '枚まで（現在のプラン）', 'error');
+  // セッション確認
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = '/index.html';
     return;
   }
-  const files = Array.from(fileList).filter(f => f.type.startsWith('image/')).slice(0, remaining);
-  if (files.length === 0) { showToast('画像ファイルを選択してください', 'error'); return; }
-  for (const f of files) {
-    const result = await fileToBase64(f);
-    manualImages.push({ ...result, name: f.name });
-  }
-  renderManualImages();
+  currentUser = session.user;
+  await loadProfile();
+
+  // ナビ表示
+  document.getElementById('nav').style.display = 'flex';
+
+  // ルーター設定
+  window.addEventListener('hashchange', route);
+  route();
+});
+
+// プロフィール読み込み
+async function loadProfile() {
+  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  currentProfile = data;
+}
+
+// プラン上限取得
+function getLimits() {
+  const tier = currentProfile?.tier || 'free';
+  return PLANS[tier] || PLANS.free;
 }
 
 // ============================================================
-// MANUAL GENERATOR — Claude API経由（Supabaseエッジ関数）
+// ルーター
 // ============================================================
-async function analyzeImage(base64, mediaType) {
-  // セッショントークンがあれば付与（なければanonキー）
-  let authHeader = `Bearer ${SUPABASE_ANON_KEY}`;
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session?.access_token) authHeader = `Bearer ${session.access_token}`;
-  } catch(e) { /* ignore */ }
+function route() {
+  const hash = location.hash || '#/students';
+  updateNavTabs(hash);
 
-  const res = await fetch(ANALYZE_FN, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': authHeader,
-    },
-    body: JSON.stringify({ base64, mediaType }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error || 'API エラー (' + res.status + ')');
+  if (hash === '#/students' || hash === '') {
+    renderStudentList();
+  } else if (hash.startsWith('#/students/') && hash.includes('/album/new')) {
+    const studentId = hash.split('/')[2];
+    renderAlbumEditor(studentId, null);
+  } else if (hash.startsWith('#/students/') && hash.includes('/album/') && !hash.includes('/new')) {
+    const parts = hash.split('/');
+    renderAlbumView(parts[4]);
+  } else if (hash.startsWith('#/students/')) {
+    const studentId = hash.split('/')[2];
+    renderStudentDetail(studentId);
+  } else if (hash === '#/account') {
+    renderAccount();
+  } else {
+    renderStudentList();
   }
-  const data = await res.json();
-  return (data.description || '').trim() || '説明を取得できませんでした。';
+}
+
+function updateNavTabs(hash) {
+  document.getElementById('tab-students').classList.toggle('active', !hash.startsWith('#/account'));
+  document.getElementById('tab-account').classList.toggle('active', hash.startsWith('#/account'));
 }
 
 // ============================================================
-// MANUAL GENERATOR — Word出力
+// 生徒一覧
 // ============================================================
-async function generateWordDoc(title, steps, watermark) {
-  const { Document, Packer, Paragraph, TextRun, ImageRun, HeadingLevel } = docx;
+async function renderStudentList() {
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="loading"></div>';
 
-  const children = [
-    new Paragraph({ text: title || '手順書', heading: HeadingLevel.HEADING_1 }),
-    new Paragraph({ text: '' }),
-  ];
+  const { data: students, error } = await sb
+    .from('students')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: true });
 
-  for (const step of steps) {
-    children.push(new Paragraph({
-      children: [new TextRun({ text: 'ステップ ' + step.stepNum, bold: true, size: 26, color: '4a7c6f' })],
-    }));
-    children.push(new Paragraph({
-      children: [new TextRun({ text: step.description, size: 22 })],
-      spacing: { after: 100 },
-    }));
-    try {
-      const ext = step.mediaType === 'image/jpeg' ? 'jpg' : step.mediaType === 'image/gif' ? 'gif' : 'png';
-      children.push(new Paragraph({
-        children: [new ImageRun({ data: base64ToUint8Array(step.base64), transformation: { width: 480, height: 300 }, type: ext })],
-      }));
-    } catch(e) { console.warn('Word image embed error:', e); }
-    children.push(new Paragraph({ text: '', spacing: { after: 200 } }));
-  }
+  if (error) { main.innerHTML = errHtml(error.message); return; }
 
-  // 透かし（Freeプラン）
-  if (watermark) {
-    children.push(new Paragraph({ text: '' }));
-    children.push(new Paragraph({
-      children: [new TextRun({ text: '業務かるがも Freeプランで生成 | gyomu-karugamo.com', color: 'aaaaaa', size: 18 })],
-    }));
-  }
+  const limits = getLimits();
+  const atLimit = students.length >= limits.maxStudents;
 
-  const doc = new Document({ sections: [{ children }] });
-  return await Packer.toBlob(doc);
+  const addBtn = atLimit
+    ? `<div class="notice notice-warn" style="margin:0;font-size:0.82rem">
+        ${limits.name}の生徒登録上限（${limits.maxStudents}名）に達しています
+       </div>`
+    : `<button class="btn btn-primary" onclick="openAddStudentModal()">＋ 生徒を追加</button>`;
+
+  main.innerHTML = `
+    <div class="page fade-up">
+      <div class="page-header">
+        <h1 class="page-title">生徒一覧</h1>
+        ${addBtn}
+      </div>
+      <div class="student-grid" id="student-grid">
+        ${students.length === 0 ? emptyState('🐥', 'まだ生徒が登録されていません<br>「生徒を追加」ボタンから始めましょう') : ''}
+        ${students.map(s => studentCardHtml(s)).join('')}
+      </div>
+    </div>`;
+}
+
+function studentCardHtml(s) {
+  const photoUrl = s.photo_path ? getPublicUrl(s.photo_path) : null;
+  const initial = s.name ? s.name[0] : '?';
+  return `
+    <div class="student-card" onclick="location.hash='#/students/${s.id}'">
+      <div class="student-avatar">
+        ${photoUrl
+          ? `<img src="${photoUrl}" alt="${esc(s.name)}" loading="lazy">`
+          : `<div class="avatar-initial">${esc(initial)}</div>`}
+      </div>
+      <div class="student-name">${esc(s.name)}</div>
+      ${s.joined_at ? `<div class="student-since">入会 ${formatDate(s.joined_at)}</div>` : ''}
+    </div>`;
 }
 
 // ============================================================
-// MANUAL GENERATOR — Excel出力
+// 生徒詳細（タイムライン）
 // ============================================================
-async function generateExcelFile(title, steps) {
-  const wb = new ExcelJS.Workbook();
-  wb.creator = '業務かるがも';
+async function renderStudentDetail(studentId) {
+  currentStudentId = studentId;
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="loading"></div>';
 
-  // Sheet1: 手順一覧
-  const ws = wb.addWorksheet('手順一覧');
-  ws.columns = [
-    { key: 'step', width: 14 },
-    { key: 'desc', width: 55 },
-    { key: 'note', width: 20 },
-  ];
-  const titleRow = ws.addRow([title || '手順書', '', '']);
-  titleRow.font = { bold: true, size: 16 };
-  ws.mergeCells('A1:C1');
-  titleRow.height = 32;
-  ws.addRow([]);
-  const hRow = ws.addRow(['ステップ番号', '操作説明', '備考']);
-  hRow.font = { bold: true };
-  hRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD4E8E2' } };
-  hRow.height = 22;
-  for (const step of steps) {
-    const row = ws.addRow(['ステップ ' + step.stepNum, step.description, '']);
-    row.getCell(2).alignment = { wrapText: true, vertical: 'top' };
-    row.height = 36;
+  const [{ data: student, error: se }, { data: records, error: re }] = await Promise.all([
+    sb.from('students').select('*').eq('id', studentId).single(),
+    sb.from('lesson_records')
+      .select('*, record_photos(id, storage_path, sort_order)')
+      .eq('student_id', studentId)
+      .order('recorded_at', { ascending: false })
+      .order('created_at', { ascending: false }),
+  ]);
+
+  if (se) { main.innerHTML = errHtml('生徒情報を取得できませんでした'); return; }
+
+  const photoUrl = student.photo_path ? getPublicUrl(student.photo_path) : null;
+  const initial  = student.name ? student.name[0] : '?';
+
+  main.innerHTML = `
+    <div class="page fade-up">
+      <div class="page-header" style="flex-wrap:wrap;gap:8px">
+        <a href="#/students" class="back-btn">← 一覧へ</a>
+        <div style="display:flex;gap:8px;margin-left:auto">
+          <button class="btn btn-secondary btn-sm" onclick="openEditStudentModal('${studentId}')">編集</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteStudent('${studentId}')">削除</button>
+        </div>
+      </div>
+
+      <div class="student-detail-header">
+        <div class="student-detail-avatar">
+          ${photoUrl
+            ? `<img src="${photoUrl}" alt="${esc(student.name)}">`
+            : `<div class="avatar-initial">${esc(initial)}</div>`}
+        </div>
+        <div class="student-detail-info">
+          <div class="student-detail-name">${esc(student.name)}</div>
+          ${student.joined_at ? `<div class="student-detail-meta">入会日: ${formatDate(student.joined_at)}</div>` : ''}
+          <div class="student-detail-meta" style="margin-top:4px">${records ? records.length : 0}件の記録</div>
+        </div>
+        <div class="student-detail-actions">
+          <button class="btn btn-primary btn-sm" onclick="openRecordModal()">＋ 記録を追加</button>
+          <button class="btn btn-secondary btn-sm" onclick="startAlbum('${studentId}')">📒 アルバムを作る</button>
+        </div>
+      </div>
+
+      <div class="timeline" id="timeline">
+        ${re ? errHtml(re.message) : ''}
+        ${(!records || records.length === 0) ? emptyState('📸', 'まだ記録がありません<br>「記録を追加」から写真とメモを残しましょう') : ''}
+        ${(records || []).map(r => timelineItemHtml(r)).join('')}
+      </div>
+    </div>`;
+}
+
+function timelineItemHtml(record) {
+  // 写真をsort_orderでソート
+  const photos = (record.record_photos || []).slice().sort((a,b) => a.sort_order - b.sort_order);
+  const photosHtml = photos.length > 0
+    ? `<div class="timeline-photos">
+        ${photos.map(p => `
+          <div class="timeline-photo">
+            <img src="${getPublicUrl(p.storage_path)}" alt="" loading="lazy"
+              onclick="openLightbox('${getPublicUrl(p.storage_path)}')">
+          </div>`).join('')}
+       </div>`
+    : '';
+
+  return `
+    <div class="timeline-item" id="record-${record.id}">
+      <div class="timeline-date">
+        📅 ${formatDate(record.recorded_at)}
+        <span style="margin-left:auto;font-size:0.78rem;color:var(--mist)">${photos.length}枚</span>
+      </div>
+      ${photosHtml}
+      ${record.memo ? `<div class="timeline-memo">${esc(record.memo)}</div>` : ''}
+      <div class="timeline-actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${record.id}')">削除</button>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// アルバム作成開始
+// ============================================================
+async function startAlbum(studentId) {
+  // 月次上限チェック
+  const limits = getLimits();
+  if (limits.maxAlbumsPerMonth < Infinity) {
+    const now = new Date();
+    const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    const { count } = await sb.from('albums')
+      .select('*', { count: 'exact', head: true })
+      .eq('student_id', studentId)
+      .gte('created_at', monthStart);
+    // user_idフィルタのため students join
+    const { count: totalCount } = await sb
+      .from('albums')
+      .select('*, students!inner(user_id)', { count: 'exact', head: true })
+      .eq('students.user_id', currentUser.id)
+      .gte('created_at', monthStart);
+
+    if ((totalCount || 0) >= limits.maxAlbumsPerMonth) {
+      alert(`${limits.name}のアルバム生成は月${limits.maxAlbumsPerMonth}回までです。\nスタンダードプランにアップグレードすると無制限でご利用いただけます。`);
+      return;
+    }
   }
 
-  // Sheet2: スクリーンショット
-  const wsImg = wb.addWorksheet('スクリーンショット');
-  wsImg.getColumn('A').width = 70;
-  const titleCell = wsImg.getCell('A1');
-  titleCell.value = title || '手順書';
-  titleCell.font = { bold: true, size: 14 };
-  wsImg.getRow(1).height = 28;
+  // アルバムレコード作成（下書き）
+  const { data: album, error } = await sb.from('albums').insert({
+    student_id: studentId,
+    title: '',
+    is_finalized: false,
+  }).select().single();
 
-  let curRow = 3;
-  for (const step of steps) {
-    wsImg.getCell('A' + curRow).value = 'ステップ ' + step.stepNum;
-    wsImg.getCell('A' + curRow).font = { bold: true, color: { argb: 'FF4a7c6f' } };
-    wsImg.getRow(curRow).height = 20;
-    curRow++;
-    wsImg.getCell('A' + curRow).value = step.description;
-    wsImg.getCell('A' + curRow).alignment = { wrapText: true };
-    wsImg.getRow(curRow).height = 40;
-    curRow++;
-    try {
-      const imgId = wb.addImage({
-        base64: step.base64,
-        extension: step.mediaType === 'image/jpeg' ? 'jpeg' : step.mediaType === 'image/gif' ? 'gif' : 'png',
+  if (error) { alert('アルバムの作成に失敗しました: ' + error.message); return; }
+
+  // 全写真をアルバムに追加
+  const { data: records } = await sb
+    .from('lesson_records')
+    .select('recorded_at, memo, record_photos(id, storage_path, sort_order)')
+    .eq('student_id', studentId)
+    .order('recorded_at', { ascending: true });
+
+  const albumPhotos = [];
+  let order = 0;
+  for (const r of (records || [])) {
+    const photos = (r.record_photos || []).slice().sort((a,b) => a.sort_order - b.sort_order);
+    for (const p of photos) {
+      albumPhotos.push({
+        album_id:   album.id,
+        photo_id:   p.id,
+        memo:       r.memo || '',
+        recorded_at: r.recorded_at,
+        sort_order:  order++,
+        is_excluded: false,
       });
-      wsImg.addImage(imgId, { tl: { col: 0, row: curRow - 1 }, ext: { width: 520, height: 320 }, editAs: 'oneCell' });
-      for (let r = 0; r < 20; r++) wsImg.getRow(curRow + r).height = 16;
-      curRow += 21;
-    } catch(e) {
-      console.warn('Excel image embed error:', e);
-      wsImg.getCell('A' + curRow).value = '（画像埋め込みに失敗しました）';
-      curRow += 2;
     }
   }
 
-  const buffer = await wb.xlsx.writeBuffer();
-  return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  if (albumPhotos.length > 0) {
+    await sb.from('album_photos').insert(albumPhotos);
+  }
+
+  location.hash = `#/students/${studentId}/album/${album.id}`;
 }
 
 // ============================================================
-// MANUAL GENERATOR — PDF出力（html2canvas + jsPDF）
+// アルバムエディター
 // ============================================================
-async function generatePdfFile(title, steps) {
-  // 一時的なHTML要素を作成してレンダリング
-  const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;padding:48px 48px 60px;background:white;font-family:sans-serif;color:#1a1714;';
+async function renderAlbumEditor(studentId, albumId) {
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="loading"></div>';
 
-  const titleEl = document.createElement('h1');
-  titleEl.style.cssText = 'font-size:24px;font-weight:700;margin-bottom:24px;color:#1a1714;border-bottom:2px solid #4a7c6f;padding-bottom:12px;';
-  titleEl.textContent = title || '手順書';
-  container.appendChild(titleEl);
+  // albumIdが渡されなかった場合はhashから取得
+  if (!albumId) {
+    const parts = location.hash.split('/');
+    albumId = parts[4];
+  }
+  currentAlbumId = albumId;
 
-  for (const step of steps) {
-    const stepEl = document.createElement('div');
-    stepEl.style.cssText = 'margin-bottom:32px;page-break-inside:avoid;';
+  const [{ data: album, error: ae }, { data: student }, { data: photos, error: pe }] = await Promise.all([
+    sb.from('albums').select('*').eq('id', albumId).single(),
+    sb.from('students').select('name').eq('id', studentId).single(),
+    sb.from('album_photos').select('*').eq('album_id', albumId).order('sort_order', { ascending: true }),
+  ]);
 
-    const numEl = document.createElement('div');
-    numEl.style.cssText = 'font-size:15px;font-weight:700;color:#4a7c6f;margin-bottom:6px;';
-    numEl.textContent = 'ステップ ' + step.stepNum;
-    stepEl.appendChild(numEl);
-
-    const descEl = document.createElement('p');
-    descEl.style.cssText = 'font-size:13px;line-height:1.8;margin-bottom:10px;color:#3d3530;';
-    descEl.textContent = step.description;
-    stepEl.appendChild(descEl);
-
-    const imgEl = document.createElement('img');
-    imgEl.src = step.dataUrl;
-    imgEl.style.cssText = 'max-width:100%;height:auto;max-height:280px;object-fit:contain;border:1px solid #e8e0d4;border-radius:6px;display:block;';
-    stepEl.appendChild(imgEl);
-
-    container.appendChild(stepEl);
+  if (ae || pe) { main.innerHTML = errHtml((ae||pe).message); return; }
+  if (album.is_finalized) {
+    renderAlbumView(albumId); return;
   }
 
-  document.body.appendChild(container);
+  main.innerHTML = `
+    <div class="page fade-up">
+      <div class="page-header">
+        <a href="#/students/${studentId}" class="back-btn">← 戻る</a>
+        <button class="btn btn-primary" onclick="finalizeAlbum('${studentId}')">完成させる →</button>
+      </div>
 
-  // 画像ロード待機
-  await Promise.all(
-    Array.from(container.querySelectorAll('img')).map(img =>
-      new Promise(r => { if (img.complete) r(); else { img.onload = r; img.onerror = r; } })
-    )
-  );
+      <div class="album-editor-header">
+        <input type="text" class="album-title-input" id="album-title-input"
+          placeholder="${esc(student?.name || '')}の成長アルバム"
+          value="${esc(album.title || '')}" maxlength="60">
+        <div class="album-hint">
+          写真をドラッグで並び替え、「除外」で非表示にできます（${photos.filter(p=>!p.is_excluded).length}枚選択中）
+        </div>
+      </div>
 
-  const canvas = await html2canvas(container, { scale: 1.5, useCORS: true, logging: false });
-  document.body.removeChild(container);
+      ${photos.length === 0
+        ? `<div class="notice notice-warn">この生徒の記録に写真がありません。先に記録を追加してください。</div>`
+        : ''}
 
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p', 'pt', 'a4');
-  const pageW = pdf.internal.pageSize.getWidth();
-  const pageH = pdf.internal.pageSize.getHeight();
-  const ratio = pageW / canvas.width;
-  const totalH = canvas.height * ratio;
-  const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      <div class="album-photo-grid" id="album-grid">
+        ${(photos || []).map(p => albumPhotoItemHtml(p)).join('')}
+      </div>
+    </div>`;
 
-  let y = 0;
-  while (y < totalH) {
-    if (y > 0) pdf.addPage();
-    pdf.addImage(imgData, 'JPEG', 0, -y, pageW, totalH);
-    y += pageH;
+  // SortableJSを初期化
+  if (photos.length > 0) {
+    albumSortable = Sortable.create(document.getElementById('album-grid'), {
+      animation: 150,
+      handle: '.drag-handle',
+      ghostClass: 'sortable-ghost',
+    });
   }
-
-  return pdf.output('blob');
 }
 
-// ============================================================
-// MANUAL GENERATOR — 生成実行
-// ============================================================
-async function runGenerate() {
-  const limits = getPlanLimits();
-  const count  = getMonthlyCount();
-  const fmt    = document.querySelector('input[name="manualFmt"]:checked')?.value || 'word';
-  const title  = ($('#manualTitle')?.value || '').trim() || '手順書';
-  const btn    = $('#manualGenerateBtn');
-  const bar    = $('#manualStatusBar');
-  const icon   = $('#manualStatusIcon');
-  const text   = $('#manualStatusText');
+function albumPhotoItemHtml(p) {
+  const url = getPublicUrl(p.storage_path || '');
+  const excluded = p.is_excluded;
+  return `
+    <div class="album-photo-item ${excluded ? 'excluded' : ''}" data-photo-id="${p.id}">
+      <span class="drag-handle" title="ドラッグで並び替え">⠿</span>
+      <img class="album-photo-img" src="${url}" alt="" loading="lazy"
+        onclick="openLightbox('${url}')">
+      <div class="album-photo-meta">
+        <div class="album-photo-date">📅 ${formatDate(p.recorded_at)}</div>
+        ${p.memo ? `<div class="album-photo-memo">${esc(p.memo)}</div>` : ''}
+      </div>
+      <div class="album-photo-actions">
+        <button class="btn ${excluded ? 'btn-secondary' : 'btn-danger'} btn-sm"
+          onclick="toggleExclude('${p.id}', ${excluded})">
+          ${excluded ? '✓ 含める' : '除外する'}
+        </button>
+      </div>
+    </div>`;
+}
 
-  function setStatus(msg, type = '') {
-    if (!bar) return;
-    bar.style.display = msg ? 'flex' : 'none';
-    bar.className = 'manual-status-bar' + (type ? ' ' + type : '');
-    if (icon) icon.textContent = type === 'error' ? '❌' : type === 'success' ? '✅' : '⏳';
-    if (text) text.textContent = msg;
+// 除外トグル
+async function toggleExclude(photoId, currentExcluded) {
+  await sb.from('album_photos').update({ is_excluded: !currentExcluded }).eq('id', photoId);
+  const el = document.querySelector(`[data-photo-id="${photoId}"]`);
+  if (!el) return;
+  el.classList.toggle('excluded', !currentExcluded);
+  const btn = el.querySelector('button');
+  if (btn) {
+    btn.className = `btn ${!currentExcluded ? 'btn-secondary' : 'btn-danger'} btn-sm`;
+    btn.textContent = !currentExcluded ? '✓ 含める' : '除外する';
+    btn.setAttribute('onclick', `toggleExclude('${photoId}', ${!currentExcluded})`);
   }
+  // ヒントの枚数更新
+  const hint = document.querySelector('.album-hint');
+  if (hint) {
+    const included = document.querySelectorAll('.album-photo-item:not(.excluded)').length;
+    hint.textContent = `写真をドラッグで並び替え、「除外」で非表示にできます（${included}枚選択中）`;
+  }
+}
 
-  // バリデーション
-  if (manualImages.length === 0) { showToast('スクリーンショットをアップロードしてください', 'error'); return; }
-  if (count >= limits.maxMonthly) {
-    setStatus('今月の生成上限（' + limits.maxMonthly + '件）に達しました。プランをアップグレードしてください。', 'error');
+// アルバム完成
+async function finalizeAlbum(studentId) {
+  const title = document.getElementById('album-title-input')?.value.trim();
+  if (!title) {
+    alert('アルバムのタイトルを入力してください。');
+    document.getElementById('album-title-input')?.focus();
     return;
   }
-  if (fmt === 'excel' && !limits.formats.includes('excel')) { showToast('Excel出力はStandard以上のプランで利用できます', 'error'); return; }
-  if (fmt === 'pdf'   && !limits.formats.includes('pdf'))   { showToast('PDF出力はPremiumプランで利用できます', 'error');       return; }
 
-  btn.disabled = true;
-  setStatus('AIが画像を解析中... (1/' + manualImages.length + '枚目)');
+  // SortableJSの並び順をDBに保存
+  if (albumSortable) {
+    const order = albumSortable.toArray ? null : null; // data-id不要、手動で取得
+    const items = document.querySelectorAll('#album-grid .album-photo-item');
+    const updates = [];
+    items.forEach((el, i) => {
+      const photoId = el.getAttribute('data-photo-id');
+      if (photoId) updates.push(sb.from('album_photos').update({ sort_order: i }).eq('id', photoId));
+    });
+    await Promise.all(updates);
+  }
 
-  const steps = [];
+  const { error } = await sb.from('albums').update({
+    title,
+    is_finalized: true,
+    finalized_at: new Date().toISOString(),
+  }).eq('id', currentAlbumId);
+
+  if (error) { alert('保存に失敗しました: ' + error.message); return; }
+
+  location.hash = `#/students/${studentId}/album/${currentAlbumId}`;
+}
+
+// ============================================================
+// アルバムビュー（完成済み）
+// ============================================================
+async function renderAlbumView(albumId) {
+  currentAlbumId = albumId;
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="loading"></div>';
+
+  const { data: album, error: ae } = await sb.from('albums').select('*, students(name, id)').eq('id', albumId).single();
+  if (ae) { main.innerHTML = errHtml(ae.message); return; }
+
+  const { data: photos, error: pe } = await sb
+    .from('album_photos')
+    .select('*')
+    .eq('album_id', albumId)
+    .eq('is_excluded', false)
+    .order('sort_order', { ascending: true });
+
+  if (pe) { main.innerHTML = errHtml(pe.message); return; }
+
+  const studentId = album.students?.id || '';
+  const studentName = album.students?.name || '';
+  const limits = getLimits();
+
+  const shareBtn = limits.canShare
+    ? `<button class="btn btn-white btn-sm" onclick="issueShareLink('${albumId}')">🔗 共有リンクを発行</button>`
+    : `<button class="btn btn-white btn-sm" title="スタンダードプランで利用可能" style="opacity:.6;cursor:not-allowed">🔗 共有（スタンダード）</button>`;
+
+  main.innerHTML = `
+    <div class="fade-up">
+      <div class="page">
+        <div class="page-header" style="margin-bottom:0">
+          <a href="#/students/${studentId}" class="back-btn">← 生徒詳細へ</a>
+        </div>
+      </div>
+
+      <div class="album-view-header" style="margin:0 0 24px">
+        <div style="max-width:860px;margin:0 auto;padding:0 16px">
+          <div class="album-view-title">${esc(album.title)}</div>
+          <div class="album-view-student">👤 ${esc(studentName)} ・ ${photos.length}枚</div>
+          <div class="album-view-actions">
+            <button class="btn btn-white btn-sm" onclick="downloadAlbumPDF('${albumId}')">⬇ PDFダウンロード</button>
+            ${shareBtn}
+          </div>
+        </div>
+      </div>
+
+      <div class="page">
+        <div class="album-photo-list" id="album-view-list">
+          ${photos.map(p => albumViewCardHtml(p)).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function albumViewCardHtml(p) {
+  const url = p.storage_path ? getPublicUrl(p.storage_path) : '';
+  return `
+    <div class="album-photo-card">
+      <img src="${url}" alt="" loading="lazy" onclick="openLightbox('${url}')">
+      <div class="album-photo-card-meta">
+        <div class="album-photo-card-date">📅 ${formatDate(p.recorded_at)}</div>
+        ${p.memo ? `<div class="album-photo-card-memo">${esc(p.memo)}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// 共有リンク発行
+// ============================================================
+async function issueShareLink(albumId) {
+  // 既存トークン確認
+  const { data: album } = await sb.from('albums').select('share_token, title').eq('id', albumId).single();
+  let token = album?.share_token;
+
+  if (!token) {
+    // トークン生成（ランダム16バイト）
+    token = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map(b => b.toString(16).padStart(2,'0')).join('');
+    const { error } = await sb.from('albums').update({ share_token: token }).eq('id', albumId);
+    if (error) { alert('共有リンクの発行に失敗しました'); return; }
+  }
+
+  currentShareLink = `${APP_URL}#/share/${token}`;
+  document.getElementById('share-link-display').textContent = currentShareLink;
+  openModal('modal-share');
+}
+
+async function copyShareLink() {
   try {
-    for (let i = 0; i < manualImages.length; i++) {
-      setStatus('AIが画像を解析中... (' + (i+1) + '/' + manualImages.length + '枚目)');
-      const img = manualImages[i];
-      const description = await analyzeImage(img.base64, img.mediaType);
-      steps.push({ stepNum: i+1, description, base64: img.base64, mediaType: img.mediaType, dataUrl: img.dataUrl });
+    await navigator.clipboard.writeText(currentShareLink);
+    alert('リンクをコピーしました！');
+  } catch {
+    prompt('以下のリンクをコピーしてください', currentShareLink);
+  }
+}
+
+// ============================================================
+// 共有ページ（認証不要）
+// ============================================================
+async function renderSharePage(token) {
+  document.getElementById('nav').style.display = 'none';
+
+  const main = document.getElementById('main');
+  main.style.paddingTop = '0';
+  main.innerHTML = '<div class="loading"></div>';
+
+  // share_tokenでアルバムを取得（RLSポリシーで公開）
+  const { data: album, error: ae } = await sb
+    .from('albums')
+    .select('*, students(name)')
+    .eq('share_token', token)
+    .eq('is_finalized', true)
+    .single();
+
+  if (ae || !album) {
+    main.innerHTML = `
+      <div style="text-align:center;padding:80px 20px">
+        <div style="font-size:3rem;margin-bottom:16px">🔍</div>
+        <div style="font-size:1.1rem;color:var(--brown-mid)">アルバムが見つかりませんでした</div>
+        <div style="font-size:0.85rem;color:var(--mist);margin-top:8px">リンクが無効か、共有が解除された可能性があります</div>
+      </div>`;
+    return;
+  }
+
+  const { data: photos } = await sb
+    .from('album_photos')
+    .select('*')
+    .eq('album_id', album.id)
+    .eq('is_excluded', false)
+    .order('sort_order', { ascending: true });
+
+  main.innerHTML = `
+    <div class="share-page">
+      <div class="share-header">
+        <div class="share-header-logo">🐥 すくすくかるがもアルバム</div>
+        <div class="share-header-title">${esc(album.title)}</div>
+        <div class="share-header-student">👤 ${esc(album.students?.name || '')}</div>
+      </div>
+
+      <div class="share-actions">
+        <button class="btn btn-primary" onclick="downloadSharePDF()">⬇ PDFでダウンロード</button>
+      </div>
+
+      <div class="share-photo-list" id="share-photo-list">
+        ${(photos||[]).map(p => albumViewCardHtml(p)).join('')}
+      </div>
+    </div>`;
+
+  // PDF用にデータを保持
+  window._sharePhotos = photos;
+  window._shareTitle  = album.title;
+}
+
+// ============================================================
+// PDF生成（html2canvas経由）
+// ============================================================
+async function downloadAlbumPDF(albumId) {
+  const { data: album } = await sb.from('albums').select('title, students(name)').eq('id', albumId).single();
+  const { data: photos } = await sb
+    .from('album_photos').select('*')
+    .eq('album_id', albumId).eq('is_excluded', false)
+    .order('sort_order', { ascending: true });
+
+  await generatePDF(album?.title || 'アルバム', album?.students?.name || '', photos || []);
+}
+
+async function downloadSharePDF() {
+  await generatePDF(window._shareTitle || 'アルバム', '', window._sharePhotos || []);
+}
+
+async function generatePDF(title, studentName, photos) {
+  if (photos.length === 0) { alert('写真がありません'); return; }
+
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const W = 210, H = 297, M = 14;
+
+    // ===== 表紙 =====
+    doc.setFillColor(74, 124, 111);
+    doc.rect(0, 0, W, H, 'F');
+    doc.setFillColor(255, 255, 255, 0.1);
+
+    // タイトル（白文字）
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    const titleLines = doc.splitTextToSize(title, W - M*2);
+    doc.text(titleLines, W/2, 120, { align: 'center' });
+
+    if (studentName) {
+      doc.setFontSize(13);
+      doc.text(studentName, W/2, 120 + titleLines.length * 10 + 10, { align: 'center' });
     }
 
-    setStatus('ファイルを生成中...');
+    doc.setFontSize(10);
+    doc.setTextColor(255, 255, 255, 0.7);
+    doc.text('すくすくかるがもアルバム', W/2, H - 20, { align: 'center' });
 
-    let blob, filename;
-    if (fmt === 'excel') {
-      blob = await generateExcelFile(title, steps);
-      filename = title + '.xlsx';
-    } else if (fmt === 'pdf') {
-      blob = await generatePdfFile(title, steps);
-      filename = title + '.pdf';
-    } else {
-      blob = await generateWordDoc(title, steps, limits.watermark);
-      filename = title + '.docx';
+    // ===== 写真ページ（2枚/ページ） =====
+    const renderArea = document.getElementById('pdf-render-area');
+
+    for (let i = 0; i < photos.length; i += 2) {
+      const batch = photos.slice(i, i+2);
+      doc.addPage();
+
+      let y = M;
+      for (const p of batch) {
+        // html2canvasで画像を描画してbase64取得
+        const url = p.storage_path ? getPublicUrl(p.storage_path) : '';
+        const imgData = await fetchImageBase64(url);
+        if (!imgData) continue;
+
+        const imgH = 100; // mm
+        const imgW = W - M*2;
+
+        try {
+          doc.addImage(imgData, 'JPEG', M, y, imgW, imgH);
+        } catch {
+          try { doc.addImage(imgData, 'PNG', M, y, imgW, imgH); } catch(e2) { console.warn('addImage error', e2); }
+        }
+        y += imgH + 3;
+
+        // 日付
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(74, 124, 111);
+        doc.text(formatDate(p.recorded_at), M, y + 4);
+        y += 7;
+
+        // メモ
+        if (p.memo) {
+          doc.setFontSize(10);
+          doc.setTextColor(61, 43, 31);
+          const memoLines = doc.splitTextToSize(p.memo, imgW);
+          const shown = memoLines.slice(0, 3);
+          doc.text(shown, M, y + 4);
+          y += shown.length * 5 + 8;
+        } else {
+          y += 6;
+        }
+      }
+
+      // ページ番号
+      doc.setFontSize(8);
+      doc.setTextColor(180, 180, 180);
+      doc.text(`${Math.floor(i/2) + 1}`, W/2, H - 8, { align: 'center' });
     }
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 3000);
-
-    incMonthlyCount();
-    updateManualUI();
-
-    setStatus('完了しました！ファイルがダウンロードされます。', 'success');
-    showToast('手順書を生成しました！', 'success');
-
-    // 未ログインユーザーに保存を促す
-    if (!currentUser) {
-      setTimeout(() => { $('#loginPromptModal').classList.add('show'); }, 2000);
-    }
-
+    doc.save(`${title}.pdf`);
   } catch(e) {
-    console.error('Generate error:', e);
-    setStatus('エラー: ' + (e.message || '生成に失敗しました'), 'error');
-    showToast('手順書の生成に失敗しました', 'error');
+    alert('PDF生成に失敗しました: ' + e.message);
+    console.error(e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '⬇ PDFダウンロード'; }
+  }
+}
+
+// 画像URLをbase64に変換（CORSを回避するため一度blob経由）
+async function fetchImageBase64(url) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch(e) {
+    console.warn('fetchImageBase64 error:', url, e);
+    return null;
+  }
+}
+
+// ============================================================
+// 生徒追加・編集モーダル
+// ============================================================
+function openAddStudentModal() {
+  editingStudentId = null;
+  studentAvatarFile = null;
+  document.getElementById('modal-student-title').textContent = '生徒を追加';
+  document.getElementById('student-name-input').value = '';
+  document.getElementById('student-joined-input').value = '';
+  document.getElementById('student-avatar-preview').innerHTML = '<span>📷</span>';
+  document.getElementById('student-save-label').textContent = '追加する';
+  openModal('modal-student');
+}
+
+async function openEditStudentModal(studentId) {
+  const { data: s } = await sb.from('students').select('*').eq('id', studentId).single();
+  if (!s) return;
+  editingStudentId = studentId;
+  studentAvatarFile = null;
+  document.getElementById('modal-student-title').textContent = '生徒情報を編集';
+  document.getElementById('student-name-input').value = s.name || '';
+  document.getElementById('student-joined-input').value = s.joined_at || '';
+  document.getElementById('student-save-label').textContent = '保存する';
+  const preview = document.getElementById('student-avatar-preview');
+  if (s.photo_path) {
+    preview.innerHTML = `<img src="${getPublicUrl(s.photo_path)}" alt="">`;
+  } else {
+    preview.innerHTML = '<span>📷</span>';
+  }
+  openModal('modal-student');
+}
+
+function previewStudentAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  studentAvatarFile = file;
+  const url = URL.createObjectURL(file);
+  document.getElementById('student-avatar-preview').innerHTML = `<img src="${url}" alt="">`;
+}
+
+async function saveStudent() {
+  const name = document.getElementById('student-name-input').value.trim();
+  if (!name) { alert('お名前を入力してください'); return; }
+
+  const joinedAt = document.getElementById('student-joined-input').value || null;
+  const btn = document.querySelector('#modal-student .btn-primary');
+  btn.disabled = true;
+
+  try {
+    let photoPath = undefined;
+
+    // アバター写真をアップロード
+    if (studentAvatarFile) {
+      const ext  = studentAvatarFile.name.split('.').pop();
+      const path = `avatars/${currentUser.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, studentAvatarFile, { upsert: true });
+      if (upErr) { alert('写真のアップロードに失敗しました: ' + upErr.message); return; }
+      photoPath = path;
+    }
+
+    if (editingStudentId) {
+      const updates = { name, joined_at: joinedAt };
+      if (photoPath !== undefined) updates.photo_path = photoPath;
+      await sb.from('students').update(updates).eq('id', editingStudentId);
+    } else {
+      await sb.from('students').insert({
+        user_id: currentUser.id,
+        name,
+        joined_at: joinedAt,
+        photo_path: photoPath || null,
+      });
+    }
+
+    closeModal('modal-student');
+
+    if (editingStudentId) {
+      renderStudentDetail(editingStudentId);
+    } else {
+      renderStudentList();
+    }
   } finally {
     btn.disabled = false;
   }
 }
 
-// ============================================================
-// MANUAL GENERATOR — 初期化
-// ============================================================
-function initManualGenerator() {
-  const dropZone  = $('#manualDropZone');
-  const fileInput = $('#manualFileInput');
-  if (!dropZone || !fileInput) return;
-
-  dropZone.addEventListener('dragover',  (e) => { e.preventDefault(); dropZone.classList.add('dragging'); });
-  dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('dragging'));
-  dropZone.addEventListener('drop', async (e) => {
-    e.preventDefault(); dropZone.classList.remove('dragging');
-    await addManualFiles(e.dataTransfer.files);
-  });
-  dropZone.addEventListener('click', () => fileInput.click());
-  dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-
-  fileInput.addEventListener('change', async (e) => {
-    await addManualFiles(e.target.files);
-    fileInput.value = '';
-  });
-
-  $('#manualGenerateBtn')?.addEventListener('click', runGenerate);
-
-  $('#usageUpgradeLink')?.addEventListener('click', (e) => { e.preventDefault(); goTab('account'); });
-  $('#loginPromptClose')?.addEventListener('click', () => { $('#loginPromptModal').classList.remove('show'); });
-  $('#loginPromptModal')?.addEventListener('click', (e) => { if (e.target === $('#loginPromptModal')) $('#loginPromptModal').classList.remove('show'); });
-
-  updateManualUI();
+async function deleteStudent(studentId) {
+  if (!confirm('この生徒を削除しますか？\n記録・アルバムもすべて削除されます。この操作は取り消せません。')) return;
+  const { error } = await sb.from('students').delete().eq('id', studentId);
+  if (error) { alert('削除に失敗しました: ' + error.message); return; }
+  location.hash = '#/students';
 }
 
 // ============================================================
-// ACCOUNT MANAGEMENT
+// 記録追加モーダル
 // ============================================================
-function renderAccount() {
-  if (!currentUser) return;
-  $('#currentEmail').textContent = currentUser?.email || '';
+function openRecordModal() {
+  recordPhotoFiles = [];
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('record-date-input').value = today;
+  document.getElementById('record-memo-input').value = '';
+  document.getElementById('record-photos').innerHTML = '';
+  openModal('modal-record');
+}
 
-  if (isPremium()) {
-    $('#planFreeBox').style.display     = 'none';
-    $('#planStandardBox').style.display = 'none';
-    $('#planPremiumBox').style.display  = 'block';
-  } else if (isStandard()) {
-    $('#planFreeBox').style.display     = 'none';
-    $('#planStandardBox').style.display = 'block';
-    $('#planPremiumBox').style.display  = 'none';
-  } else {
-    $('#planFreeBox').style.display     = 'block';
-    $('#planStandardBox').style.display = 'none';
-    $('#planPremiumBox').style.display  = 'none';
+// 定型文挿入
+function insertPhrase(phrase) {
+  const ta = document.getElementById('record-memo-input');
+  const pos = ta.selectionStart;
+  const before = ta.value.slice(0, pos);
+  const after  = ta.value.slice(pos);
+  const sep = before && !before.endsWith('\n') ? '\n' : '';
+  ta.value = before + sep + phrase + after;
+  ta.focus();
+}
+
+// 写真ファイル追加
+function addPhotoPreviews(files, containerId) {
+  const container = document.getElementById(containerId);
+  for (const file of files) {
+    recordPhotoFiles.push(file);
+    const idx = recordPhotoFiles.length - 1;
+    const url = URL.createObjectURL(file);
+    const div = document.createElement('div');
+    div.className = 'photo-preview-item';
+    div.dataset.idx = idx;
+    div.innerHTML = `
+      <img src="${url}" alt="">
+      <button class="photo-preview-remove" onclick="removePhotoPreview(${idx})">✕</button>`;
+    container.appendChild(div);
   }
+}
 
-  const everSubscribed = hasEverSubscribed();
-  const stdBtn   = $('#btnSubscribeStandard');
-  const preBtn   = $('#btnSubscribePremium');
-  const trialNote = $('#trialNote');
-  if (stdBtn)    stdBtn.textContent    = everSubscribed ? 'Standardへ登録' : 'Standardへ（7日間無料）';
-  if (preBtn)    preBtn.textContent    = everSubscribed ? 'Premiumへ登録'  : 'Premiumへ（7日間無料）';
-  if (trialNote) trialNote.textContent = everSubscribed ? '※ 過去にご利用歴があるため、無料トライアルは適用されません。' : '';
+function removePhotoPreview(idx) {
+  recordPhotoFiles[idx] = null; // nullで無効化
+  const el = document.querySelector(`[data-idx="${idx}"]`);
+  if (el) el.remove();
+}
 
-  // Googleログインユーザーはメール変更・PW変更を非表示
-  const isGoogle = (currentUser?.identities || []).some(id => id.provider === 'google');
-  if (isGoogle) {
-    const es = $('#emailChangeSection');
-    const ps = $('#pwSection');
-    if (es) es.style.display = 'none';
-    if (ps) ps.style.display = 'none';
+// ドラッグ&ドロップ
+function handleDragOver(e, areaId) {
+  e.preventDefault();
+  document.getElementById(areaId).classList.add('dragover');
+}
+function handleDragLeave(e, areaId) {
+  document.getElementById(areaId).classList.remove('dragover');
+}
+function handleDrop(e, containerId) {
+  e.preventDefault();
+  document.getElementById(e.currentTarget.id || '').classList.remove('dragover');
+  addPhotoPreviews(e.dataTransfer.files, containerId);
+}
+
+async function saveRecord() {
+  const date = document.getElementById('record-date-input').value;
+  const memo = document.getElementById('record-memo-input').value.trim();
+  if (!date) { alert('日付を選択してください'); return; }
+  if (!currentStudentId) { alert('生徒が選択されていません'); return; }
+
+  const validFiles = recordPhotoFiles.filter(f => f !== null);
+
+  const btn = document.getElementById('record-save-btn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  try {
+    // レッスン記録を作成
+    const { data: record, error: rErr } = await sb.from('lesson_records').insert({
+      student_id: currentStudentId,
+      memo:        memo || null,
+      recorded_at: date,
+    }).select().single();
+
+    if (rErr) { alert('記録の保存に失敗しました: ' + rErr.message); return; }
+
+    // 写真をアップロード
+    for (let i = 0; i < validFiles.length; i++) {
+      const file = validFiles[i];
+      const ext  = file.name.split('.').pop();
+      const path = `records/${currentUser.id}/${currentStudentId}/${record.id}/${Date.now()}_${i}.${ext}`;
+      const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, file);
+      if (upErr) { console.warn('写真アップロードエラー:', upErr); continue; }
+      await sb.from('record_photos').insert({ record_id: record.id, storage_path: path, sort_order: i });
+    }
+
+    closeModal('modal-record');
+    renderStudentDetail(currentStudentId);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '記録を保存';
   }
+}
+
+async function deleteRecord(recordId) {
+  if (!confirm('この記録を削除しますか？写真もすべて削除されます。')) return;
+  await sb.from('lesson_records').delete().eq('id', recordId);
+  renderStudentDetail(currentStudentId);
+}
+
+// ============================================================
+// アカウントタブ
+// ============================================================
+async function renderAccount() {
+  await loadProfile();
+  const main = document.getElementById('main');
+  const tier  = currentProfile?.tier || 'free';
+  const isStd = tier === 'standard' || tier === 'premium';
+
+  main.innerHTML = `
+    <div class="page fade-up">
+      <div class="page-header"><h1 class="page-title">アカウント</h1></div>
+
+      <div class="account-section">
+
+        <div class="card">
+          <div style="font-size:0.82rem;color:var(--mist);margin-bottom:4px">ログイン中のアカウント</div>
+          <div style="font-weight:600;color:var(--brown)">${esc(currentUser.email || '')}</div>
+        </div>
+
+        ${isStd ? `
+        <div class="plan-card current">
+          <div class="plan-badge">✓ ご利用中のプラン</div>
+          <div class="plan-name">スタンダードプラン</div>
+          <div class="plan-price">¥980 <span>/ 月</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">生徒登録 無制限</div>
+            <div class="plan-feature">アルバム生成 無制限</div>
+            <div class="plan-feature">保護者への共有リンク発行</div>
+            <div class="plan-feature">PDFダウンロード</div>
+          </div>
+          <button class="btn btn-secondary" onclick="openPortal()">サブスクリプション管理</button>
+        </div>
+        ` : `
+        <div class="plan-card current">
+          <div class="plan-badge">現在のプラン</div>
+          <div class="plan-name">ライトプラン（無料）</div>
+          <div class="plan-price">¥0 <span>/ 月</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">生徒登録 最大15名</div>
+            <div class="plan-feature">アルバム生成 月1回まで</div>
+            <div class="plan-feature">PDFダウンロード</div>
+          </div>
+        </div>
+
+        <div class="plan-card" style="border-color:var(--duck)">
+          <div class="plan-badge" style="background:var(--duck);color:#fff;border-color:var(--duck)">おすすめ</div>
+          <div class="plan-name">スタンダードプラン</div>
+          <div class="plan-price">¥980 <span>/ 月（14日間無料）</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">生徒登録 無制限</div>
+            <div class="plan-feature">アルバム生成 無制限</div>
+            <div class="plan-feature">保護者への共有リンク発行</div>
+            <div class="plan-feature">PDFダウンロード</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="startCheckout('standard')">
+            14日間無料で試す →
+          </button>
+        </div>
+        `}
+
+        <div class="card" style="display:flex;justify-content:center">
+          <button class="btn btn-danger btn-sm" onclick="signOut()">ログアウト</button>
+        </div>
+
+      </div>
+    </div>`;
 }
 
 async function startCheckout(plan) {
-  if (!currentUser) return;
-  const { data: { session } } = await sb.auth.getSession();
-  const token = session?.access_token;
-  if (!token) { showToast('ログインし直してください', 'error'); return; }
-
-  ['btnSubscribeStandard','btnSubscribePremium'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) { btn.disabled = true; btn.textContent = '準備中…'; }
-  });
-
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '処理中...';
   try {
+    const { data: { session } } = await sb.auth.getSession();
     const res = await fetch(CHECKOUT_FN, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
       body: JSON.stringify({
-        user_id: currentUser.id, plan,
-        success_url: `${APP_URL}?checkout=success`,
-        cancel_url: APP_URL,
+        plan,
+        success_url: `${APP_URL}#/account`,
+        cancel_url:  `${APP_URL}#/account`,
       }),
     });
-    if (!res.ok) { showToast('決済の準備に失敗しました', 'error'); return; }
-    const { url } = await res.json();
-    if (url) window.location.href = url;
-    else showToast('決済URLが取得できませんでした', 'error');
-  } catch(e) {
-    showToast('ネットワークエラーが発生しました', 'error');
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert('チェックアウトURLを取得できませんでした');
   } finally {
-    renderAccount();
+    btn.disabled = false;
+    btn.textContent = '14日間無料で試す →';
   }
 }
 
-async function openPortal(action = '') {
-  if (!currentProfile?.stripe_customer_id) {
-    showToast('お客様情報が見つかりません', 'error'); return;
-  }
+async function openPortal() {
   const { data: { session } } = await sb.auth.getSession();
-  const token = session?.access_token;
-  if (!token) { showToast('ログインし直してください', 'error'); return; }
-
-  ['btnUpgradePremium','btnDowngradeStandard','btnCancel','btnCancelPremium'].forEach(id => {
-    const btn = document.getElementById(id);
-    if (btn) btn.disabled = true;
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+    body: JSON.stringify({ return_url: `${APP_URL}#/account` }),
   });
+  const data = await res.json();
+  if (data.url) window.location.href = data.url;
+  else alert('ポータルURLを取得できませんでした');
+}
 
+async function signOut() {
+  await sb.auth.signOut();
+  window.location.href = '/index.html';
+}
+
+// ============================================================
+// モーダルユーティリティ
+// ============================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// オーバーレイクリックで閉じる
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// ============================================================
+// ライトボックス
+// ============================================================
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('open');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeLightbox();
+    document.querySelectorAll('.modal-overlay.open').forEach(m => closeModal(m.id));
+  }
+});
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function getPublicUrl(path) {
+  if (!path) return '';
+  return sb.storage.from(STORAGE_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
   try {
-    const res = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ user_id: currentUser.id, return_url: location.href, action }),
-    });
-    if (!res.ok) { showToast('エラーが発生しました（' + res.status + '）', 'error'); return; }
-    const d = await res.json();
-    if (d?.url) window.location.href = d.url;
-    else showToast('ポータルURLが取得できませんでした', 'error');
-  } catch(e) {
-    showToast('ネットワークエラーが発生しました', 'error');
-  } finally {
-    renderAccount();
-  }
+    const d = new Date(dateStr + 'T00:00:00');
+    return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+  } catch { return dateStr; }
 }
 
-// ============================================================
-// PROFILE LOAD
-// ============================================================
-async function loadOrCreateProfile(userId) {
-  let { data, error } = await sb.from('profiles')
-    .select('id, tier, is_active, has_password, stripe_customer_id, stripe_subscription_id')
-    .eq('id', userId).single();
-
-  if (error && (error.code === 'PGRST116' || error.details?.includes('0 rows'))) {
-    await sb.from('profiles').upsert(
-      { id: userId, tier: 'free', is_active: false, has_password: false },
-      { onConflict: 'id' }
-    );
-    ({ data, error } = await sb.from('profiles')
-      .select('id, tier, is_active, has_password, stripe_customer_id, stripe_subscription_id')
-      .eq('id', userId).single());
-  }
-  return { data, error };
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
 
-// ============================================================
-// MAIN
-// ============================================================
-async function main() {
-  initTabs();
-  initManualGenerator();
-
-  // Checkout完了後のトースト
-  const urlParams = new URLSearchParams(location.search);
-  if (urlParams.get('checkout') === 'success') {
-    history.replaceState({}, '', location.pathname);
-    setTimeout(() => showToast('ご登録ありがとうございます！✨', 'success'), 1200);
-  }
-
-  // 解約モーダル
-  $('#cancelPlanCancelBtn')?.addEventListener('click', () => $('#cancelPlanModal').classList.remove('show'));
-  $('#cancelPlanConfirmBtn')?.addEventListener('click', () => openPortal('cancel'));
-  $('#cancelPlanModal')?.addEventListener('click', (e) => { if (e.target === $('#cancelPlanModal')) $('#cancelPlanModal').classList.remove('show'); });
-
-  // 削除モーダル
-  $('#deleteCancelBtn')?.addEventListener('click', () => $('#deleteModal').classList.remove('show'));
-  $('#deleteConfirmBtn')?.addEventListener('click', async () => {
-    const { error } = await sb.rpc('delete_user_account');
-    if (!error) { await sb.auth.signOut(); location.replace('/'); }
-    else { showToast('エラーが発生しました', 'error'); $('#deleteModal').classList.remove('show'); }
-  });
-  $('#deleteAccountBtn')?.addEventListener('click', () => $('#deleteModal').classList.add('show'));
-
-  // アカウントボタン
-  $('#btnSubscribeStandard')?.addEventListener('click', () => startCheckout('standard'));
-  $('#btnSubscribePremium')?.addEventListener('click',  () => startCheckout('premium'));
-  $('#btnUpgradePremium')?.addEventListener('click',    () => openPortal('upgrade_premium'));
-  $('#btnDowngradeStandard')?.addEventListener('click', () => openPortal('downgrade_standard'));
-  $('#btnCancel')?.addEventListener('click',        () => { $('#cancelPlanModal').classList.add('show'); });
-  $('#btnCancelPremium')?.addEventListener('click', () => { $('#cancelPlanModal').classList.add('show'); });
-
-  // メール変更
-  $('#changeEmailBtn')?.addEventListener('click', async () => {
-    const newEmail = ($('#newEmailInput')?.value || '').trim();
-    const msgEl = $('#emailChangeMsg');
-    if (!newEmail) { showMsg(msgEl, 'メールアドレスを入力してください', 'error'); return; }
-    const btn = $('#changeEmailBtn');
-    btn.disabled = true;
-    const { error } = await sb.auth.updateUser({ email: newEmail });
-    btn.disabled = false;
-    if (error) showMsg(msgEl, 'エラー: ' + error.message, 'error');
-    else showMsg(msgEl, '確認メールを送信しました', 'success');
-  });
-
-  // パスワード変更
-  $('#changePwBtn')?.addEventListener('click', async () => {
-    const pw1 = $('#newPw1')?.value || '';
-    const pw2 = $('#newPw2')?.value || '';
-    const msgEl = $('#pwMsg');
-    if (!pw1 || pw1.length < 8) { showMsg(msgEl, '8文字以上のパスワードを入力してください', 'error'); return; }
-    if (pw1 !== pw2)             { showMsg(msgEl, 'パスワードが一致しません', 'error'); return; }
-    const btn = $('#changePwBtn');
-    btn.disabled = true;
-    const { error } = await sb.auth.updateUser({ password: pw1 });
-    btn.disabled = false;
-    if (error) showMsg(msgEl, 'エラー: ' + error.message, 'error');
-    else { showMsg(msgEl, 'パスワードを変更しました', 'success'); $('#newPw1').value = ''; $('#newPw2').value = ''; }
-  });
-
-  // ログアウト
-  $('#logoutBtn')?.addEventListener('click', async () => {
-    await sb.auth.signOut();
-    location.replace('/index.html');
-  });
-
-  // Auth状態監視
-  sb.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT') location.reload();
-    if (event === 'SIGNED_IN' && session && !currentUser) mainInit(session.user);
-  });
-
-  // セッション確認
-  const { data: { session: initSession } } = await sb.auth.getSession();
-  let user = initSession?.user || null;
-  if (!user) {
-    const { data: { user: u } } = await sb.auth.getUser();
-    user = u || null;
-  }
-
-  if (user) {
-    await mainInit(user);
-  } else {
-    // 未ログイン: 手順書生成タブのみ（Freeプラン）
-    setTimeout(() => {
-      if (!currentUser) {
-        const guestBanner = $('#manualGuestBanner');
-        if (guestBanner) guestBanner.style.display = 'flex';
-        updateManualUI();
-      }
-    }, 800);
-  }
+function errHtml(msg) {
+  return `<div class="notice notice-error">エラー: ${esc(msg)}</div>`;
 }
 
-async function mainInit(user) {
-  if (currentUser) return;
-  currentUser = user;
-  window._karuLoggedIn = true;
-
-  $('#userEmail').textContent = user.email || '';
-  $('#logoutBtn').style.display = 'inline-flex';
-  $('#accountTabBtn').style.display = 'flex';
-
-  const { data: prof } = await loadOrCreateProfile(user.id);
-  currentProfile = prof;
-
-  renderAccount();
-  updateManualUI();
+function emptyState(icon, text) {
+  return `
+    <div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-state-icon">${icon}</div>
+      <div>${text}</div>
+    </div>`;
 }
-
-main();
 </script>
-
 </body>
 </html>
