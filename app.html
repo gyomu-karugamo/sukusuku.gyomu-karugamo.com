@@ -1259,7 +1259,7 @@ async function renderStudentList() {
         ${addBtn}
       </div>
       <div class="student-grid" id="student-grid">
-        ${students.length === 0 ? emptyState('🐥', 'まだ生徒が登録されていません<br>「生徒を追加」ボタンから始めましょう') : ''}
+        ${students.length === 0 ? emptyState('📋', 'まだ生徒が登録されていません<br>「生徒を追加」ボタンから始めましょう') : ''}
         ${students.map(s => studentCardHtml(s)).join('')}
       </div>
     </div>`;
@@ -1697,7 +1697,7 @@ async function renderSharePage(token) {
   main.innerHTML = `
     <div class="share-page">
       <div class="share-header">
-        <div class="share-header-logo">🐥 すくすくかるがもアルバム</div>
+        <div class="share-header-logo">すくすくかるがもアルバム</div>
         <div class="share-header-title">${esc(album.title)}</div>
         <div class="share-header-student">👤 ${esc(album.students?.name || '')}</div>
       </div>
@@ -2054,11 +2054,50 @@ async function renderAccount() {
 
       <div class="account-section">
 
+        <!-- ===== メールアドレス ===== -->
         <div class="card">
-          <div style="font-size:0.82rem;color:var(--mist);margin-bottom:4px">ログイン中のアカウント</div>
-          <div style="font-weight:600;color:var(--brown)">${esc(currentUser.email || '')}</div>
+          <div class="section-label" style="margin-bottom:10px">メールアドレス</div>
+          <div id="email-display-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="font-weight:600;color:var(--brown);flex:1;min-width:0;word-break:break-all">${esc(currentUser.email || '')}</div>
+            <button class="btn btn-secondary btn-sm" onclick="showEmailForm()">変更</button>
+          </div>
+          <div id="email-form" style="display:none;margin-top:14px">
+            <div class="form-group">
+              <label class="form-label">新しいメールアドレス</label>
+              <input type="email" class="form-input" id="new-email-input" placeholder="new@example.com" autocomplete="email">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" onclick="changeEmail()">確認メールを送信</button>
+              <button class="btn btn-secondary btn-sm" onclick="hideEmailForm()">キャンセル</button>
+            </div>
+            <div id="email-msg" style="margin-top:8px;font-size:0.85rem"></div>
+          </div>
         </div>
 
+        <!-- ===== パスワード変更 ===== -->
+        <div class="card">
+          <div class="section-label" style="margin-bottom:10px">パスワード</div>
+          <div id="pw-display-row">
+            <button class="btn btn-secondary btn-sm" onclick="showPwForm()">パスワードを変更</button>
+          </div>
+          <div id="pw-form" style="display:none;margin-top:14px">
+            <div class="form-group">
+              <label class="form-label">新しいパスワード</label>
+              <input type="password" class="form-input" id="new-pw-input" placeholder="8文字以上" autocomplete="new-password" minlength="8">
+            </div>
+            <div class="form-group">
+              <label class="form-label">新しいパスワード（確認）</label>
+              <input type="password" class="form-input" id="new-pw-confirm-input" placeholder="再入力" autocomplete="new-password">
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" onclick="changePassword()">変更する</button>
+              <button class="btn btn-secondary btn-sm" onclick="hidePwForm()">キャンセル</button>
+            </div>
+            <div id="pw-msg" style="margin-top:8px;font-size:0.85rem"></div>
+          </div>
+        </div>
+
+        <!-- ===== プラン ===== -->
         ${isStd ? `
         <div class="plan-card current">
           <div class="plan-badge">✓ ご利用中のプラン</div>
@@ -2100,12 +2139,80 @@ async function renderAccount() {
         </div>
         `}
 
+        <!-- ===== ログアウト ===== -->
         <div class="card" style="display:flex;justify-content:center">
           <button class="btn btn-danger btn-sm" onclick="signOut()">ログアウト</button>
         </div>
 
       </div>
     </div>`;
+}
+
+// メールアドレス変更フォーム表示/非表示
+function showEmailForm() {
+  document.getElementById('email-form').style.display = 'block';
+  document.getElementById('email-display-row').querySelector('button').style.display = 'none';
+  document.getElementById('new-email-input').focus();
+}
+function hideEmailForm() {
+  document.getElementById('email-form').style.display = 'none';
+  document.getElementById('email-display-row').querySelector('button').style.display = '';
+  document.getElementById('email-msg').textContent = '';
+}
+
+async function changeEmail() {
+  const newEmail = document.getElementById('new-email-input').value.trim();
+  const msg = document.getElementById('email-msg');
+  if (!newEmail) { msg.textContent = 'メールアドレスを入力してください'; msg.style.color = 'var(--error)'; return; }
+
+  const { error } = await sb.auth.updateUser({ email: newEmail });
+  if (error) {
+    msg.textContent = 'エラー: ' + error.message;
+    msg.style.color = 'var(--error)';
+  } else {
+    msg.textContent = '確認メールを送信しました。新しいメールアドレス宛のリンクをクリックして変更を完了してください。';
+    msg.style.color = 'var(--success)';
+  }
+}
+
+// パスワード変更フォーム表示/非表示
+function showPwForm() {
+  document.getElementById('pw-form').style.display = 'block';
+  document.getElementById('pw-display-row').querySelector('button').style.display = 'none';
+  document.getElementById('new-pw-input').focus();
+}
+function hidePwForm() {
+  document.getElementById('pw-form').style.display = 'none';
+  document.getElementById('pw-display-row').querySelector('button').style.display = '';
+  document.getElementById('new-pw-input').value = '';
+  document.getElementById('new-pw-confirm-input').value = '';
+  document.getElementById('pw-msg').textContent = '';
+}
+
+async function changePassword() {
+  const newPw  = document.getElementById('new-pw-input').value;
+  const confirm = document.getElementById('new-pw-confirm-input').value;
+  const msg    = document.getElementById('pw-msg');
+
+  if (newPw.length < 8) {
+    msg.textContent = 'パスワードは8文字以上で入力してください';
+    msg.style.color = 'var(--error)'; return;
+  }
+  if (newPw !== confirm) {
+    msg.textContent = 'パスワードが一致しません';
+    msg.style.color = 'var(--error)'; return;
+  }
+
+  const { error } = await sb.auth.updateUser({ password: newPw });
+  if (error) {
+    msg.textContent = 'エラー: ' + error.message;
+    msg.style.color = 'var(--error)';
+  } else {
+    msg.textContent = 'パスワードを変更しました';
+    msg.style.color = 'var(--success)';
+    document.getElementById('new-pw-input').value = '';
+    document.getElementById('new-pw-confirm-input').value = '';
+  }
 }
 
 async function startCheckout(plan) {

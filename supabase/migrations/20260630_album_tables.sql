@@ -137,22 +137,38 @@ CREATE POLICY "album_photos_public_share" ON album_photos
   );
 
 -- ============================================================
--- ストレージバケット設定（Supabaseダッシュボードで手動設定も可）
+-- ストレージバケット設定
+-- ⚠️ 以下を Supabase ダッシュボード → SQL Editor で実行してください
 -- ============================================================
--- バケット名: album-photos
--- 公開設定: Public（共有リンクページで直接URL参照するため）
---
--- 以下のコマンドをSupabase SQLエディタで実行：
--- INSERT INTO storage.buckets (id, name, public)
--- VALUES ('album-photos', 'album-photos', true)
--- ON CONFLICT (id) DO UPDATE SET public = true;
 
--- ストレージポリシー：認証ユーザーはアップロード可能
--- INSERT INTO storage.policies (name, bucket_id, operation, definition)
--- VALUES
---   ('upload_own', 'album-photos', 'INSERT', 'auth.uid()::text = (storage.foldername(name))[2]'),
---   ('read_all',   'album-photos', 'SELECT', 'true'),
---   ('delete_own', 'album-photos', 'DELETE', 'auth.uid()::text = (storage.foldername(name))[2]');
+-- バケット作成（公開バケット：共有ページで直接URL参照するため）
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('album-photos', 'album-photos', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- ストレージRLSを有効化
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- 認証ユーザーはアップロード可能
+CREATE POLICY "album_photos_insert" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'album-photos');
+
+-- 全ユーザーが読み取り可能（共有ページ・公開アルバム用）
+CREATE POLICY "album_photos_select" ON storage.objects
+  FOR SELECT
+  USING (bucket_id = 'album-photos');
+
+-- 認証ユーザーは削除可能
+CREATE POLICY "album_photos_delete" ON storage.objects
+  FOR DELETE TO authenticated
+  USING (bucket_id = 'album-photos');
+
+-- 認証ユーザーは更新可能（upsert対応）
+CREATE POLICY "album_photos_update" ON storage.objects
+  FOR UPDATE TO authenticated
+  USING (bucket_id = 'album-photos')
+  WITH CHECK (bucket_id = 'album-photos');
 
 -- ============================================================
 -- profilesテーブルへのtier列追加（既存テーブルに追加する場合）
