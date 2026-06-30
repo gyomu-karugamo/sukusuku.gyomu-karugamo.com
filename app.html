@@ -1054,8 +1054,14 @@ textarea.form-input {
       <input type="date" class="form-input" id="record-date-input">
     </div>
 
+    <!-- 既存写真（編集モード時のみ表示） -->
+    <div class="form-group" id="existing-photos-group" style="display:none">
+      <label class="form-label">現在の写真</label>
+      <div class="photo-preview-grid" id="existing-photos-list"></div>
+    </div>
+
     <div class="form-group">
-      <label class="form-label">写真（複数選択可）</label>
+      <label class="form-label" id="photo-upload-label">写真（複数選択可）</label>
       <div class="photo-upload-area" id="record-drop-area"
         onclick="document.getElementById('record-photo-file').click()"
         ondragover="handleDragOver(event,'record-drop-area')"
@@ -1148,6 +1154,8 @@ let sb, currentUser, currentProfile;
 let recordPhotoFiles = []; // 記録追加モーダルの一時写真リスト
 let studentAvatarFile = null; // 生徒追加モーダルの一時アバター
 let editingStudentId = null;  // 生徒編集時のID
+let editingRecordId  = null;  // 記録編集時のID（nullなら新規追加）
+let existingPhotosToRemove = []; // 記録編集時に削除する既存写真のID+path
 let currentStudentId = null;  // 詳細ページで表示中の生徒ID
 let currentAlbumId   = null;  // アルバムエディター・ビューのID
 let albumSortable    = null;  // SortableJSインスタンス
@@ -1359,6 +1367,7 @@ function timelineItemHtml(record) {
       ${photosHtml}
       ${record.memo ? `<div class="timeline-memo">${esc(record.memo)}</div>` : ''}
       <div class="timeline-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openEditRecordModal('${record.id}')">編集</button>
         <button class="btn btn-danger btn-sm" onclick="deleteRecord('${record.id}')">削除</button>
       </div>
     </div>`;
@@ -1412,12 +1421,13 @@ async function startAlbum(studentId) {
     const photos = (r.record_photos || []).slice().sort((a,b) => a.sort_order - b.sort_order);
     for (const p of photos) {
       albumPhotos.push({
-        album_id:   album.id,
-        photo_id:   p.id,
-        memo:       r.memo || '',
-        recorded_at: r.recorded_at,
-        sort_order:  order++,
-        is_excluded: false,
+        album_id:     album.id,
+        photo_id:     p.id,
+        storage_path: p.storage_path, // 画像パスを保存（PDF・共有ページで必須）
+        memo:         r.memo || '',
+        recorded_at:  r.recorded_at,
+        sort_order:   order++,
+        is_excluded:  false,
       });
     }
   }
@@ -1927,7 +1937,25 @@ async function saveStudent() {
 }
 
 async function deleteStudent(studentId) {
-  if (!confirm('この生徒を削除しますか？\n記録・アルバムもすべて削除されます。この操作は取り消せません。')) return;
+  if (!confirm('この生徒を削除しますか？\n記録・アルバム・写真がすべて削除されます。この操作は取り消せません。')) return;
+
+  // 全記録写真のパスを収集してストレージから削除
+  const { data: records } = await sb.from('lesson_records').select('id').eq('student_id', studentId);
+  if (records && records.length > 0) {
+    const recordIds = records.map(r => r.id);
+    const { data: photos } = await sb.from('record_photos').select('storage_path').in('record_id', recordIds);
+    if (photos && photos.length > 0) {
+      const paths = photos.map(p => p.storage_path).filter(Boolean);
+      if (paths.length > 0) await sb.storage.from(STORAGE_BUCKET).remove(paths);
+    }
+  }
+
+  // プロフィール写真も削除
+  const { data: student } = await sb.from('students').select('photo_path').eq('id', studentId).single();
+  if (student?.photo_path) {
+    await sb.storage.from(STORAGE_BUCKET).remove([student.photo_path]);
+  }
+
   const { error } = await sb.from('students').delete().eq('id', studentId);
   if (error) { alert('削除に失敗しました: ' + error.message); return; }
   location.hash = '#/students';
@@ -1937,12 +1965,74 @@ async function deleteStudent(studentId) {
 // 記録追加モーダル
 // ============================================================
 function openRecordModal() {
+  editingRecordId = null;
+  existingPhotosToRemove = [];
   recordPhotoFiles = [];
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('record-date-input').value = today;
   document.getElementById('record-memo-input').value = '';
   document.getElementById('record-photos').innerHTML = '';
+  document.getElementById('existing-photos-group').style.display = 'none';
+  document.getElementById('existing-photos-list').innerHTML = '';
+  document.querySelector('#modal-record .modal-title').textContent = '記録を追加';
+  document.getElementById('photo-upload-label').textContent = '写真（複数選択可）';
+  document.getElementById('record-save-btn').textContent = '記録を保存';
   openModal('modal-record');
+}
+
+// 記録編集モーダルを開く
+async function openEditRecordModal(recordId) {
+  const { data: record } = await sb
+    .from('lesson_records')
+    .select('*, record_photos(id, storage_path, sort_order)')
+    .eq('id', recordId)
+    .single();
+  if (!record) return;
+
+  editingRecordId = recordId;
+  existingPhotosToRemove = [];
+  recordPhotoFiles = [];
+
+  document.querySelector('#modal-record .modal-title').textContent = '記録を編集';
+  document.getElementById('record-date-input').value = record.recorded_at || '';
+  document.getElementById('record-memo-input').value = record.memo || '';
+  document.getElementById('record-photos').innerHTML = '';
+  document.getElementById('photo-upload-label').textContent = '写真を追加';
+  document.getElementById('record-save-btn').textContent = '変更を保存';
+
+  // 既存写真の表示
+  const photos = (record.record_photos || []).slice().sort((a,b) => a.sort_order - b.sort_order);
+  const existingGroup = document.getElementById('existing-photos-group');
+  const existingList  = document.getElementById('existing-photos-list');
+  existingList.innerHTML = '';
+
+  if (photos.length > 0) {
+    existingGroup.style.display = 'block';
+    photos.forEach(p => {
+      const url = getPublicUrl(p.storage_path);
+      const div = document.createElement('div');
+      div.className = 'photo-preview-item';
+      div.dataset.photoId = p.id;
+      div.innerHTML = `
+        <img src="${url}" alt="">
+        <button class="photo-preview-remove" onclick="markExistingPhotoRemoved('${p.id}','${p.storage_path}',this.parentElement)">✕</button>`;
+      existingList.appendChild(div);
+    });
+  } else {
+    existingGroup.style.display = 'none';
+  }
+
+  openModal('modal-record');
+}
+
+// 既存写真を削除マーク（実際の削除は保存時）
+function markExistingPhotoRemoved(photoId, storagePath, el) {
+  existingPhotosToRemove.push({ id: photoId, path: storagePath });
+  el.remove();
+  // 既存写真が0件になったらグループを非表示
+  if (document.getElementById('existing-photos-list').children.length === 0) {
+    document.getElementById('existing-photos-group').style.display = 'none';
+  }
 }
 
 // 定型文挿入
@@ -2006,35 +2096,70 @@ async function saveRecord() {
   btn.textContent = '保存中...';
 
   try {
-    // レッスン記録を作成
-    const { data: record, error: rErr } = await sb.from('lesson_records').insert({
-      student_id: currentStudentId,
-      memo:        memo || null,
-      recorded_at: date,
-    }).select().single();
+    if (editingRecordId) {
+      // ===== 編集モード =====
+      // 日付・メモを更新
+      const { error: uErr } = await sb.from('lesson_records').update({
+        memo:        memo || null,
+        recorded_at: date,
+      }).eq('id', editingRecordId);
+      if (uErr) { alert('更新に失敗しました: ' + uErr.message); return; }
 
-    if (rErr) { alert('記録の保存に失敗しました: ' + rErr.message); return; }
+      // 削除マークされた既存写真をストレージとDBから削除
+      for (const { id, path } of existingPhotosToRemove) {
+        await sb.storage.from(STORAGE_BUCKET).remove([path]);
+        await sb.from('record_photos').delete().eq('id', id);
+      }
 
-    // 写真をアップロード
-    for (let i = 0; i < validFiles.length; i++) {
-      const file = validFiles[i];
-      const ext  = file.name.split('.').pop();
-      const path = `records/${currentUser.id}/${currentStudentId}/${record.id}/${Date.now()}_${i}.${ext}`;
-      const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, file);
-      if (upErr) { console.warn('写真アップロードエラー:', upErr); continue; }
-      await sb.from('record_photos').insert({ record_id: record.id, storage_path: path, sort_order: i });
+      // 新しい写真をアップロード
+      const { data: existingPhotos } = await sb.from('record_photos').select('sort_order').eq('record_id', editingRecordId).order('sort_order', { ascending: false }).limit(1);
+      let nextOrder = (existingPhotos?.[0]?.sort_order ?? -1) + 1;
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        const ext  = file.name.split('.').pop();
+        const path = `records/${currentUser.id}/${currentStudentId}/${editingRecordId}/${Date.now()}_${i}.${ext}`;
+        const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, file);
+        if (upErr) { console.warn('写真アップロードエラー:', upErr); continue; }
+        await sb.from('record_photos').insert({ record_id: editingRecordId, storage_path: path, sort_order: nextOrder++ });
+      }
+    } else {
+      // ===== 新規追加モード =====
+      const { data: record, error: rErr } = await sb.from('lesson_records').insert({
+        student_id: currentStudentId,
+        memo:        memo || null,
+        recorded_at: date,
+      }).select().single();
+      if (rErr) { alert('記録の保存に失敗しました: ' + rErr.message); return; }
+
+      for (let i = 0; i < validFiles.length; i++) {
+        const file = validFiles[i];
+        const ext  = file.name.split('.').pop();
+        const path = `records/${currentUser.id}/${currentStudentId}/${record.id}/${Date.now()}_${i}.${ext}`;
+        const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, file);
+        if (upErr) { console.warn('写真アップロードエラー:', upErr); continue; }
+        await sb.from('record_photos').insert({ record_id: record.id, storage_path: path, sort_order: i });
+      }
     }
 
     closeModal('modal-record');
     renderStudentDetail(currentStudentId);
   } finally {
     btn.disabled = false;
-    btn.textContent = '記録を保存';
+    btn.textContent = editingRecordId ? '変更を保存' : '記録を保存';
   }
 }
 
+// 記録削除（ストレージから写真も削除）
 async function deleteRecord(recordId) {
   if (!confirm('この記録を削除しますか？写真もすべて削除されます。')) return;
+
+  // 写真パスを取得してストレージから削除
+  const { data: photos } = await sb.from('record_photos').select('storage_path').eq('record_id', recordId);
+  if (photos && photos.length > 0) {
+    const paths = photos.map(p => p.storage_path).filter(Boolean);
+    if (paths.length > 0) await sb.storage.from(STORAGE_BUCKET).remove(paths);
+  }
+
   await sb.from('lesson_records').delete().eq('id', recordId);
   renderStudentDetail(currentStudentId);
 }
