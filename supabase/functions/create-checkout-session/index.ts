@@ -7,15 +7,17 @@ const APP_ENV = Deno.env.get("APP_ENV") ?? "prod";
 const IS_DEV  = APP_ENV === "dev";
 
 const PRICE_IDS: Record<string, string> = {
+  // ライトプラン（すくすくかるがもアルバム）
+  light: IS_DEV
+    ? "price_1To2nhFip1mPhO1UJQNLkKdZ"               // テスト環境
+    : Deno.env.get("LIGHT_PRICE_ID") ?? "",            // 本番環境
+  // スタンダードプラン（すくすくかるがもアルバム）
   standard: IS_DEV
-    ? "price_1THEGUFip1mPhO1Uc5TEVzwG"               // テスト環境
+    ? "price_1To2oGFip1mPhO1UvhtEvSit"               // テスト環境
     : Deno.env.get("STANDARD_PRICE_ID") ?? "",         // 本番環境
-  premium: IS_DEV
-    ? "price_1THEE4Fip1mPhO1U0NawHmJz"                // テスト環境
-    : Deno.env.get("PREMIUM_PRICE_ID")  ?? "",         // 本番環境
 };
 
-const TRIAL_DAYS = 7; // 無料トライアル日数
+const TRIAL_DAYS = 14; // 無料トライアル日数
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -49,8 +51,8 @@ serve(async (req) => {
     if (!plan || !success_url || !cancel_url) {
       return new Response("Missing plan or redirect URLs", { status: 400, headers: corsHeaders });
     }
-    if (!["standard", "premium"].includes(plan)) {
-      return new Response("Invalid plan. Must be 'standard' or 'premium'", { status: 400, headers: corsHeaders });
+    if (!["light", "standard"].includes(plan)) {
+      return new Response("Invalid plan. Must be 'light' or 'standard'", { status: 400, headers: corsHeaders });
     }
     if (bodyUserId && bodyUserId !== userId) {
       return new Response("user_id mismatch", { status: 403, headers: corsHeaders });
