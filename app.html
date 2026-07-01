@@ -1604,89 +1604,35 @@ async function toggleExclude(photoId, currentExcluded) {
 // アルバムプレビュー
 // ============================================================
 function showAlbumPreview(studentId) {
-  const titleInput = document.getElementById('album-title-input');
-  const title       = titleInput?.value.trim() || titleInput?.placeholder || 'アルバム';
-  const accentColor = document.getElementById('album-color-input')?.value || '#4a7c6f';
-  const textColor   = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
+  const titleInput    = document.getElementById('album-title-input');
+  const title         = titleInput?.value.trim() || titleInput?.placeholder || 'アルバム';
+  const accentColor   = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const textColor     = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
   const photosPerPage = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
-  const studentName = window._editorStudentName || '';
+  const message       = document.getElementById('album-message-input')?.value.trim() || '';
 
-  // グリッドから表示中の写真を収集
+  // グリッドから表示中の写真を収集（buildAlbumPagesが使えるよう storage_path / recorded_at 形式に）
   const items = document.querySelectorAll('#album-grid .album-photo-item:not(.excluded)');
   const photos = [];
   items.forEach(el => {
     const img  = el.querySelector('img.album-photo-img');
     const date = el.getAttribute('data-date') || '';
     const memo = el.getAttribute('data-memo') || '';
-    if (img?.src) photos.push({ src: img.src, date, memo });
+    const src  = el.getAttribute('data-src') || img?.src || '';
+    if (src) photos.push({ recorded_at: date, memo, _url: src });
   });
 
-  const pages = [];
+  const fakeAlbum = {
+    accent_color: accentColor,
+    text_color: textColor,
+    photos_per_page: photosPerPage,
+    title,
+    students: { name: window._editorStudentName || '' },
+    message,
+    cover_photo_path: window._editorCoverSrc || null,
+  };
 
-  const coverPhotoSrc = window._editorCoverSrc || null;
-
-  // 表紙（スタイリッシュ：白背景＋ストライプ帯＋丸写真）
-  const stripeStyle = `repeating-linear-gradient(90deg,${accentColor} 0,${accentColor} 10px,transparent 10px,transparent 20px)`;
-  pages.push(`
-    <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5% 10%;box-sizing:border-box">
-        ${coverPhotoSrc ? `<div style="width:42%;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:3px solid ${accentColor};margin-bottom:6%;flex-shrink:0"><img src="${coverPhotoSrc}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : ''}
-        <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.18em;color:${accentColor};margin-bottom:8px;text-transform:uppercase">すくすくかるがもアルバム</div>
-        <div style="font-size:clamp(16px,4vw,26px);font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
-        ${studentName ? `<div style="font-size:clamp(11px,2vw,14px);margin-top:10px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
-      </div>
-      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
-    </div>`);
-
-  // 写真ページ（日付でグループ化）
-  const dateGroups = [];
-  for (const p of photos) {
-    const last = dateGroups[dateGroups.length - 1];
-    if (last && last.date === p.date) last.photos.push(p);
-    else dateGroups.push({ date: p.date, photos: [p] });
-  }
-  for (const grp of dateGroups) {
-    for (let i = 0; i < grp.photos.length; i += photosPerPage) {
-      const batch = grp.photos.slice(i, i + photosPerPage);
-      const count = batch.length;
-      const META_H_PCT = 8; // %
-      const IMG_H_PCT  = Math.floor((100 - 10) / count) - META_H_PCT; // 日付ヘッダー10%
-
-      let pageHtml = `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans JP',sans-serif;overflow:hidden">`;
-      pageHtml += `<div style="height:10%;padding:0 4%;display:flex;align-items:center;background:${accentColor}18;border-bottom:2px solid ${accentColor}40;flex-shrink:0">
-        <span style="font-size:clamp(9px,1.8vw,12px);font-weight:600;color:${accentColor}">${formatDate(grp.date)}</span>
-      </div>`;
-      batch.forEach(p => {
-        pageHtml += `
-          <div style="flex:1;display:flex;flex-direction:column;border-bottom:1px solid #e8e0d8;overflow:hidden">
-            <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px 0">
-              <img src="${p.src}" style="max-width:96%;max-height:96%;object-fit:contain;display:block">
-            </div>
-            <div style="height:${META_H_PCT}%;min-height:20px;padding:0 4%;display:flex;align-items:center;flex-shrink:0">
-              ${p.memo ? `<span style="font-size:clamp(8px,1.5vw,11px);color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
-            </div>
-          </div>`;
-      });
-      pageHtml += '</div>';
-      pages.push(pageHtml);
-    }
-  }
-
-  // メッセージページ
-  const previewMessage = document.getElementById('album-message-input')?.value.trim() || '';
-  if (previewMessage) {
-    pages.push(`
-      <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8% 12%;box-sizing:border-box;text-align:center">
-          <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.15em;color:${accentColor};margin-bottom:16px">Message</div>
-          <div style="font-size:clamp(13px,2.5vw,16px);line-height:2;color:${textColor};white-space:pre-wrap">${esc(previewMessage)}</div>
-        </div>
-        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
-      </div>`);
-  }
-
+  const pages = buildAlbumPages(fakeAlbum, photos);
   if (pages.length === 0) { alert('表示できる写真がありません'); return; }
 
   window._previewPages     = pages;
@@ -1791,6 +1737,116 @@ async function finalizeAlbum(studentId) {
 }
 
 // ============================================================
+// アルバムページ生成（プレビュー・アルバムビュー・共有ページ共用）
+// ============================================================
+function buildAlbumPages(album, photos) {
+  const accentColor   = album.accent_color || '#4a7c6f';
+  const textColor     = album.text_color   || '#3d2b1f';
+  const photosPerPage = parseInt(album.photos_per_page || 2, 10);
+  const title         = album.title || 'アルバム';
+  const studentName   = album.students?.name || '';
+  const stripeStyle   = `repeating-linear-gradient(90deg,${accentColor} 0,${accentColor} 10px,transparent 10px,transparent 20px)`;
+  const coverUrl      = album.cover_photo_path || null;
+
+  const pages = [];
+
+  // 表紙
+  pages.push(`
+    <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
+      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5% 10%;box-sizing:border-box">
+        ${coverUrl ? `<div style="width:42%;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:3px solid ${accentColor};margin-bottom:6%;flex-shrink:0"><img src="${coverUrl}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : ''}
+        <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.18em;color:${accentColor};margin-bottom:8px">すくすくかるがもアルバム</div>
+        <div style="font-size:clamp(16px,4vw,26px);font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
+        ${studentName ? `<div style="font-size:clamp(11px,2vw,14px);margin-top:10px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
+      </div>
+      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+    </div>`);
+
+  // 写真ページ（日付でグループ化）
+  const dateGroups = [];
+  for (const p of photos) {
+    const date = p.recorded_at || p.date || '';
+    const url  = p._url || (p.storage_path ? getPublicUrl(p.storage_path) : (p.src || ''));
+    const last = dateGroups[dateGroups.length - 1];
+    if (last && last.date === date) last.photos.push({ ...p, _url: url });
+    else dateGroups.push({ date, photos: [{ ...p, _url: url }] });
+  }
+  for (const grp of dateGroups) {
+    for (let i = 0; i < grp.photos.length; i += photosPerPage) {
+      const batch = grp.photos.slice(i, i + photosPerPage);
+      const count = batch.length;
+      const META_H_PCT = 8;
+      let pageHtml = `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans JP',sans-serif;overflow:hidden">`;
+      pageHtml += `<div style="height:10%;padding:0 4%;display:flex;align-items:center;background:${accentColor}18;border-bottom:2px solid ${accentColor}40;flex-shrink:0">
+        <span style="font-size:clamp(9px,1.8vw,12px);font-weight:600;color:${accentColor}">${formatDate(grp.date)}</span>
+      </div>`;
+      batch.forEach((p, idx) => {
+        const isLast = idx === batch.length - 1;
+        pageHtml += `
+          <div style="flex:1;display:flex;flex-direction:column;${isLast ? '' : 'border-bottom:2px solid #e8e0d8;margin-bottom:2%'}overflow:hidden">
+            <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:4px 4% 4px 4%">
+              <img src="${p._url}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">
+            </div>
+            <div style="height:${META_H_PCT}%;min-height:20px;padding:0 4%;display:flex;align-items:center;flex-shrink:0">
+              ${p.memo ? `<span style="font-size:clamp(8px,1.5vw,11px);color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
+            </div>
+          </div>`;
+      });
+      pageHtml += '</div>';
+      pages.push(pageHtml);
+    }
+  }
+
+  // メッセージページ
+  if (album.message) {
+    pages.push(`
+      <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
+        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8% 12%;box-sizing:border-box;text-align:center">
+          <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.15em;color:${accentColor};margin-bottom:16px">Message</div>
+          <div style="font-size:clamp(13px,2.5vw,16px);line-height:2;color:${textColor};white-space:pre-wrap">${esc(album.message)}</div>
+        </div>
+        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+      </div>`);
+  }
+
+  return pages;
+}
+
+function renderSlideViewer(containerId, pages) {
+  window._slidePages = window._slidePages || {};
+  window._slideIndex = window._slideIndex || {};
+  window._slidePages[containerId] = pages;
+  window._slideIndex[containerId] = 0;
+  document.getElementById(containerId).innerHTML = pages[0] || '';
+  document.getElementById(containerId + '-counter').textContent = `1 / ${pages.length}`;
+}
+
+function slideGo(containerId, dir) {
+  const pages = window._slidePages?.[containerId];
+  if (!pages) return;
+  const idx = Math.max(0, Math.min(pages.length - 1, (window._slideIndex[containerId] || 0) + dir));
+  window._slideIndex[containerId] = idx;
+  document.getElementById(containerId).innerHTML = pages[idx];
+  document.getElementById(containerId + '-counter').textContent = `${idx + 1} / ${pages.length}`;
+}
+
+function slideViewerHtml(containerId) {
+  return `
+    <div style="background:var(--cream);padding:12px;border-radius:12px;max-width:520px">
+      <div style="width:100%;aspect-ratio:1/1;background:#fff;border-radius:8px;overflow:hidden;box-shadow:var(--shadow)">
+        <div id="${containerId}" style="width:100%;height:100%"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px">
+        <button class="btn btn-secondary btn-sm" onclick="slideGo('${containerId}',-1)">← 前</button>
+        <span id="${containerId}-counter" style="font-size:13px;color:var(--brown-mid)">1 / 1</span>
+        <button class="btn btn-secondary btn-sm" onclick="slideGo('${containerId}',1)">次 →</button>
+      </div>
+    </div>`;
+}
+
+// ============================================================
 // アルバムビュー（完成済み）
 // ============================================================
 async function renderAlbumView(albumId) {
@@ -1810,47 +1866,34 @@ async function renderAlbumView(albumId) {
 
   if (pe) { main.innerHTML = errHtml(pe.message); return; }
 
-  const studentId = album.students?.id || '';
+  const studentId   = album.students?.id || '';
   const studentName = album.students?.name || '';
-  const limits = getLimits();
-  const accentColor = album.accent_color || '#4a7c6f';
-  const textColor   = album.text_color   || '#3d2b1f';
+  const limits      = getLimits();
 
   const shareBtn = limits.canShare
-    ? `<button class="btn btn-white btn-sm" onclick="issueShareLink('${albumId}')">🔗 共有リンクを発行</button>`
-    : `<button class="btn btn-white btn-sm" title="スタンダードプランで利用可能" style="opacity:.6;cursor:not-allowed">🔗 共有（スタンダード）</button>`;
+    ? `<button class="btn btn-secondary btn-sm" onclick="issueShareLink('${albumId}')">🔗 共有リンクを発行</button>`
+    : `<button class="btn btn-secondary btn-sm" title="スタンダードプランで利用可能" style="opacity:.6;cursor:not-allowed">🔗 共有（スタンダード）</button>`;
 
   main.innerHTML = `
     <div class="fade-up">
       <div class="page">
-        <div class="page-header" style="margin-bottom:0">
+        <div class="page-header">
           <a href="#/students/${studentId}" class="back-btn">← 生徒詳細へ</a>
-          <button class="btn btn-secondary btn-sm" onclick="unFinalizeAlbum('${albumId}','${studentId}')">編集に戻る</button>
-        </div>
-      </div>
-
-      <div class="album-view-header" style="margin:0 0 24px;background:${accentColor}20;border-bottom:3px solid ${accentColor}40">
-        <div style="max-width:860px;margin:0 auto;padding:16px">
-          <div class="album-view-title" style="color:${textColor}">${esc(album.title)}</div>
-          <div class="album-view-student" style="color:${textColor}">${esc(studentName)} ・ ${photos.length}枚</div>
-          <div class="album-view-actions">
-            <button class="btn btn-white btn-sm" onclick="downloadAlbumPDF('${albumId}')">⬇ PDFダウンロード</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-secondary btn-sm" onclick="unFinalizeAlbum('${albumId}','${studentId}')">編集に戻る</button>
             ${shareBtn}
           </div>
         </div>
-      </div>
-
-      <div class="page">
-        <div class="album-photo-list" id="album-view-list">
-          ${photos.map(p => albumViewCardHtml(p)).join('')}
+        <h2 style="font-family:'Noto Serif JP',serif;margin-bottom:4px">${esc(album.title)}</h2>
+        <div style="color:var(--brown-mid);font-size:13px;margin-bottom:20px">${esc(studentName)}・${photos.length}枚</div>
+        ${slideViewerHtml('album-view-slide')}
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-sm" onclick="downloadAlbumPDF('${albumId}')">⬇ PDFダウンロード</button>
         </div>
-        ${album.message ? `
-        <div style="margin-top:32px;padding:20px 24px;background:${accentColor}10;border-left:3px solid ${accentColor};border-radius:8px">
-          <div style="font-size:11px;letter-spacing:.1em;color:${accentColor};margin-bottom:8px">Message</div>
-          <div style="font-size:14px;line-height:1.9;color:${textColor};white-space:pre-wrap">${esc(album.message)}</div>
-        </div>` : ''}
       </div>
     </div>`;
+
+  renderSlideViewer('album-view-slide', buildAlbumPages(album, photos));
 }
 
 async function unFinalizeAlbum(albumId, studentId) {
@@ -1948,8 +1991,8 @@ async function renderSharePage(token) {
         <button class="btn btn-primary" onclick="downloadSharePDF()">⬇ PDFでダウンロード</button>
       </div>
 
-      <div class="share-photo-list" id="share-photo-list">
-        ${(photos||[]).map(p => albumViewCardHtml(p)).join('')}
+      <div style="padding:0 16px 24px;max-width:560px;margin:0 auto">
+        ${slideViewerHtml('share-slide')}
       </div>
     </div>`;
 
@@ -1958,6 +2001,8 @@ async function renderSharePage(token) {
   window._shareTitle   = album.title;
   window._shareStudent = album.students?.name || '';
   window._shareAlbum   = album;
+
+  renderSlideViewer('share-slide', buildAlbumPages(album, photos || []));
 }
 
 // ============================================================
@@ -2063,8 +2108,9 @@ async function generatePDF(album, photos) {
 
       const count    = batch.photos.length;
       const DATE_H   = 32; // 日付ヘッダー
-      const META_H   = 28; // メモ行
-      const usable   = PAGE_PX - DATE_H;
+      const META_H   = 24; // メモ行
+      const GAP      = 12; // 写真間スペース
+      const usable   = PAGE_PX - DATE_H - GAP * (count - 1);
       const slotH    = Math.floor(usable / count);
       const imgAreaH = slotH - META_H;
 
@@ -2078,13 +2124,14 @@ async function generatePDF(album, photos) {
 
       batch.photos.forEach((p, idx) => {
         const imgSrc = imgDataArr[idx];
+        const isLast = idx === batch.photos.length - 1;
         const imgTag = imgSrc
-          ? `<img src="${imgSrc}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;margin:auto">`
+          ? `<img src="${imgSrc}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">`
           : `<div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:24px">?</div>`;
 
         pageHtml += `
-          <div style="width:${PAGE_PX}px;height:${slotH}px;display:flex;flex-direction:column;border-bottom:1px solid #e8e0d8">
-            <div style="height:${imgAreaH}px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px 0">${imgTag}</div>
+          <div style="width:${PAGE_PX}px;height:${slotH}px;display:flex;flex-direction:column;${isLast ? '' : `margin-bottom:${GAP}px;border-bottom:2px solid #e8e0d8`}">
+            <div style="height:${imgAreaH}px;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:4px 16px 4px 16px">${imgTag}</div>
             <div style="height:${META_H}px;padding:0 14px;display:flex;align-items:center">
               ${p.memo ? `<span style="font-size:10px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : '<span></span>'}
             </div>
