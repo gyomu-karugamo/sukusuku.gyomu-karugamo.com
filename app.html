@@ -841,16 +841,25 @@ textarea.form-input {
 }
 
 .photo-memo-input {
-  font-size: 11px;
-  padding: 4px 6px;
+  font-size: 13px;
+  padding: 6px 8px;
   border: none;
   border-top: 1px solid var(--line);
-  background: #fff;
+  background: #fafaf8;
   color: var(--brown);
   width: 100%;
   box-sizing: border-box;
   font-family: inherit;
   outline: none;
+  border-radius: 0 0 8px 8px;
+}
+.photo-memo-input:focus {
+  background: #fff;
+  border-top-color: var(--duck);
+  box-shadow: inset 0 1px 0 var(--duck-pale);
+}
+.photo-memo-input::placeholder {
+  color: var(--mist);
 }
 
 .photo-preview-remove {
@@ -1179,8 +1188,8 @@ const APP_URL           = "https://app.gyomu-karugamo.com/app.html";
 // プラン設定
 // ============================================================
 const PLANS = {
-  free:     { name: 'ライトプラン（無料）', maxStudents: 15, maxAlbumsPerMonth: 1, canShare: false },
-  light:    { name: 'ライトプラン',         maxStudents: 15, maxAlbumsPerMonth: 1, canShare: false },
+  free:     { name: 'ライトプラン（無料）', maxStudents: 15, maxAlbumsPerMonth: 10, canShare: false },
+  light:    { name: 'ライトプラン',         maxStudents: 15, maxAlbumsPerMonth: 10, canShare: false },
   standard: { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true },
   premium:  { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true },
 };
@@ -1399,7 +1408,7 @@ function timelineItemHtml(record) {
   return `
     <div class="timeline-item" id="record-${record.id}">
       <div class="timeline-date">
-        📅 ${formatDate(record.recorded_at)}
+        ${formatDate(record.recorded_at)}
         <span style="margin-left:auto;font-size:0.78rem;color:var(--mist)">${photos.length}枚</span>
       </div>
       ${photosHtml}
@@ -1574,13 +1583,13 @@ function albumPhotoItemHtml(p) {
       <img class="album-photo-img" src="${url}" alt="" loading="lazy"
         onclick="openLightbox('${url}')">
       <div class="album-photo-meta">
-        <div class="album-photo-date">📅 ${formatDate(p.recorded_at)}</div>
+        <div class="album-photo-date">${formatDate(p.recorded_at)}</div>
         ${p.memo ? `<div class="album-photo-memo">${esc(p.memo)}</div>` : ''}
       </div>
       <div class="album-photo-actions">
         <button class="btn btn-secondary btn-sm" onclick="setCoverPhoto(this,'${url}')" title="表紙用の写真に設定">⭐ 表紙</button>
         <button class="btn ${excluded ? 'btn-secondary' : 'btn-danger'} btn-sm"
-          onclick="toggleExclude('${p.id}', ${excluded})">
+          onclick="toggleExclude('${p.id}', ${excluded}, this)">
           ${excluded ? '表示' : '非表示'}
         </button>
       </div>
@@ -1588,16 +1597,16 @@ function albumPhotoItemHtml(p) {
 }
 
 // 除外トグル
-async function toggleExclude(photoId, currentExcluded) {
+async function toggleExclude(photoId, currentExcluded, btnEl) {
   await sb.from('album_photos').update({ is_excluded: !currentExcluded }).eq('id', photoId);
   const el = document.querySelector(`[data-photo-id="${photoId}"]`);
   if (!el) return;
   el.classList.toggle('excluded', !currentExcluded);
-  const btn = el.querySelector('button');
+  const btn = btnEl || el.querySelectorAll('.album-photo-actions button')[1];
   if (btn) {
     btn.className = `btn ${!currentExcluded ? 'btn-secondary' : 'btn-danger'} btn-sm`;
     btn.textContent = !currentExcluded ? '表示' : '非表示';
-    btn.setAttribute('onclick', `toggleExclude('${photoId}', ${!currentExcluded})`);
+    btn.setAttribute('onclick', `toggleExclude('${photoId}', ${!currentExcluded}, this)`);
   }
   const hint = document.querySelector('.album-hint');
   if (hint) {
@@ -1907,7 +1916,7 @@ function albumViewCardHtml(p) {
     <div class="album-photo-card">
       <img src="${url}" alt="" loading="lazy" onclick="openLightbox('${url}')">
       <div class="album-photo-card-meta">
-        <div class="album-photo-card-date">📅 ${formatDate(p.recorded_at)}</div>
+        <div class="album-photo-card-date">${formatDate(p.recorded_at)}</div>
         ${p.memo ? `<div class="album-photo-card-memo">${esc(p.memo)}</div>` : ''}
       </div>
     </div>`;
@@ -2077,8 +2086,9 @@ async function generatePDF(album, photos) {
     const PDF_GINGHAM_SVG = `<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:0;left:0;width:${PAGE_PX}px;height:${PAGE_PX}px">${ginghamRects}</svg>`;
     const coverPhotoPath   = album.cover_photo_path || null;
     const coverPhotoBase64 = coverPhotoPath ? await fetchImageBase64(coverPhotoPath) : null;
+    // object-fit:coverはhtml2canvasで正しく描画されないため、background-imageで代替
     const coverCircleHtml  = coverPhotoBase64
-      ? `<div style="width:220px;height:220px;border-radius:50%;overflow:hidden;border:3px solid rgba(${pr},${pg},${pb},0.35);margin-bottom:28px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.1)"><img src="${coverPhotoBase64}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`
+      ? `<div style="width:220px;height:220px;border-radius:50%;background-image:url('${coverPhotoBase64}');background-size:cover;background-position:center;border:3px solid rgba(${pr},${pg},${pb},0.35);margin-bottom:28px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.1)"></div>`
       : '';
     const coverHtml = `
       <div style="position:relative;width:${PAGE_PX}px;height:${PAGE_PX}px;background-color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:48px;box-sizing:border-box">
