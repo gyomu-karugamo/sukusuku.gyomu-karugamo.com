@@ -1843,29 +1843,49 @@ async function generatePDF(album, photos) {
     const coverImg = await captureHtml(coverHtml);
     doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
 
-    // ===== 写真ページ =====
+    // ===== 写真ページ（同じ日付はまとめて、photosPerPage枚ずつ） =====
+    // まず日付でグループ化
+    const dateGroups = [];
+    for (const p of photos) {
+      const last = dateGroups[dateGroups.length - 1];
+      if (last && last.date === p.recorded_at) {
+        last.photos.push(p);
+      } else {
+        dateGroups.push({ date: p.recorded_at, photos: [p] });
+      }
+    }
+
+    // 各日付グループをphotosPerPage枚ずつページに分割
     const batches = [];
-    for (let i = 0; i < photos.length; i += photosPerPage) {
-      batches.push(photos.slice(i, i + photosPerPage));
+    for (const grp of dateGroups) {
+      for (let i = 0; i < grp.photos.length; i += photosPerPage) {
+        batches.push({ date: grp.date, photos: grp.photos.slice(i, i + photosPerPage) });
+      }
     }
 
     for (const batch of batches) {
       doc.addPage([PAGE_MM, PAGE_MM]);
 
-      // 画像をプリロード（base64）
-      const imgDataArr = await Promise.all(batch.map(p =>
+      const imgDataArr = await Promise.all(batch.photos.map(p =>
         p.storage_path ? fetchImageBase64(getPublicUrl(p.storage_path)) : Promise.resolve(null)
       ));
 
-      // 各枚数レイアウト（縦積み、写真の縦横比を維持）
-      const count    = batch.length;
-      const META_H   = 36;
-      const slotH    = Math.floor(PAGE_PX / count);
+      const count    = batch.photos.length;
+      const DATE_H   = 32; // 日付ヘッダー
+      const META_H   = 28; // メモ行
+      const usable   = PAGE_PX - DATE_H;
+      const slotH    = Math.floor(usable / count);
       const imgAreaH = slotH - META_H;
 
       let pageHtml = `<div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;font-family:'Noto Sans JP',sans-serif;display:flex;flex-direction:column">`;
 
-      batch.forEach((p, idx) => {
+      // 日付ヘッダー（ページ先頭に1回だけ）
+      pageHtml += `
+        <div style="height:${DATE_H}px;padding:0 16px;display:flex;align-items:center;background:${accentColor}18;border-bottom:2px solid ${accentColor}40">
+          <span style="font-size:12px;font-weight:600;color:${accentColor};letter-spacing:.04em">${formatDate(batch.date)}</span>
+        </div>`;
+
+      batch.photos.forEach((p, idx) => {
         const imgSrc = imgDataArr[idx];
         const imgTag = imgSrc
           ? `<img src="${imgSrc}" style="max-width:100%;max-height:100%;object-fit:contain;display:block;margin:auto">`
@@ -1874,9 +1894,8 @@ async function generatePDF(album, photos) {
         pageHtml += `
           <div style="width:${PAGE_PX}px;height:${slotH}px;display:flex;flex-direction:column;border-bottom:1px solid #e8e0d8">
             <div style="height:${imgAreaH}px;background:#f8f6f3;display:flex;align-items:center;justify-content:center;overflow:hidden">${imgTag}</div>
-            <div style="height:${META_H}px;padding:0 14px;display:flex;align-items:center;gap:14px;background:#fff">
-              <span style="font-size:10px;color:${accentColor};white-space:nowrap;font-weight:500">${formatDate(p.recorded_at)}</span>
-              ${p.memo ? `<span style="font-size:10px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(p.memo)}</span>` : ''}
+            <div style="height:${META_H}px;padding:0 14px;display:flex;align-items:center">
+              ${p.memo ? `<span style="font-size:10px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : '<span></span>'}
             </div>
           </div>`;
       });
