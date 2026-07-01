@@ -945,12 +945,14 @@ textarea.form-input {
   display: flex; align-items: center; justify-content: center;
 }
 
-/* ===== アルバム画像PDF生成用（非表示） ===== */
+/* ===== アルバムPDF生成用（非表示、正方形600px） ===== */
 #pdf-render-area {
   position: fixed;
   left: -9999px;
   top: 0;
-  width: 794px; /* A4 at 96dpi approx */
+  width: 600px;
+  height: 600px;
+  overflow: hidden;
   background: #fff;
   font-family: 'Noto Sans JP', sans-serif;
   color: #1a1714;
@@ -1464,6 +1466,7 @@ async function renderAlbumEditor(studentId, albumId) {
     renderAlbumView(albumId); return;
   }
 
+  const accentColor = album.accent_color || '#4a7c6f';
   main.innerHTML = `
     <div class="page fade-up">
       <div class="page-header">
@@ -1472,9 +1475,35 @@ async function renderAlbumEditor(studentId, albumId) {
       </div>
 
       <div class="album-editor-header">
-        <input type="text" class="album-title-input" id="album-title-input"
-          placeholder="${esc(student?.name || '')}の成長アルバム"
-          value="${esc(album.title || '')}" maxlength="60">
+        <div class="form-group" style="margin-bottom:12px">
+          <label class="form-label">アルバム名</label>
+          <input type="text" class="album-title-input" id="album-title-input"
+            placeholder="${esc(student?.name || '')}の成長アルバム"
+            value="${esc(album.title || '')}" maxlength="60">
+        </div>
+
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+          <div>
+            <label class="form-label" style="margin-bottom:6px">テーマカラー</label>
+            <input type="color" id="album-color-input" value="${esc(accentColor)}"
+              style="width:48px;height:36px;border:none;cursor:pointer;border-radius:8px;padding:2px">
+          </div>
+          <div style="flex:1;min-width:180px">
+            <label class="form-label" style="margin-bottom:6px">写真のまとめ方</label>
+            <select class="form-input" id="album-layout-select" style="padding:8px 12px">
+              <option value="2" ${(album.photos_per_page||2)==2?'selected':''}>1ページに2枚</option>
+              <option value="3" ${(album.photos_per_page||2)==3?'selected':''}>1ページに3枚</option>
+              <option value="1" ${(album.photos_per_page||2)==1?'selected':''}>1ページに1枚</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:8px">
+          <label class="form-label">先生からのメッセージ（任意・アルバムの最後のページに掲載）</label>
+          <textarea class="form-input" id="album-message-input" rows="3"
+            placeholder="例：○○ちゃん、いつも一生懸命練習してくれてありがとう。これからも一緒に頑張ろうね！">${esc(album.teacher_message || '')}</textarea>
+        </div>
+
         <div class="album-hint">
           写真をドラッグで並び替え、「除外」で非表示にできます（${photos.filter(p=>!p.is_excluded).length}枚選択中）
         </div>
@@ -1561,8 +1590,15 @@ async function finalizeAlbum(studentId) {
     await Promise.all(updates);
   }
 
+  const accentColor   = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const photosPerPage = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
+  const teacherMsg    = document.getElementById('album-message-input')?.value.trim() || null;
+
   const { error } = await sb.from('albums').update({
     title,
+    accent_color:    accentColor,
+    photos_per_page: photosPerPage,
+    teacher_message: teacherMsg,
     is_finalized: true,
     finalized_at: new Date().toISOString(),
   }).eq('id', currentAlbumId);
@@ -1580,8 +1616,8 @@ async function renderAlbumView(albumId) {
   const main = document.getElementById('main');
   main.innerHTML = '<div class="loading"></div>';
 
-  const { data: album, error: ae } = await sb.from('albums').select('*, students(name, id)').eq('id', albumId).single();
-  if (ae) { main.innerHTML = errHtml(ae.message); return; }
+  const { data: album, error: ae } = await sb.from('albums').select('*, students(name, id)').eq('id', albumId).maybeSingle();
+  if (ae || !album) { main.innerHTML = errHtml(ae?.message || 'アルバムが見つかりません'); return; }
 
   const { data: photos, error: pe } = await sb
     .from('album_photos')
@@ -1595,21 +1631,30 @@ async function renderAlbumView(albumId) {
   const studentId = album.students?.id || '';
   const studentName = album.students?.name || '';
   const limits = getLimits();
+  const accentColor = album.accent_color || '#4a7c6f';
 
   const shareBtn = limits.canShare
     ? `<button class="btn btn-white btn-sm" onclick="issueShareLink('${albumId}')">🔗 共有リンクを発行</button>`
     : `<button class="btn btn-white btn-sm" title="スタンダードプランで利用可能" style="opacity:.6;cursor:not-allowed">🔗 共有（スタンダード）</button>`;
+
+  const teacherMsgHtml = album.teacher_message
+    ? `<div style="background:#fff8f2;border:1px solid var(--line);border-radius:12px;padding:20px 24px;max-width:600px;margin:0 auto 24px">
+        <div style="font-size:0.8rem;color:var(--mist);margin-bottom:8px;letter-spacing:.05em">先生からのメッセージ</div>
+        <div style="font-family:'Noto Serif JP',serif;line-height:1.8;color:var(--brown);white-space:pre-wrap">${esc(album.teacher_message)}</div>
+      </div>`
+    : '';
 
   main.innerHTML = `
     <div class="fade-up">
       <div class="page">
         <div class="page-header" style="margin-bottom:0">
           <a href="#/students/${studentId}" class="back-btn">← 生徒詳細へ</a>
+          <button class="btn btn-secondary btn-sm" onclick="unFinalizeAlbum('${albumId}','${studentId}')">編集に戻る</button>
         </div>
       </div>
 
-      <div class="album-view-header" style="margin:0 0 24px">
-        <div style="max-width:860px;margin:0 auto;padding:0 16px">
+      <div class="album-view-header" style="margin:0 0 24px;background:${accentColor}20;border-bottom:3px solid ${accentColor}">
+        <div style="max-width:860px;margin:0 auto;padding:16px">
           <div class="album-view-title">${esc(album.title)}</div>
           <div class="album-view-student">👤 ${esc(studentName)} ・ ${photos.length}枚</div>
           <div class="album-view-actions">
@@ -1620,11 +1665,18 @@ async function renderAlbumView(albumId) {
       </div>
 
       <div class="page">
+        ${teacherMsgHtml}
         <div class="album-photo-list" id="album-view-list">
           ${photos.map(p => albumViewCardHtml(p)).join('')}
         </div>
       </div>
     </div>`;
+}
+
+async function unFinalizeAlbum(albumId, studentId) {
+  if (!confirm('編集モードに戻りますか？')) return;
+  await sb.from('albums').update({ is_finalized: false, finalized_at: null }).eq('id', albumId);
+  renderAlbumEditor(studentId, albumId);
 }
 
 function albumViewCardHtml(p) {
@@ -1685,7 +1737,7 @@ async function renderSharePage(token) {
     .select('*, students(name)')
     .eq('share_token', token)
     .eq('is_finalized', true)
-    .single();
+    .maybeSingle();
 
   if (ae || !album) {
     main.innerHTML = `
@@ -1722,109 +1774,134 @@ async function renderSharePage(token) {
     </div>`;
 
   // PDF用にデータを保持
-  window._sharePhotos = photos;
-  window._shareTitle  = album.title;
+  window._sharePhotos  = photos;
+  window._shareTitle   = album.title;
+  window._shareStudent = album.students?.name || '';
+  window._shareAlbum   = album;
 }
 
 // ============================================================
 // PDF生成（html2canvas経由）
 // ============================================================
 async function downloadAlbumPDF(albumId) {
-  const { data: album } = await sb.from('albums').select('title, students(name)').eq('id', albumId).single();
+  const { data: album } = await sb.from('albums').select('*, students(name)').eq('id', albumId).single();
   const { data: photos } = await sb
     .from('album_photos').select('*')
     .eq('album_id', albumId).eq('is_excluded', false)
     .order('sort_order', { ascending: true });
 
-  await generatePDF(album?.title || 'アルバム', album?.students?.name || '', photos || []);
+  await generatePDF(album || {}, photos || []);
 }
 
 async function downloadSharePDF() {
-  await generatePDF(window._shareTitle || 'アルバム', '', window._sharePhotos || []);
+  await generatePDF(window._shareAlbum || { title: window._shareTitle || 'アルバム' }, window._sharePhotos || []);
 }
 
-async function generatePDF(title, studentName, photos) {
-  if (photos.length === 0) { alert('写真がありません'); return; }
+async function generatePDF(album, photos) {
+  const title       = album.title || 'アルバム';
+  const studentName = album.students?.name || '';
+  const accentColor = album.accent_color || '#4a7c6f';
+  const photosPerPage = parseInt(album.photos_per_page || 2, 10);
+  const teacherMsg  = album.teacher_message || '';
+
+  if (photos.length === 0 && !teacherMsg) { alert('写真がありません'); return; }
 
   const btn = event?.target;
   if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
 
+  const renderArea = document.getElementById('pdf-render-area');
+
+  // ページサイズ: 150mm×150mm 正方形
+  const PAGE_MM = 150;
+  const PAGE_PX = 600; // renderAreaの幅と一致
+
+  async function captureHtml(html) {
+    renderArea.innerHTML = html;
+    renderArea.style.width  = PAGE_PX + 'px';
+    renderArea.style.height = PAGE_PX + 'px';
+    await new Promise(r => setTimeout(r, 80));
+    const canvas = await html2canvas(renderArea, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+    });
+    return canvas.toDataURL('image/jpeg', 0.92);
+  }
+
   try {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const W = 210, H = 297, M = 14;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [PAGE_MM, PAGE_MM] });
 
     // ===== 表紙 =====
-    doc.setFillColor(74, 124, 111);
-    doc.rect(0, 0, W, H, 'F');
-    doc.setFillColor(255, 255, 255, 0.1);
+    const coverHtml = `
+      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:${accentColor};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;color:#fff;padding:40px;box-sizing:border-box">
+        <div style="font-size:13px;letter-spacing:.15em;opacity:.8;margin-bottom:24px">すくすくかるがもアルバム</div>
+        <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all">${esc(title)}</div>
+        ${studentName ? `<div style="font-size:16px;margin-top:20px;opacity:.9">${esc(studentName)}</div>` : ''}
+      </div>`;
+    const coverImg = await captureHtml(coverHtml);
+    doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
 
-    // タイトル（白文字）
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    const titleLines = doc.splitTextToSize(title, W - M*2);
-    doc.text(titleLines, W/2, 120, { align: 'center' });
-
-    if (studentName) {
-      doc.setFontSize(13);
-      doc.text(studentName, W/2, 120 + titleLines.length * 10 + 10, { align: 'center' });
+    // ===== 写真ページ =====
+    const batches = [];
+    for (let i = 0; i < photos.length; i += photosPerPage) {
+      batches.push(photos.slice(i, i + photosPerPage));
     }
 
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255, 0.7);
-    doc.text('すくすくかるがもアルバム', W/2, H - 20, { align: 'center' });
+    for (const batch of batches) {
+      doc.addPage([PAGE_MM, PAGE_MM]);
 
-    // ===== 写真ページ（2枚/ページ） =====
-    const renderArea = document.getElementById('pdf-render-area');
+      // 画像をプリロード（base64）
+      const imgDataArr = await Promise.all(batch.map(p =>
+        p.storage_path ? fetchImageBase64(getPublicUrl(p.storage_path)) : Promise.resolve(null)
+      ));
 
-    for (let i = 0; i < photos.length; i += 2) {
-      const batch = photos.slice(i, i+2);
-      doc.addPage();
+      // 各枚数レイアウト
+      const count = batch.length;
+      const rows  = count; // 縦積み（1〜3枚）
+      const slotH = Math.floor(PAGE_PX / rows);
 
-      let y = M;
-      for (const p of batch) {
-        // html2canvasで画像を描画してbase64取得
-        const url = p.storage_path ? getPublicUrl(p.storage_path) : '';
-        const imgData = await fetchImageBase64(url);
-        if (!imgData) continue;
+      let pageHtml = `<div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;font-family:'Noto Sans JP',sans-serif;display:flex;flex-direction:column;gap:0">`;
 
-        const imgH = 100; // mm
-        const imgW = W - M*2;
+      batch.forEach((p, idx) => {
+        const imgSrc = imgDataArr[idx];
+        const imgTag = imgSrc
+          ? `<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover" crossorigin="anonymous">`
+          : `<div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:24px">?</div>`;
 
-        try {
-          doc.addImage(imgData, 'JPEG', M, y, imgW, imgH);
-        } catch {
-          try { doc.addImage(imgData, 'PNG', M, y, imgW, imgH); } catch(e2) { console.warn('addImage error', e2); }
-        }
-        y += imgH + 3;
+        const imgAreaH = Math.floor(slotH * 0.75);
+        const metaH    = slotH - imgAreaH;
 
-        // 日付
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(9);
-        doc.setTextColor(74, 124, 111);
-        doc.text(formatDate(p.recorded_at), M, y + 4);
-        y += 7;
+        pageHtml += `
+          <div style="width:${PAGE_PX}px;height:${slotH}px;display:flex;flex-direction:column;border-bottom:1px solid #eee">
+            <div style="height:${imgAreaH}px;overflow:hidden">${imgTag}</div>
+            <div style="height:${metaH}px;padding:4px 12px;display:flex;align-items:center;gap:12px;background:#fafafa;overflow:hidden">
+              <span style="font-size:11px;color:${accentColor};white-space:nowrap">${formatDate(p.recorded_at)}</span>
+              ${p.memo ? `<span style="font-size:11px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${esc(p.memo)}</span>` : ''}
+            </div>
+          </div>`;
+      });
 
-        // メモ
-        if (p.memo) {
-          doc.setFontSize(10);
-          doc.setTextColor(61, 43, 31);
-          const memoLines = doc.splitTextToSize(p.memo, imgW);
-          const shown = memoLines.slice(0, 3);
-          doc.text(shown, M, y + 4);
-          y += shown.length * 5 + 8;
-        } else {
-          y += 6;
-        }
-      }
+      pageHtml += '</div>';
 
-      // ページ番号
-      doc.setFontSize(8);
-      doc.setTextColor(180, 180, 180);
-      doc.text(`${Math.floor(i/2) + 1}`, W/2, H - 8, { align: 'center' });
+      const img = await captureHtml(pageHtml);
+      doc.addImage(img, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
     }
 
+    // ===== 先生からのメッセージページ（任意） =====
+    if (teacherMsg) {
+      doc.addPage([PAGE_MM, PAGE_MM]);
+      const msgHtml = `
+        <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff8f2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:60px;box-sizing:border-box">
+          <div style="font-size:11px;letter-spacing:.12em;color:${accentColor};margin-bottom:28px">先生からのメッセージ</div>
+          <div style="font-size:16px;line-height:2;color:#3d2b1f;text-align:center;word-break:break-all;white-space:pre-wrap">${esc(teacherMsg)}</div>
+        </div>`;
+      const msgImg = await captureHtml(msgHtml);
+      doc.addImage(msgImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
+    }
+
+    renderArea.innerHTML = '';
     doc.save(`${title}.pdf`);
   } catch(e) {
     alert('PDF生成に失敗しました: ' + e.message);
@@ -2269,6 +2346,13 @@ async function renderAccount() {
           <button class="btn btn-danger btn-sm" onclick="signOut()">ログアウト</button>
         </div>
 
+        <!-- ===== アカウント削除 ===== -->
+        <div class="card" style="border-color:var(--error-bg)">
+          <div class="section-label" style="margin-bottom:6px;color:var(--error)">アカウント削除</div>
+          <div style="font-size:0.85rem;color:var(--mist);margin-bottom:12px">アカウントを削除すると、生徒・記録・アルバム・写真がすべて完全に削除されます。この操作は取り消せません。</div>
+          <button class="btn btn-danger btn-sm" onclick="deleteAccount()">アカウントを削除する</button>
+        </div>
+
       </div>
     </div>`;
 }
@@ -2337,6 +2421,56 @@ async function changePassword() {
     msg.style.color = 'var(--success)';
     document.getElementById('new-pw-input').value = '';
     document.getElementById('new-pw-confirm-input').value = '';
+  }
+}
+
+async function deleteAccount() {
+  const confirmed = prompt('アカウントを削除するには「削除する」と入力してください。');
+  if (confirmed !== '削除する') { if (confirmed !== null) alert('キャンセルしました'); return; }
+
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '削除中...'; }
+
+  try {
+    // 全生徒の記録写真とアバターをストレージから削除
+    const { data: students } = await sb.from('students').select('id, photo_path').eq('user_id', currentUser.id);
+    if (students && students.length > 0) {
+      const studentIds = students.map(s => s.id);
+
+      // 記録写真
+      const { data: records } = await sb.from('lesson_records').select('id').in('student_id', studentIds);
+      if (records && records.length > 0) {
+        const recordIds = records.map(r => r.id);
+        const { data: recPhotos } = await sb.from('record_photos').select('storage_path').in('record_id', recordIds);
+        if (recPhotos && recPhotos.length > 0) {
+          const paths = recPhotos.map(p => p.storage_path).filter(Boolean);
+          if (paths.length > 0) await sb.storage.from(STORAGE_BUCKET).remove(paths);
+        }
+      }
+
+      // アバター
+      const avatarPaths = students.map(s => s.photo_path).filter(Boolean);
+      if (avatarPaths.length > 0) await sb.storage.from(STORAGE_BUCKET).remove(avatarPaths);
+    }
+
+    // DBはCASCADE DELETEで連鎖削除、studentsを消せば全消える
+    if (students && students.length > 0) {
+      await sb.from('students').delete().eq('user_id', currentUser.id);
+    }
+
+    // Supabase Auth ユーザー削除（自分自身）
+    const { error } = await sb.rpc('delete_own_account');
+    if (error) {
+      // RPCがない場合は auth.admin 経由が必要なためサインアウトのみ
+      console.warn('delete_own_account RPC error:', error);
+    }
+
+    await sb.auth.signOut();
+    alert('アカウントを削除しました。ご利用ありがとうございました。');
+    location.href = '/';
+  } catch(e) {
+    alert('削除に失敗しました: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'アカウントを削除する'; }
   }
 }
 

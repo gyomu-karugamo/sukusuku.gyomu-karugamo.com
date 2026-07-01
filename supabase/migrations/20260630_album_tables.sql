@@ -171,6 +171,23 @@ CREATE POLICY "album_photos_update" ON storage.objects
   WITH CHECK (bucket_id = 'album-photos');
 
 -- ============================================================
+-- albumsテーブルへの追加列（既存テーブルに追加する場合）
+-- ============================================================
+ALTER TABLE albums ADD COLUMN IF NOT EXISTS accent_color    TEXT DEFAULT '#4a7c6f';
+ALTER TABLE albums ADD COLUMN IF NOT EXISTS teacher_message TEXT;
+ALTER TABLE albums ADD COLUMN IF NOT EXISTS photos_per_page INTEGER DEFAULT 2;
+
+-- ============================================================
+-- アカウント自己削除用RPC（Edge Functionなしで削除できるよう）
+-- ============================================================
+CREATE OR REPLACE FUNCTION delete_own_account()
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+BEGIN
+  DELETE FROM auth.users WHERE id = auth.uid();
+END;
+$$;
+
+-- ============================================================
 -- profilesテーブルへのtier列追加（既存テーブルに追加する場合）
 -- ============================================================
 -- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS tier TEXT DEFAULT 'free';
