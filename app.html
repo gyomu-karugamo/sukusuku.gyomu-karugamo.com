@@ -1528,8 +1528,15 @@ async function renderAlbumEditor(studentId, albumId) {
           </div>
         </div>
 
+        <div class="form-group" style="margin-bottom:8px">
+          <label class="form-label">メッセージ（任意・アルバム最後のページに掲載）</label>
+          <textarea class="form-input" id="album-message-input" rows="3"
+            placeholder="例：○○ちゃん、いつも一生懸命練習してくれてありがとう！">${esc(album.message || '')}</textarea>
+        </div>
+
         <div class="album-hint">
-          写真をドラッグで並び替え、表示／非表示を切り替えられます（${photos.filter(p=>!p.is_excluded).length}枚表示中）
+          写真をドラッグで並び替え、表示／非表示を切り替えられます（${photos.filter(p=>!p.is_excluded).length}枚表示中）<br>
+          <span style="font-size:0.82rem;color:var(--mist)">⭐ アイコンで表紙用の写真を1枚選べます</span>
         </div>
       </div>
 
@@ -1556,7 +1563,7 @@ function albumPhotoItemHtml(p) {
   const url = getPublicUrl(p.storage_path || '');
   const excluded = p.is_excluded;
   return `
-    <div class="album-photo-item ${excluded ? 'excluded' : ''}" data-photo-id="${p.id}" data-date="${p.recorded_at}" data-memo="${esc(p.memo||'')}">
+    <div class="album-photo-item ${excluded ? 'excluded' : ''}" data-photo-id="${p.id}" data-date="${p.recorded_at}" data-memo="${esc(p.memo||'')}" data-src="${url}">
       <span class="drag-handle" title="ドラッグで並び替え">⠿</span>
       <img class="album-photo-img" src="${url}" alt="" loading="lazy"
         onclick="openLightbox('${url}')">
@@ -1565,6 +1572,7 @@ function albumPhotoItemHtml(p) {
         ${p.memo ? `<div class="album-photo-memo">${esc(p.memo)}</div>` : ''}
       </div>
       <div class="album-photo-actions">
+        <button class="btn btn-secondary btn-sm" onclick="setCoverPhoto(this,'${url}')" title="表紙用の写真に設定">⭐ 表紙</button>
         <button class="btn ${excluded ? 'btn-secondary' : 'btn-danger'} btn-sm"
           onclick="toggleExclude('${p.id}', ${excluded})">
           ${excluded ? '表示' : '非表示'}
@@ -1615,12 +1623,20 @@ function showAlbumPreview(studentId) {
 
   const pages = [];
 
-  // 表紙
+  const coverPhotoSrc = window._editorCoverSrc || null;
+
+  // 表紙（スタイリッシュ：白背景＋ストライプ帯＋丸写真）
+  const stripeStyle = `repeating-linear-gradient(90deg,${accentColor} 0,${accentColor} 10px,transparent 10px,transparent 20px)`;
   pages.push(`
-    <div style="width:100%;height:100%;background:${accentColor};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10%;box-sizing:border-box;font-family:'Noto Serif JP',serif">
-      <div style="font-size:clamp(10px,2vw,13px);letter-spacing:.15em;opacity:.75;margin-bottom:16px;color:${textColor}">すくすくかるがもアルバム</div>
-      <div style="font-size:clamp(16px,4vw,28px);font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
-      ${studentName ? `<div style="font-size:clamp(12px,2.5vw,16px);margin-top:16px;opacity:.85;color:${textColor}">${esc(studentName)}</div>` : ''}
+    <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
+      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5% 10%;box-sizing:border-box">
+        ${coverPhotoSrc ? `<div style="width:42%;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:3px solid ${accentColor};margin-bottom:6%;flex-shrink:0"><img src="${coverPhotoSrc}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : ''}
+        <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.18em;color:${accentColor};margin-bottom:8px;text-transform:uppercase">すくすくかるがもアルバム</div>
+        <div style="font-size:clamp(16px,4vw,26px);font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
+        ${studentName ? `<div style="font-size:clamp(11px,2vw,14px);margin-top:10px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
+      </div>
+      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
     </div>`);
 
   // 写真ページ（日付でグループ化）
@@ -1644,8 +1660,8 @@ function showAlbumPreview(studentId) {
       batch.forEach(p => {
         pageHtml += `
           <div style="flex:1;display:flex;flex-direction:column;border-bottom:1px solid #e8e0d8;overflow:hidden">
-            <div style="flex:1;background:#f8f6f3;display:flex;align-items:center;justify-content:center;overflow:hidden">
-              <img src="${p.src}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">
+            <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px 0">
+              <img src="${p.src}" style="max-width:96%;max-height:96%;object-fit:contain;display:block">
             </div>
             <div style="height:${META_H_PCT}%;min-height:20px;padding:0 4%;display:flex;align-items:center;flex-shrink:0">
               ${p.memo ? `<span style="font-size:clamp(8px,1.5vw,11px);color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
@@ -1655,6 +1671,20 @@ function showAlbumPreview(studentId) {
       pageHtml += '</div>';
       pages.push(pageHtml);
     }
+  }
+
+  // メッセージページ
+  const previewMessage = document.getElementById('album-message-input')?.value.trim() || '';
+  if (previewMessage) {
+    pages.push(`
+      <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
+        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8% 12%;box-sizing:border-box;text-align:center">
+          <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.15em;color:${accentColor};margin-bottom:16px">Message</div>
+          <div style="font-size:clamp(13px,2.5vw,16px);line-height:2;color:${textColor};white-space:pre-wrap">${esc(previewMessage)}</div>
+        </div>
+        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+      </div>`);
   }
 
   if (pages.length === 0) { alert('表示できる写真がありません'); return; }
@@ -1680,6 +1710,19 @@ function previewNext() {
   window._previewIndex = Math.min(window._previewPages.length - 1, window._previewIndex + 1);
   document.getElementById('preview-page-container').innerHTML = window._previewPages[window._previewIndex];
   document.getElementById('preview-counter').textContent = `${window._previewIndex + 1} / ${window._previewPages.length}`;
+}
+
+function setCoverPhoto(btn, src) {
+  // 他の⭐ボタンをリセット
+  document.querySelectorAll('.album-photo-item .btn[onclick^="setCoverPhoto"]').forEach(b => {
+    b.textContent = '⭐ 表紙';
+    b.style.background = '';
+    b.style.color = '';
+  });
+  window._editorCoverSrc = src;
+  btn.textContent = '⭐ 表紙用';
+  btn.style.background = '#f5c542';
+  btn.style.color = '#333';
 }
 
 function doFinalizeAlbum() {
@@ -1713,19 +1756,27 @@ async function finalizeAlbum(studentId) {
   });
   if (updates.length > 0) await Promise.all(updates);
 
-  const accentColor   = document.getElementById('album-color-input')?.value || '#4a7c6f';
-  const textColor     = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
-  const photosPerPage = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
+  const accentColor     = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const textColor       = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
+  const photosPerPage   = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
+  const message         = document.getElementById('album-message-input')?.value.trim() || null;
+  // 表紙写真：⭐選択されたsrcからstorageパスを逆引き
+  const coverSrc        = window._editorCoverSrc || null;
+  const coverPhotoPath  = coverSrc
+    ? document.querySelector(`[data-src="${CSS.escape(coverSrc)}"]`)?.getAttribute('data-photo-id') || null
+    : null;
 
   const btn = document.querySelector('.album-editor-header')?.closest('.page')?.querySelector('.btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
 
   try {
+    // まず拡張列を試みる（列がなくてもcoreは必ず保存）
+    const extUpdate = { accent_color: accentColor, text_color: textColor, photos_per_page: photosPerPage, message, cover_photo_path: coverSrc };
+    await sb.from('albums').update(extUpdate).eq('id', albumId); // エラーは無視
+
+    // core（必ず成功すべき）
     const { error } = await sb.from('albums').update({
       title,
-      accent_color:    accentColor,
-      text_color:      textColor,
-      photos_per_page: photosPerPage,
       is_finalized: true,
       finalized_at: new Date().toISOString(),
     }).eq('id', albumId);
@@ -1735,7 +1786,7 @@ async function finalizeAlbum(studentId) {
     currentAlbumId = albumId;
     renderAlbumView(albumId);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '完成させる →'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'プレビューを確認 →'; }
   }
 }
 
@@ -1793,6 +1844,11 @@ async function renderAlbumView(albumId) {
         <div class="album-photo-list" id="album-view-list">
           ${photos.map(p => albumViewCardHtml(p)).join('')}
         </div>
+        ${album.message ? `
+        <div style="margin-top:32px;padding:20px 24px;background:${accentColor}10;border-left:3px solid ${accentColor};border-radius:8px">
+          <div style="font-size:11px;letter-spacing:.1em;color:${accentColor};margin-bottom:8px">Message</div>
+          <div style="font-size:14px;line-height:1.9;color:${textColor};white-space:pre-wrap">${esc(album.message)}</div>
+        </div>` : ''}
       </div>
     </div>`;
 }
@@ -1958,11 +2014,22 @@ async function generatePDF(album, photos) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [PAGE_MM, PAGE_MM] });
 
     // ===== 表紙 =====
+    const pdfStripe = `repeating-linear-gradient(90deg,${accentColor} 0,${accentColor} 10px,transparent 10px,transparent 20px)`;
+    const coverPhotoPath = album.cover_photo_path || null;
+    const coverPhotoBase64 = coverPhotoPath ? await fetchImageBase64(coverPhotoPath) : null;
+    const coverCircle = coverPhotoBase64
+      ? `<div style="width:220px;height:220px;border-radius:50%;overflow:hidden;border:4px solid ${accentColor};margin-bottom:28px;flex-shrink:0"><img src="${coverPhotoBase64}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`
+      : '';
     const coverHtml = `
-      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:${accentColor};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:40px;box-sizing:border-box">
-        <div style="font-size:13px;letter-spacing:.15em;opacity:.75;margin-bottom:24px;color:${textColor}">すくすくかるがもアルバム</div>
-        <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
-        ${studentName ? `<div style="font-size:16px;margin-top:20px;opacity:.85;color:${textColor}">${esc(studentName)}</div>` : ''}
+      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
+        <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;box-sizing:border-box">
+          ${coverCircle}
+          <div style="font-size:13px;letter-spacing:.18em;color:${accentColor};margin-bottom:10px">すくすくかるがもアルバム</div>
+          <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
+          ${studentName ? `<div style="font-size:15px;margin-top:14px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
+        </div>
+        <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
       </div>`;
     const coverImg = await captureHtml(coverHtml);
     doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
@@ -2017,7 +2084,7 @@ async function generatePDF(album, photos) {
 
         pageHtml += `
           <div style="width:${PAGE_PX}px;height:${slotH}px;display:flex;flex-direction:column;border-bottom:1px solid #e8e0d8">
-            <div style="height:${imgAreaH}px;background:#f8f6f3;display:flex;align-items:center;justify-content:center;overflow:hidden">${imgTag}</div>
+            <div style="height:${imgAreaH}px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px 0">${imgTag}</div>
             <div style="height:${META_H}px;padding:0 14px;display:flex;align-items:center">
               ${p.memo ? `<span style="font-size:10px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : '<span></span>'}
             </div>
@@ -2028,6 +2095,23 @@ async function generatePDF(album, photos) {
 
       const img = await captureHtml(pageHtml);
       doc.addImage(img, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
+    }
+
+    // ===== メッセージページ =====
+    const pdfMessage = album.message || '';
+    if (pdfMessage) {
+      doc.addPage([PAGE_MM, PAGE_MM]);
+      const msgHtml = `
+        <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
+          <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 50px;box-sizing:border-box;text-align:center">
+            <div style="font-size:13px;letter-spacing:.15em;color:${accentColor};margin-bottom:28px">Message</div>
+            <div style="font-size:18px;line-height:2;color:${textColor};white-space:pre-wrap">${esc(pdfMessage)}</div>
+          </div>
+          <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
+        </div>`;
+      const msgImg = await captureHtml(msgHtml);
+      doc.addImage(msgImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
     }
 
     renderArea.innerHTML = '';
