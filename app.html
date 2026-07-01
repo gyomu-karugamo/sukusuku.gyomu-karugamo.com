@@ -1745,22 +1745,59 @@ function buildAlbumPages(album, photos) {
   const photosPerPage = parseInt(album.photos_per_page || 2, 10);
   const title         = album.title || 'アルバム';
   const studentName   = album.students?.name || '';
-  const stripeStyle   = `repeating-linear-gradient(90deg,${accentColor} 0,${accentColor} 10px,transparent 10px,transparent 20px)`;
-  const coverUrl      = album.cover_photo_path || null;
+  // テーマカラーを元にした多色ストライプ（縦ストライプ、参考画像風）
+  const c1 = accentColor;           // メインカラー
+  const c2 = accentColor + 'aa';    // 薄め
+  const STRIPE = `repeating-linear-gradient(180deg,
+    #e8524a 0px,#e8524a 8px,
+    #f5a623 8px,#f5a623 16px,
+    #f7e34a 16px,#f7e34a 24px,
+    #4caf50 24px,#4caf50 32px,
+    #42a5f5 32px,#42a5f5 40px,
+    ${c1} 40px,${c1} 48px,
+    #ce93d8 48px,#ce93d8 56px,
+    transparent 56px,transparent 60px)`;
+  const coverUrl = album.cover_photo_path || null;
+
+  // 花飾りのSVG（丸写真の周り）
+  const FLOWERS = `
+    <svg viewBox="0 0 200 200" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+      <!-- 左上の花 -->
+      <g transform="translate(18,18) rotate(-20)"><circle cx="0" cy="-9" r="6" fill="#f5a623" opacity=".85"/><circle cx="9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="9" r="6" fill="#f5a623" opacity=".85"/><circle cx="-9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
+      <!-- 右上の花（ピンク） -->
+      <g transform="translate(182,22) rotate(15)"><circle cx="0" cy="-8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="-8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="0" r="4.5" fill="#fff"/></g>
+      <!-- 左下の花（赤） -->
+      <g transform="translate(22,178) rotate(10)"><circle cx="0" cy="-10" r="7" fill="#e8524a" opacity=".8"/><circle cx="10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="10" r="7" fill="#e8524a" opacity=".8"/><circle cx="-10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="0" r="5.5" fill="#ffcdd2"/></g>
+      <!-- 右下の花（黄） -->
+      <g transform="translate(180,180) rotate(-15)"><circle cx="0" cy="-9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="-9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
+      <!-- 葉っぱ（左） -->
+      <ellipse cx="30" cy="100" rx="10" ry="18" fill="#81c784" opacity=".7" transform="rotate(-30,30,100)"/>
+      <ellipse cx="170" cy="90" rx="8" ry="14" fill="#aed581" opacity=".7" transform="rotate(20,170,90)"/>
+      <!-- 小花（上中央） -->
+      <g transform="translate(100,8)"><circle cx="0" cy="-5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#e3f2fd"/></g>
+      <!-- 小花（下中央） -->
+      <g transform="translate(100,192)"><circle cx="0" cy="-5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#f3e5f5"/></g>
+    </svg>`;
 
   const pages = [];
 
   // 表紙
   pages.push(`
-    <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:5% 10%;box-sizing:border-box">
-        ${coverUrl ? `<div style="width:42%;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:3px solid ${accentColor};margin-bottom:6%;flex-shrink:0"><img src="${coverUrl}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : ''}
-        <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.18em;color:${accentColor};margin-bottom:8px">すくすくかるがもアルバム</div>
-        <div style="font-size:clamp(16px,4vw,26px);font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
-        ${studentName ? `<div style="font-size:clamp(11px,2vw,14px);margin-top:10px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
+    <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif;position:relative">
+      <div style="height:9%;background:${STRIPE};flex-shrink:0"></div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4% 10% 2%;box-sizing:border-box;position:relative">
+        ${coverUrl ? `
+          <div style="position:relative;width:44%;aspect-ratio:1/1;margin-bottom:5%;flex-shrink:0">
+            ${FLOWERS}
+            <div style="position:relative;z-index:1;width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid ${c1};box-shadow:0 4px 16px rgba(0,0,0,.12)">
+              <img src="${coverUrl}" style="width:100%;height:100%;object-fit:cover;display:block">
+            </div>
+          </div>` : ''}
+        <div style="font-size:clamp(9px,1.8vw,11px);letter-spacing:.2em;color:${c1};margin-bottom:6px;text-transform:uppercase">すくすくかるがもアルバム</div>
+        <div style="font-size:clamp(15px,3.5vw,24px);font-weight:700;text-align:center;line-height:1.6;word-break:break-all;color:${textColor}">${esc(title)}</div>
+        ${studentName ? `<div style="font-size:clamp(10px,2vw,13px);margin-top:8px;color:${textColor};opacity:.7">${esc(studentName)}</div>` : ''}
       </div>
-      <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+      <div style="height:9%;background:${STRIPE};flex-shrink:0"></div>
     </div>`);
 
   // 写真ページ（日付でグループ化）
@@ -1802,12 +1839,12 @@ function buildAlbumPages(album, photos) {
   if (album.message) {
     pages.push(`
       <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+        <div style="height:8%;background:${STRIPE};flex-shrink:0"></div>
         <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8% 12%;box-sizing:border-box;text-align:center">
           <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.15em;color:${accentColor};margin-bottom:16px">Message</div>
           <div style="font-size:clamp(13px,2.5vw,16px);line-height:2;color:${textColor};white-space:pre-wrap">${esc(album.message)}</div>
         </div>
-        <div style="height:8%;background:${stripeStyle};flex-shrink:0"></div>
+        <div style="height:8%;background:${STRIPE};flex-shrink:0"></div>
       </div>`);
   }
 
@@ -2059,22 +2096,46 @@ async function generatePDF(album, photos) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [PAGE_MM, PAGE_MM] });
 
     // ===== 表紙 =====
-    const pdfStripe = `repeating-linear-gradient(90deg,${accentColor} 0,${accentColor} 10px,transparent 10px,transparent 20px)`;
+    const PDF_STRIPE = `repeating-linear-gradient(180deg,
+      #e8524a 0px,#e8524a 14px,
+      #f5a623 14px,#f5a623 28px,
+      #f7e34a 28px,#f7e34a 42px,
+      #4caf50 42px,#4caf50 56px,
+      #42a5f5 56px,#42a5f5 70px,
+      ${accentColor} 70px,${accentColor} 84px,
+      #ce93d8 84px,#ce93d8 98px,
+      transparent 98px,transparent 108px)`;
+    const pdfFlowers = `
+      <svg viewBox="0 0 ${PAGE_PX} ${PAGE_PX}" style="position:absolute;inset:0;width:${PAGE_PX}px;height:${PAGE_PX}px;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(60,60) scale(2.8) rotate(-20)"><circle cx="0" cy="-9" r="6" fill="#f5a623" opacity=".85"/><circle cx="9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="9" r="6" fill="#f5a623" opacity=".85"/><circle cx="-9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
+        <g transform="translate(540,65) scale(2.6) rotate(15)"><circle cx="0" cy="-8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="-8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="0" r="4.5" fill="#fff"/></g>
+        <g transform="translate(55,540) scale(2.9) rotate(10)"><circle cx="0" cy="-10" r="7" fill="#e8524a" opacity=".8"/><circle cx="10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="10" r="7" fill="#e8524a" opacity=".8"/><circle cx="-10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="0" r="5.5" fill="#ffcdd2"/></g>
+        <g transform="translate(545,540) scale(2.7) rotate(-15)"><circle cx="0" cy="-9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="-9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
+        <ellipse cx="82" cy="300" rx="22" ry="40" fill="#81c784" opacity=".65" transform="rotate(-30,82,300)"/>
+        <ellipse cx="518" cy="280" rx="18" ry="32" fill="#aed581" opacity=".65" transform="rotate(20,518,280)"/>
+        <g transform="translate(300,65) scale(2.2)"><circle cx="0" cy="-5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#e3f2fd"/></g>
+        <g transform="translate(300,534) scale(2.2)"><circle cx="0" cy="-5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#f3e5f5"/></g>
+      </svg>`;
     const coverPhotoPath = album.cover_photo_path || null;
     const coverPhotoBase64 = coverPhotoPath ? await fetchImageBase64(coverPhotoPath) : null;
     const coverCircle = coverPhotoBase64
-      ? `<div style="width:220px;height:220px;border-radius:50%;overflow:hidden;border:4px solid ${accentColor};margin-bottom:28px;flex-shrink:0"><img src="${coverPhotoBase64}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`
+      ? `<div style="position:relative;width:240px;height:240px;margin-bottom:28px;flex-shrink:0">
+           ${pdfFlowers}
+           <div style="position:relative;z-index:1;width:240px;height:240px;border-radius:50%;overflow:hidden;border:4px solid ${accentColor};box-shadow:0 6px 24px rgba(0,0,0,.12)">
+             <img src="${coverPhotoBase64}" style="width:100%;height:100%;object-fit:cover;display:block">
+           </div>
+         </div>`
       : '';
     const coverHtml = `
       <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-        <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;box-sizing:border-box">
+        <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 40px;box-sizing:border-box">
           ${coverCircle}
           <div style="font-size:13px;letter-spacing:.18em;color:${accentColor};margin-bottom:10px">すくすくかるがもアルバム</div>
           <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
           ${studentName ? `<div style="font-size:15px;margin-top:14px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
         </div>
-        <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
+        <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
       </div>`;
     const coverImg = await captureHtml(coverHtml);
     doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
@@ -2150,12 +2211,12 @@ async function generatePDF(album, photos) {
       doc.addPage([PAGE_MM, PAGE_MM]);
       const msgHtml = `
         <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-          <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
+          <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
           <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 50px;box-sizing:border-box;text-align:center">
             <div style="font-size:13px;letter-spacing:.15em;color:${accentColor};margin-bottom:28px">Message</div>
             <div style="font-size:18px;line-height:2;color:${textColor};white-space:pre-wrap">${esc(pdfMessage)}</div>
           </div>
-          <div style="height:48px;background:${pdfStripe};flex-shrink:0"></div>
+          <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
         </div>`;
       const msgImg = await captureHtml(msgHtml);
       doc.addImage(msgImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
