@@ -1518,14 +1518,6 @@ async function renderAlbumEditor(studentId, albumId) {
             <input type="color" id="album-text-color-input" value="${esc(textColor)}"
               style="width:48px;height:36px;border:none;cursor:pointer;border-radius:8px;padding:2px">
           </div>
-          <div style="flex:1;min-width:180px">
-            <label class="form-label" style="margin-bottom:6px">写真のまとめ方</label>
-            <select class="form-input" id="album-layout-select" style="padding:8px 12px">
-              <option value="2" ${(album.photos_per_page||2)==2?'selected':''}>1ページに2枚</option>
-              <option value="3" ${(album.photos_per_page||2)==3?'selected':''}>1ページに3枚</option>
-              <option value="1" ${(album.photos_per_page||2)==1?'selected':''}>1ページに1枚</option>
-            </select>
-          </div>
         </div>
 
         <div class="form-group" style="margin-bottom:8px">
@@ -1606,10 +1598,9 @@ async function toggleExclude(photoId, currentExcluded) {
 function showAlbumPreview(studentId) {
   const titleInput    = document.getElementById('album-title-input');
   const title         = titleInput?.value.trim() || titleInput?.placeholder || 'アルバム';
-  const accentColor   = document.getElementById('album-color-input')?.value || '#4a7c6f';
-  const textColor     = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
-  const photosPerPage = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
-  const message       = document.getElementById('album-message-input')?.value.trim() || '';
+  const accentColor = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const textColor   = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
+  const message     = document.getElementById('album-message-input')?.value.trim() || '';
 
   // グリッドから表示中の写真を収集（buildAlbumPagesが使えるよう storage_path / recorded_at 形式に）
   const items = document.querySelectorAll('#album-grid .album-photo-item:not(.excluded)');
@@ -1625,7 +1616,6 @@ function showAlbumPreview(studentId) {
   const fakeAlbum = {
     accent_color: accentColor,
     text_color: textColor,
-    photos_per_page: photosPerPage,
     title,
     students: { name: window._editorStudentName || '' },
     message,
@@ -1702,22 +1692,17 @@ async function finalizeAlbum(studentId) {
   });
   if (updates.length > 0) await Promise.all(updates);
 
-  const accentColor     = document.getElementById('album-color-input')?.value || '#4a7c6f';
-  const textColor       = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
-  const photosPerPage   = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
-  const message         = document.getElementById('album-message-input')?.value.trim() || null;
-  // 表紙写真：⭐選択されたsrcからstorageパスを逆引き
-  const coverSrc        = window._editorCoverSrc || null;
-  const coverPhotoPath  = coverSrc
-    ? document.querySelector(`[data-src="${CSS.escape(coverSrc)}"]`)?.getAttribute('data-photo-id') || null
-    : null;
+  const accentColor = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const textColor   = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
+  const message     = document.getElementById('album-message-input')?.value.trim() || null;
+  const coverSrc    = window._editorCoverSrc || null;
 
   const btn = document.querySelector('.album-editor-header')?.closest('.page')?.querySelector('.btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
 
   try {
     // まず拡張列を試みる（列がなくてもcoreは必ず保存）
-    const extUpdate = { accent_color: accentColor, text_color: textColor, photos_per_page: photosPerPage, message, cover_photo_path: coverSrc };
+    const extUpdate = { accent_color: accentColor, text_color: textColor, message, cover_photo_path: coverSrc };
     await sb.from('albums').update(extUpdate).eq('id', albumId); // エラーは無視
 
     // core（必ず成功すべき）
@@ -1745,107 +1730,70 @@ function buildAlbumPages(album, photos) {
   const photosPerPage = parseInt(album.photos_per_page || 2, 10);
   const title         = album.title || 'アルバム';
   const studentName   = album.students?.name || '';
-  // テーマカラーを元にした多色ストライプ（縦ストライプ、参考画像風）
-  const c1 = accentColor;           // メインカラー
-  const c2 = accentColor + 'aa';    // 薄め
-  const STRIPE = `repeating-linear-gradient(180deg,
-    #e8524a 0px,#e8524a 8px,
-    #f5a623 8px,#f5a623 16px,
-    #f7e34a 16px,#f7e34a 24px,
-    #4caf50 24px,#4caf50 32px,
-    #42a5f5 32px,#42a5f5 40px,
-    ${c1} 40px,${c1} 48px,
-    #ce93d8 48px,#ce93d8 56px,
-    transparent 56px,transparent 60px)`;
+  // テーマカラーのRGB分解（ginghamパターン用）
+  const _r = parseInt(accentColor.slice(1,3),16);
+  const _g = parseInt(accentColor.slice(3,5),16);
+  const _b = parseInt(accentColor.slice(5,7),16);
+  const GC  = `rgba(${_r},${_g},${_b},0.13)`;  // チェック色（薄め）
+  const GC2 = `rgba(${_r},${_g},${_b},0.07)`;  // 重なり部分用
+  // ギンガムチェック柄：横縞×縦縞の重ね合わせで市松＋チェック
+  const GINGHAM = [
+    `repeating-linear-gradient(90deg,${GC} 0px,${GC} 28px,transparent 28px,transparent 56px)`,
+    `repeating-linear-gradient(0deg,${GC} 0px,${GC} 28px,transparent 28px,transparent 56px)`,
+  ].join(',');
+
+  // ロゴ行（最終ページ用）
+  const LOGO_LINE = `<div style="margin-top:auto;padding-top:8%;display:flex;flex-direction:column;align-items:center;gap:4px">
+    <div style="font-size:clamp(8px,1.5vw,10px);letter-spacing:.2em;color:${accentColor};opacity:.7">すくすくかるがもアルバム</div>
+    <div style="width:40px;height:1px;background:${accentColor};opacity:.3"></div>
+  </div>`;
+
   const coverUrl = album.cover_photo_path || null;
-
-  // 花飾りのSVG（丸写真の周り）
-  const FLOWERS = `
-    <svg viewBox="0 0 200 200" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
-      <!-- 左上の花 -->
-      <g transform="translate(18,18) rotate(-20)"><circle cx="0" cy="-9" r="6" fill="#f5a623" opacity=".85"/><circle cx="9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="9" r="6" fill="#f5a623" opacity=".85"/><circle cx="-9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
-      <!-- 右上の花（ピンク） -->
-      <g transform="translate(182,22) rotate(15)"><circle cx="0" cy="-8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="-8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="0" r="4.5" fill="#fff"/></g>
-      <!-- 左下の花（赤） -->
-      <g transform="translate(22,178) rotate(10)"><circle cx="0" cy="-10" r="7" fill="#e8524a" opacity=".8"/><circle cx="10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="10" r="7" fill="#e8524a" opacity=".8"/><circle cx="-10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="0" r="5.5" fill="#ffcdd2"/></g>
-      <!-- 右下の花（黄） -->
-      <g transform="translate(180,180) rotate(-15)"><circle cx="0" cy="-9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="-9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
-      <!-- 葉っぱ（左） -->
-      <ellipse cx="30" cy="100" rx="10" ry="18" fill="#81c784" opacity=".7" transform="rotate(-30,30,100)"/>
-      <ellipse cx="170" cy="90" rx="8" ry="14" fill="#aed581" opacity=".7" transform="rotate(20,170,90)"/>
-      <!-- 小花（上中央） -->
-      <g transform="translate(100,8)"><circle cx="0" cy="-5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#e3f2fd"/></g>
-      <!-- 小花（下中央） -->
-      <g transform="translate(100,192)"><circle cx="0" cy="-5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#f3e5f5"/></g>
-    </svg>`;
-
   const pages = [];
 
-  // 表紙
+  // ===== 表紙（ギンガムチェック背景＋中央白パネル） =====
   pages.push(`
-    <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif;position:relative">
-      <div style="height:9%;background:${STRIPE};flex-shrink:0"></div>
-      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4% 10% 2%;box-sizing:border-box;position:relative">
-        ${coverUrl ? `
-          <div style="position:relative;width:44%;aspect-ratio:1/1;margin-bottom:5%;flex-shrink:0">
-            ${FLOWERS}
-            <div style="position:relative;z-index:1;width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid ${c1};box-shadow:0 4px 16px rgba(0,0,0,.12)">
-              <img src="${coverUrl}" style="width:100%;height:100%;object-fit:cover;display:block">
-            </div>
-          </div>` : ''}
-        <div style="font-size:clamp(9px,1.8vw,11px);letter-spacing:.2em;color:${c1};margin-bottom:6px;text-transform:uppercase">すくすくかるがもアルバム</div>
+    <div style="width:100%;height:100%;background-color:#fff;background-image:${GINGHAM};display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;box-sizing:border-box;padding:8%">
+      <div style="background:#fff;border-radius:4px;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8%;box-sizing:border-box;border:1.5px solid rgba(${_r},${_g},${_b},0.25);box-shadow:0 2px 16px rgba(0,0,0,.07)">
+        ${coverUrl ? `<div style="width:52%;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:2px solid rgba(${_r},${_g},${_b},0.35);margin-bottom:8%;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.1)"><img src="${coverUrl}" style="width:100%;height:100%;object-fit:cover;display:block"></div>` : ''}
         <div style="font-size:clamp(15px,3.5vw,24px);font-weight:700;text-align:center;line-height:1.6;word-break:break-all;color:${textColor}">${esc(title)}</div>
-        ${studentName ? `<div style="font-size:clamp(10px,2vw,13px);margin-top:8px;color:${textColor};opacity:.7">${esc(studentName)}</div>` : ''}
+        ${studentName ? `<div style="font-size:clamp(10px,2vw,13px);margin-top:8px;color:${textColor};opacity:.65">${esc(studentName)}</div>` : ''}
       </div>
-      <div style="height:9%;background:${STRIPE};flex-shrink:0"></div>
     </div>`);
 
-  // 写真ページ（日付でグループ化）
-  const dateGroups = [];
+  // ===== 写真ページ（1枚/ページ固定、日付ヘッダー付き） =====
   for (const p of photos) {
     const date = p.recorded_at || p.date || '';
     const url  = p._url || (p.storage_path ? getPublicUrl(p.storage_path) : (p.src || ''));
-    const last = dateGroups[dateGroups.length - 1];
-    if (last && last.date === date) last.photos.push({ ...p, _url: url });
-    else dateGroups.push({ date, photos: [{ ...p, _url: url }] });
-  }
-  for (const grp of dateGroups) {
-    for (let i = 0; i < grp.photos.length; i += photosPerPage) {
-      const batch = grp.photos.slice(i, i + photosPerPage);
-      const count = batch.length;
-      const META_H_PCT = 8;
-      let pageHtml = `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans JP',sans-serif;overflow:hidden">`;
-      pageHtml += `<div style="height:10%;padding:0 4%;display:flex;align-items:center;background:${accentColor}18;border-bottom:2px solid ${accentColor}40;flex-shrink:0">
-        <span style="font-size:clamp(9px,1.8vw,12px);font-weight:600;color:${accentColor}">${formatDate(grp.date)}</span>
-      </div>`;
-      batch.forEach((p, idx) => {
-        const isLast = idx === batch.length - 1;
-        pageHtml += `
-          <div style="flex:1;display:flex;flex-direction:column;${isLast ? '' : 'border-bottom:2px solid #e8e0d8;margin-bottom:2%'}overflow:hidden">
-            <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:4px 4% 4px 4%">
-              <img src="${p._url}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">
-            </div>
-            <div style="height:${META_H_PCT}%;min-height:20px;padding:0 4%;display:flex;align-items:center;flex-shrink:0">
-              ${p.memo ? `<span style="font-size:clamp(8px,1.5vw,11px);color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
-            </div>
-          </div>`;
-      });
-      pageHtml += '</div>';
-      pages.push(pageHtml);
-    }
+    pages.push(`
+      <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans JP',sans-serif;overflow:hidden">
+        <div style="height:9%;padding:0 5%;display:flex;align-items:center;background:rgba(${_r},${_g},${_b},0.08);border-bottom:1.5px solid rgba(${_r},${_g},${_b},0.2);flex-shrink:0">
+          <span style="font-size:clamp(9px,1.8vw,12px);font-weight:600;color:${accentColor}">${formatDate(date)}</span>
+        </div>
+        <div style="flex:1;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:3% 5%">
+          <img src="${url}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">
+        </div>
+        <div style="height:9%;padding:0 5%;display:flex;align-items:center;flex-shrink:0;border-top:1px solid rgba(${_r},${_g},${_b},0.1)">
+          ${p.memo ? `<span style="font-size:clamp(9px,1.8vw,12px);color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
+        </div>
+      </div>`);
   }
 
-  // メッセージページ
+  // ===== 最終ページ：メッセージ（あれば）＋ロゴ =====
   if (album.message) {
     pages.push(`
-      <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-        <div style="height:8%;background:${STRIPE};flex-shrink:0"></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8% 12%;box-sizing:border-box;text-align:center">
-          <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.15em;color:${accentColor};margin-bottom:16px">Message</div>
-          <div style="font-size:clamp(13px,2.5vw,16px);line-height:2;color:${textColor};white-space:pre-wrap">${esc(album.message)}</div>
-        </div>
-        <div style="height:8%;background:${STRIPE};flex-shrink:0"></div>
+      <div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:10% 12%;box-sizing:border-box;text-align:center">
+        <div style="font-size:clamp(10px,2vw,12px);letter-spacing:.15em;color:${accentColor};margin-bottom:14px">Message</div>
+        <div style="font-size:clamp(13px,2.5vw,16px);line-height:2;color:${textColor};white-space:pre-wrap;flex:1;display:flex;align-items:center">${esc(album.message)}</div>
+        ${LOGO_LINE}
       </div>`);
+  } else if (pages.length > 1) {
+    // 写真ページの最後にロゴを追記（最終写真ページの末尾に）
+    const last = pages[pages.length - 1];
+    pages[pages.length - 1] = last.replace(
+      /<div style="height:9%;padding:0 5%;display:flex;align-items:center;flex-shrink:0;border-top/,
+      `<div style="padding:0 5% 2%;display:flex;justify-content:center"><div style="font-size:9px;letter-spacing:.15em;color:${accentColor};opacity:.6">すくすくかるがもアルバム</div></div><div style="height:9%;padding:0 5%;display:flex;align-items:center;flex-shrink:0;border-top`
+    );
   }
 
   return pages;
@@ -2095,112 +2043,58 @@ async function generatePDF(album, photos) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [PAGE_MM, PAGE_MM] });
 
-    // ===== 表紙 =====
-    const PDF_STRIPE = `repeating-linear-gradient(180deg,
-      #e8524a 0px,#e8524a 14px,
-      #f5a623 14px,#f5a623 28px,
-      #f7e34a 28px,#f7e34a 42px,
-      #4caf50 42px,#4caf50 56px,
-      #42a5f5 56px,#42a5f5 70px,
-      ${accentColor} 70px,${accentColor} 84px,
-      #ce93d8 84px,#ce93d8 98px,
-      transparent 98px,transparent 108px)`;
-    const pdfFlowers = `
-      <svg viewBox="0 0 ${PAGE_PX} ${PAGE_PX}" style="position:absolute;inset:0;width:${PAGE_PX}px;height:${PAGE_PX}px;pointer-events:none" xmlns="http://www.w3.org/2000/svg">
-        <g transform="translate(60,60) scale(2.8) rotate(-20)"><circle cx="0" cy="-9" r="6" fill="#f5a623" opacity=".85"/><circle cx="9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="9" r="6" fill="#f5a623" opacity=".85"/><circle cx="-9" cy="0" r="6" fill="#f5a623" opacity=".85"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
-        <g transform="translate(540,65) scale(2.6) rotate(15)"><circle cx="0" cy="-8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="8" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="-8" cy="0" r="5.5" fill="#f48fb1" opacity=".9"/><circle cx="0" cy="0" r="4.5" fill="#fff"/></g>
-        <g transform="translate(55,540) scale(2.9) rotate(10)"><circle cx="0" cy="-10" r="7" fill="#e8524a" opacity=".8"/><circle cx="10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="10" r="7" fill="#e8524a" opacity=".8"/><circle cx="-10" cy="0" r="7" fill="#e8524a" opacity=".8"/><circle cx="0" cy="0" r="5.5" fill="#ffcdd2"/></g>
-        <g transform="translate(545,540) scale(2.7) rotate(-15)"><circle cx="0" cy="-9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="9" r="6" fill="#f7e34a" opacity=".9"/><circle cx="-9" cy="0" r="6" fill="#f7e34a" opacity=".9"/><circle cx="0" cy="0" r="5" fill="#fff9c4"/></g>
-        <ellipse cx="82" cy="300" rx="22" ry="40" fill="#81c784" opacity=".65" transform="rotate(-30,82,300)"/>
-        <ellipse cx="518" cy="280" rx="18" ry="32" fill="#aed581" opacity=".65" transform="rotate(20,518,280)"/>
-        <g transform="translate(300,65) scale(2.2)"><circle cx="0" cy="-5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#42a5f5" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#42a5f5" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#e3f2fd"/></g>
-        <g transform="translate(300,534) scale(2.2)"><circle cx="0" cy="-5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="5" r="4" fill="#ce93d8" opacity=".8"/><circle cx="-5" cy="0" r="4" fill="#ce93d8" opacity=".8"/><circle cx="0" cy="0" r="3.5" fill="#f3e5f5"/></g>
-      </svg>`;
-    const coverPhotoPath = album.cover_photo_path || null;
+    // ===== 表紙（ギンガムチェック＋中央白パネル） =====
+    const pr = parseInt(accentColor.slice(1,3),16);
+    const pg = parseInt(accentColor.slice(3,5),16);
+    const pb = parseInt(accentColor.slice(5,7),16);
+    const GC = `rgba(${pr},${pg},${pb},0.13)`;
+    const PDF_GINGHAM = [
+      `repeating-linear-gradient(90deg,${GC} 0px,${GC} 28px,transparent 28px,transparent 56px)`,
+      `repeating-linear-gradient(0deg,${GC} 0px,${GC} 28px,transparent 28px,transparent 56px)`,
+    ].join(',');
+    const coverPhotoPath   = album.cover_photo_path || null;
     const coverPhotoBase64 = coverPhotoPath ? await fetchImageBase64(coverPhotoPath) : null;
-    const coverCircle = coverPhotoBase64
-      ? `<div style="position:relative;width:240px;height:240px;margin-bottom:28px;flex-shrink:0">
-           ${pdfFlowers}
-           <div style="position:relative;z-index:1;width:240px;height:240px;border-radius:50%;overflow:hidden;border:4px solid ${accentColor};box-shadow:0 6px 24px rgba(0,0,0,.12)">
-             <img src="${coverPhotoBase64}" style="width:100%;height:100%;object-fit:cover;display:block">
-           </div>
-         </div>`
+    const coverCircleHtml  = coverPhotoBase64
+      ? `<div style="width:220px;height:220px;border-radius:50%;overflow:hidden;border:3px solid rgba(${pr},${pg},${pb},0.35);margin-bottom:28px;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.1)"><img src="${coverPhotoBase64}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`
       : '';
     const coverHtml = `
-      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-        <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 40px;box-sizing:border-box">
-          ${coverCircle}
-          <div style="font-size:13px;letter-spacing:.18em;color:${accentColor};margin-bottom:10px">すくすくかるがもアルバム</div>
-          <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
-          ${studentName ? `<div style="font-size:15px;margin-top:14px;color:${textColor};opacity:.75">${esc(studentName)}</div>` : ''}
+      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background-color:#fff;background-image:${PDF_GINGHAM};display:flex;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:48px;box-sizing:border-box">
+        <div style="background:#fff;border-radius:4px;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;box-sizing:border-box;border:1.5px solid rgba(${pr},${pg},${pb},0.25);box-shadow:0 2px 20px rgba(0,0,0,.07)">
+          ${coverCircleHtml}
+          <div style="font-size:26px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
+          ${studentName ? `<div style="font-size:15px;margin-top:12px;color:${textColor};opacity:.65">${esc(studentName)}</div>` : ''}
         </div>
-        <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
       </div>`;
     const coverImg = await captureHtml(coverHtml);
     doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
 
-    // ===== 写真ページ（同じ日付はまとめて、photosPerPage枚ずつ） =====
-    // まず日付でグループ化
-    const dateGroups = [];
-    for (const p of photos) {
-      const last = dateGroups[dateGroups.length - 1];
-      if (last && last.date === p.recorded_at) {
-        last.photos.push(p);
-      } else {
-        dateGroups.push({ date: p.recorded_at, photos: [p] });
-      }
-    }
+    // ===== 写真ページ（1枚/ページ固定） =====
+    const DATE_H = 54;  // 日付ヘッダー
+    const META_H = 48;  // メモ行
+    const IMG_H  = PAGE_PX - DATE_H - META_H;
 
-    // 各日付グループをphotosPerPage枚ずつページに分割
-    const batches = [];
-    for (const grp of dateGroups) {
-      for (let i = 0; i < grp.photos.length; i += photosPerPage) {
-        batches.push({ date: grp.date, photos: grp.photos.slice(i, i + photosPerPage) });
-      }
-    }
-
-    for (const batch of batches) {
+    for (let pi = 0; pi < photos.length; pi++) {
+      const p      = photos[pi];
+      const isLast = pi === photos.length - 1;
       doc.addPage([PAGE_MM, PAGE_MM]);
-
-      const imgDataArr = await Promise.all(batch.photos.map(p =>
-        p.storage_path ? fetchImageBase64(getPublicUrl(p.storage_path)) : Promise.resolve(null)
-      ));
-
-      const count    = batch.photos.length;
-      const DATE_H   = 32; // 日付ヘッダー
-      const META_H   = 24; // メモ行
-      const GAP      = 12; // 写真間スペース
-      const usable   = PAGE_PX - DATE_H - GAP * (count - 1);
-      const slotH    = Math.floor(usable / count);
-      const imgAreaH = slotH - META_H;
-
-      let pageHtml = `<div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;font-family:'Noto Sans JP',sans-serif;display:flex;flex-direction:column">`;
-
-      // 日付ヘッダー（ページ先頭に1回だけ）
-      pageHtml += `
-        <div style="height:${DATE_H}px;padding:0 16px;display:flex;align-items:center;background:${accentColor}18;border-bottom:2px solid ${accentColor}40">
-          <span style="font-size:12px;font-weight:600;color:${accentColor};letter-spacing:.04em">${formatDate(batch.date)}</span>
+      const imgSrc = p.storage_path ? await fetchImageBase64(getPublicUrl(p.storage_path)) : null;
+      const imgTag = imgSrc
+        ? `<img src="${imgSrc}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">`
+        : `<div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:36px">?</div>`;
+      const logoLine = isLast && !album.message
+        ? `<div style="text-align:center;margin-bottom:4px"><span style="font-size:9px;letter-spacing:.15em;color:${accentColor};opacity:.6">すくすくかるがもアルバム</span></div>`
+        : '';
+      const pageHtml = `
+        <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;font-family:'Noto Sans JP',sans-serif;display:flex;flex-direction:column">
+          <div style="height:${DATE_H}px;padding:0 24px;display:flex;align-items:center;background:rgba(${pr},${pg},${pb},0.08);border-bottom:1.5px solid rgba(${pr},${pg},${pb},0.2)">
+            <span style="font-size:13px;font-weight:600;color:${accentColor};letter-spacing:.04em">${formatDate(p.recorded_at)}</span>
+          </div>
+          <div style="height:${IMG_H}px;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:12px 24px">${imgTag}</div>
+          <div style="height:${META_H}px;padding:0 24px;display:flex;flex-direction:column;justify-content:center;border-top:1px solid rgba(${pr},${pg},${pb},0.1)">
+            ${logoLine}
+            ${p.memo ? `<span style="font-size:11px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
+          </div>
         </div>`;
-
-      batch.photos.forEach((p, idx) => {
-        const imgSrc = imgDataArr[idx];
-        const isLast = idx === batch.photos.length - 1;
-        const imgTag = imgSrc
-          ? `<img src="${imgSrc}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">`
-          : `<div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:24px">?</div>`;
-
-        pageHtml += `
-          <div style="width:${PAGE_PX}px;height:${slotH}px;display:flex;flex-direction:column;${isLast ? '' : `margin-bottom:${GAP}px;border-bottom:2px solid #e8e0d8`}">
-            <div style="height:${imgAreaH}px;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:4px 16px 4px 16px">${imgTag}</div>
-            <div style="height:${META_H}px;padding:0 14px;display:flex;align-items:center">
-              ${p.memo ? `<span style="font-size:10px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : '<span></span>'}
-            </div>
-          </div>`;
-      });
-
-      pageHtml += '</div>';
-
       const img = await captureHtml(pageHtml);
       doc.addImage(img, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
     }
@@ -2210,13 +2104,13 @@ async function generatePDF(album, photos) {
     if (pdfMessage) {
       doc.addPage([PAGE_MM, PAGE_MM]);
       const msgHtml = `
-        <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;font-family:'Noto Serif JP',serif">
-          <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 50px;box-sizing:border-box;text-align:center">
-            <div style="font-size:13px;letter-spacing:.15em;color:${accentColor};margin-bottom:28px">Message</div>
-            <div style="font-size:18px;line-height:2;color:${textColor};white-space:pre-wrap">${esc(pdfMessage)}</div>
+        <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:70px 60px;box-sizing:border-box;text-align:center">
+          <div style="font-size:13px;letter-spacing:.15em;color:${accentColor};margin-bottom:28px">Message</div>
+          <div style="font-size:18px;line-height:2;color:${textColor};white-space:pre-wrap;flex:1;display:flex;align-items:center">${esc(pdfMessage)}</div>
+          <div style="margin-top:32px;display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="font-size:10px;letter-spacing:.2em;color:${accentColor};opacity:.65">すくすくかるがもアルバム</div>
+            <div style="width:48px;height:1px;background:${accentColor};opacity:.3"></div>
           </div>
-          <div style="height:54px;background:${PDF_STRIPE};flex-shrink:0"></div>
         </div>`;
       const msgImg = await captureHtml(msgHtml);
       doc.addImage(msgImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
