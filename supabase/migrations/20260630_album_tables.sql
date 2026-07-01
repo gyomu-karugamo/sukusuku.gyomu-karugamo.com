@@ -173,6 +173,8 @@ CREATE POLICY "album_photos_update" ON storage.objects
 -- ============================================================
 -- albumsテーブルへの追加列（既存テーブルに追加する場合）
 -- ============================================================
+ALTER TABLE record_photos ADD COLUMN IF NOT EXISTS memo TEXT;
+
 ALTER TABLE albums ADD COLUMN IF NOT EXISTS accent_color      TEXT DEFAULT '#4a7c6f';
 ALTER TABLE albums ADD COLUMN IF NOT EXISTS text_color        TEXT DEFAULT '#3d2b1f';
 ALTER TABLE albums ADD COLUMN IF NOT EXISTS photos_per_page   INTEGER DEFAULT 2;
