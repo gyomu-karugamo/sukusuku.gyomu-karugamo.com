@@ -1094,6 +1094,28 @@ textarea.form-input {
 </div>
 
 <!-- ===== 共有リンク発行モーダル ===== -->
+<!-- ===== アルバムプレビューモーダル ===== -->
+<div class="modal-overlay" id="modal-preview" style="z-index:2000">
+  <div class="modal" style="max-width:580px;width:95vw">
+    <div class="modal-header">
+      <div class="modal-title">アルバムプレビュー</div>
+      <button class="modal-close" onclick="closeModal('modal-preview')">✕</button>
+    </div>
+    <div id="preview-page-wrap" style="width:100%;aspect-ratio:1/1;background:#f5f5f5;border-radius:12px;overflow:hidden;margin-bottom:12px;position:relative">
+      <div id="preview-page-container" style="width:100%;height:100%"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-bottom:14px">
+      <button class="btn btn-secondary btn-sm" onclick="previewPrev()">← 前</button>
+      <span id="preview-counter" style="font-size:0.9rem;color:var(--brown-mid);min-width:60px;text-align:center">1 / 1</span>
+      <button class="btn btn-secondary btn-sm" onclick="previewNext()">次 →</button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-preview')">← 編集に戻る</button>
+      <button class="btn btn-primary" style="flex:1" onclick="doFinalizeAlbum()">このアルバムを完成させる</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-share">
   <div class="modal">
     <div class="modal-header">
@@ -1467,11 +1489,14 @@ async function renderAlbumEditor(studentId, albumId) {
   }
 
   const accentColor = album.accent_color || '#4a7c6f';
+  const textColor   = album.text_color   || '#3d2b1f';
+  window._editorStudentName = student?.name || '';
+
   main.innerHTML = `
     <div class="page fade-up">
       <div class="page-header">
         <a href="#/students/${studentId}" class="back-btn">← 戻る</a>
-        <button class="btn btn-primary" onclick="finalizeAlbum('${studentId}')">完成させる →</button>
+        <button class="btn btn-primary" onclick="showAlbumPreview('${studentId}')">プレビューを確認 →</button>
       </div>
 
       <div class="album-editor-header">
@@ -1488,6 +1513,11 @@ async function renderAlbumEditor(studentId, albumId) {
             <input type="color" id="album-color-input" value="${esc(accentColor)}"
               style="width:48px;height:36px;border:none;cursor:pointer;border-radius:8px;padding:2px">
           </div>
+          <div>
+            <label class="form-label" style="margin-bottom:6px">文字色</label>
+            <input type="color" id="album-text-color-input" value="${esc(textColor)}"
+              style="width:48px;height:36px;border:none;cursor:pointer;border-radius:8px;padding:2px">
+          </div>
           <div style="flex:1;min-width:180px">
             <label class="form-label" style="margin-bottom:6px">写真のまとめ方</label>
             <select class="form-input" id="album-layout-select" style="padding:8px 12px">
@@ -1498,14 +1528,8 @@ async function renderAlbumEditor(studentId, albumId) {
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">先生からのメッセージ（任意・アルバムの最後のページに掲載）</label>
-          <textarea class="form-input" id="album-message-input" rows="3"
-            placeholder="例：○○ちゃん、いつも一生懸命練習してくれてありがとう。これからも一緒に頑張ろうね！">${esc(album.teacher_message || '')}</textarea>
-        </div>
-
         <div class="album-hint">
-          写真をドラッグで並び替え、「除外」で非表示にできます（${photos.filter(p=>!p.is_excluded).length}枚選択中）
+          写真をドラッグで並び替え、表示／非表示を切り替えられます（${photos.filter(p=>!p.is_excluded).length}枚表示中）
         </div>
       </div>
 
@@ -1532,7 +1556,7 @@ function albumPhotoItemHtml(p) {
   const url = getPublicUrl(p.storage_path || '');
   const excluded = p.is_excluded;
   return `
-    <div class="album-photo-item ${excluded ? 'excluded' : ''}" data-photo-id="${p.id}">
+    <div class="album-photo-item ${excluded ? 'excluded' : ''}" data-photo-id="${p.id}" data-date="${p.recorded_at}" data-memo="${esc(p.memo||'')}">
       <span class="drag-handle" title="ドラッグで並び替え">⠿</span>
       <img class="album-photo-img" src="${url}" alt="" loading="lazy"
         onclick="openLightbox('${url}')">
@@ -1543,7 +1567,7 @@ function albumPhotoItemHtml(p) {
       <div class="album-photo-actions">
         <button class="btn ${excluded ? 'btn-secondary' : 'btn-danger'} btn-sm"
           onclick="toggleExclude('${p.id}', ${excluded})">
-          ${excluded ? '✓ 含める' : '除外する'}
+          ${excluded ? '表示' : '非表示'}
         </button>
       </div>
     </div>`;
@@ -1558,15 +1582,109 @@ async function toggleExclude(photoId, currentExcluded) {
   const btn = el.querySelector('button');
   if (btn) {
     btn.className = `btn ${!currentExcluded ? 'btn-secondary' : 'btn-danger'} btn-sm`;
-    btn.textContent = !currentExcluded ? '✓ 含める' : '除外する';
+    btn.textContent = !currentExcluded ? '表示' : '非表示';
     btn.setAttribute('onclick', `toggleExclude('${photoId}', ${!currentExcluded})`);
   }
-  // ヒントの枚数更新
   const hint = document.querySelector('.album-hint');
   if (hint) {
     const included = document.querySelectorAll('.album-photo-item:not(.excluded)').length;
-    hint.textContent = `写真をドラッグで並び替え、「除外」で非表示にできます（${included}枚選択中）`;
+    hint.textContent = `写真をドラッグで並び替え、表示／非表示を切り替えられます（${included}枚表示中）`;
   }
+}
+
+// ============================================================
+// アルバムプレビュー
+// ============================================================
+function showAlbumPreview(studentId) {
+  const titleInput = document.getElementById('album-title-input');
+  const title       = titleInput?.value.trim() || titleInput?.placeholder || 'アルバム';
+  const accentColor = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const textColor   = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
+  const photosPerPage = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
+  const studentName = window._editorStudentName || '';
+
+  // グリッドから表示中の写真を収集
+  const items = document.querySelectorAll('#album-grid .album-photo-item:not(.excluded)');
+  const photos = [];
+  items.forEach(el => {
+    const img  = el.querySelector('img.album-photo-img');
+    const date = el.getAttribute('data-date') || '';
+    const memo = el.getAttribute('data-memo') || '';
+    if (img?.src) photos.push({ src: img.src, date, memo });
+  });
+
+  const pages = [];
+
+  // 表紙
+  pages.push(`
+    <div style="width:100%;height:100%;background:${accentColor};display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10%;box-sizing:border-box;font-family:'Noto Serif JP',serif">
+      <div style="font-size:clamp(10px,2vw,13px);letter-spacing:.15em;opacity:.75;margin-bottom:16px;color:${textColor}">すくすくかるがもアルバム</div>
+      <div style="font-size:clamp(16px,4vw,28px);font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
+      ${studentName ? `<div style="font-size:clamp(12px,2.5vw,16px);margin-top:16px;opacity:.85;color:${textColor}">${esc(studentName)}</div>` : ''}
+    </div>`);
+
+  // 写真ページ（日付でグループ化）
+  const dateGroups = [];
+  for (const p of photos) {
+    const last = dateGroups[dateGroups.length - 1];
+    if (last && last.date === p.date) last.photos.push(p);
+    else dateGroups.push({ date: p.date, photos: [p] });
+  }
+  for (const grp of dateGroups) {
+    for (let i = 0; i < grp.photos.length; i += photosPerPage) {
+      const batch = grp.photos.slice(i, i + photosPerPage);
+      const count = batch.length;
+      const META_H_PCT = 8; // %
+      const IMG_H_PCT  = Math.floor((100 - 10) / count) - META_H_PCT; // 日付ヘッダー10%
+
+      let pageHtml = `<div style="width:100%;height:100%;background:#fff;display:flex;flex-direction:column;font-family:'Noto Sans JP',sans-serif;overflow:hidden">`;
+      pageHtml += `<div style="height:10%;padding:0 4%;display:flex;align-items:center;background:${accentColor}18;border-bottom:2px solid ${accentColor}40;flex-shrink:0">
+        <span style="font-size:clamp(9px,1.8vw,12px);font-weight:600;color:${accentColor}">${formatDate(grp.date)}</span>
+      </div>`;
+      batch.forEach(p => {
+        pageHtml += `
+          <div style="flex:1;display:flex;flex-direction:column;border-bottom:1px solid #e8e0d8;overflow:hidden">
+            <div style="flex:1;background:#f8f6f3;display:flex;align-items:center;justify-content:center;overflow:hidden">
+              <img src="${p.src}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">
+            </div>
+            <div style="height:${META_H_PCT}%;min-height:20px;padding:0 4%;display:flex;align-items:center;flex-shrink:0">
+              ${p.memo ? `<span style="font-size:clamp(8px,1.5vw,11px);color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
+            </div>
+          </div>`;
+      });
+      pageHtml += '</div>';
+      pages.push(pageHtml);
+    }
+  }
+
+  if (pages.length === 0) { alert('表示できる写真がありません'); return; }
+
+  window._previewPages     = pages;
+  window._previewIndex     = 0;
+  window._previewStudentId = studentId;
+
+  document.getElementById('preview-page-container').innerHTML = pages[0];
+  document.getElementById('preview-counter').textContent = `1 / ${pages.length}`;
+  openModal('modal-preview');
+}
+
+function previewPrev() {
+  if (!window._previewPages) return;
+  window._previewIndex = Math.max(0, window._previewIndex - 1);
+  document.getElementById('preview-page-container').innerHTML = window._previewPages[window._previewIndex];
+  document.getElementById('preview-counter').textContent = `${window._previewIndex + 1} / ${window._previewPages.length}`;
+}
+
+function previewNext() {
+  if (!window._previewPages) return;
+  window._previewIndex = Math.min(window._previewPages.length - 1, window._previewIndex + 1);
+  document.getElementById('preview-page-container').innerHTML = window._previewPages[window._previewIndex];
+  document.getElementById('preview-counter').textContent = `${window._previewIndex + 1} / ${window._previewPages.length}`;
+}
+
+function doFinalizeAlbum() {
+  closeModal('modal-preview');
+  finalizeAlbum(window._previewStudentId);
 }
 
 // アルバム完成
@@ -1596,8 +1714,8 @@ async function finalizeAlbum(studentId) {
   if (updates.length > 0) await Promise.all(updates);
 
   const accentColor   = document.getElementById('album-color-input')?.value || '#4a7c6f';
+  const textColor     = document.getElementById('album-text-color-input')?.value || '#3d2b1f';
   const photosPerPage = parseInt(document.getElementById('album-layout-select')?.value || '2', 10);
-  const teacherMsg    = document.getElementById('album-message-input')?.value.trim() || null;
 
   const btn = document.querySelector('.album-editor-header')?.closest('.page')?.querySelector('.btn-primary');
   if (btn) { btn.disabled = true; btn.textContent = '保存中...'; }
@@ -1606,8 +1724,8 @@ async function finalizeAlbum(studentId) {
     const { error } = await sb.from('albums').update({
       title,
       accent_color:    accentColor,
+      text_color:      textColor,
       photos_per_page: photosPerPage,
-      teacher_message: teacherMsg,
       is_finalized: true,
       finalized_at: new Date().toISOString(),
     }).eq('id', albumId);
@@ -1645,17 +1763,11 @@ async function renderAlbumView(albumId) {
   const studentName = album.students?.name || '';
   const limits = getLimits();
   const accentColor = album.accent_color || '#4a7c6f';
+  const textColor   = album.text_color   || '#3d2b1f';
 
   const shareBtn = limits.canShare
     ? `<button class="btn btn-white btn-sm" onclick="issueShareLink('${albumId}')">🔗 共有リンクを発行</button>`
     : `<button class="btn btn-white btn-sm" title="スタンダードプランで利用可能" style="opacity:.6;cursor:not-allowed">🔗 共有（スタンダード）</button>`;
-
-  const teacherMsgHtml = album.teacher_message
-    ? `<div style="background:#fff8f2;border:1px solid var(--line);border-radius:12px;padding:20px 24px;max-width:600px;margin:0 auto 24px">
-        <div style="font-size:0.8rem;color:var(--mist);margin-bottom:8px;letter-spacing:.05em">先生からのメッセージ</div>
-        <div style="font-family:'Noto Serif JP',serif;line-height:1.8;color:var(--brown);white-space:pre-wrap">${esc(album.teacher_message)}</div>
-      </div>`
-    : '';
 
   main.innerHTML = `
     <div class="fade-up">
@@ -1666,10 +1778,10 @@ async function renderAlbumView(albumId) {
         </div>
       </div>
 
-      <div class="album-view-header" style="margin:0 0 24px;background:${accentColor}20;border-bottom:3px solid ${accentColor}">
+      <div class="album-view-header" style="margin:0 0 24px;background:${accentColor}20;border-bottom:3px solid ${accentColor}40">
         <div style="max-width:860px;margin:0 auto;padding:16px">
-          <div class="album-view-title">${esc(album.title)}</div>
-          <div class="album-view-student">👤 ${esc(studentName)} ・ ${photos.length}枚</div>
+          <div class="album-view-title" style="color:${textColor}">${esc(album.title)}</div>
+          <div class="album-view-student" style="color:${textColor}">${esc(studentName)} ・ ${photos.length}枚</div>
           <div class="album-view-actions">
             <button class="btn btn-white btn-sm" onclick="downloadAlbumPDF('${albumId}')">⬇ PDFダウンロード</button>
             ${shareBtn}
@@ -1678,7 +1790,6 @@ async function renderAlbumView(albumId) {
       </div>
 
       <div class="page">
-        ${teacherMsgHtml}
         <div class="album-photo-list" id="album-view-list">
           ${photos.map(p => albumViewCardHtml(p)).join('')}
         </div>
@@ -1774,7 +1885,7 @@ async function renderSharePage(token) {
       <div class="share-header">
         <div class="share-header-logo">すくすくかるがもアルバム</div>
         <div class="share-header-title">${esc(album.title)}</div>
-        <div class="share-header-student">👤 ${esc(album.students?.name || '')}</div>
+        <div class="share-header-student">${esc(album.students?.name || '')}</div>
       </div>
 
       <div class="share-actions">
@@ -1814,10 +1925,10 @@ async function generatePDF(album, photos) {
   const title       = album.title || 'アルバム';
   const studentName = album.students?.name || '';
   const accentColor = album.accent_color || '#4a7c6f';
+  const textColor   = album.text_color   || '#3d2b1f';
   const photosPerPage = parseInt(album.photos_per_page || 2, 10);
-  const teacherMsg  = album.teacher_message || '';
 
-  if (photos.length === 0 && !teacherMsg) { alert('写真がありません'); return; }
+  if (photos.length === 0) { alert('写真がありません'); return; }
 
   const btn = event?.target;
   if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
@@ -1848,10 +1959,10 @@ async function generatePDF(album, photos) {
 
     // ===== 表紙 =====
     const coverHtml = `
-      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:${accentColor};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;color:#fff;padding:40px;box-sizing:border-box">
-        <div style="font-size:13px;letter-spacing:.15em;opacity:.8;margin-bottom:24px">すくすくかるがもアルバム</div>
-        <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all">${esc(title)}</div>
-        ${studentName ? `<div style="font-size:16px;margin-top:20px;opacity:.9">${esc(studentName)}</div>` : ''}
+      <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:${accentColor};display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:40px;box-sizing:border-box">
+        <div style="font-size:13px;letter-spacing:.15em;opacity:.75;margin-bottom:24px;color:${textColor}">すくすくかるがもアルバム</div>
+        <div style="font-size:28px;font-weight:700;text-align:center;line-height:1.5;word-break:break-all;color:${textColor}">${esc(title)}</div>
+        ${studentName ? `<div style="font-size:16px;margin-top:20px;opacity:.85;color:${textColor}">${esc(studentName)}</div>` : ''}
       </div>`;
     const coverImg = await captureHtml(coverHtml);
     doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
@@ -1917,18 +2028,6 @@ async function generatePDF(album, photos) {
 
       const img = await captureHtml(pageHtml);
       doc.addImage(img, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
-    }
-
-    // ===== 先生からのメッセージページ（任意） =====
-    if (teacherMsg) {
-      doc.addPage([PAGE_MM, PAGE_MM]);
-      const msgHtml = `
-        <div style="width:${PAGE_PX}px;height:${PAGE_PX}px;background:#fff8f2;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Noto Serif JP',serif;padding:60px;box-sizing:border-box">
-          <div style="font-size:11px;letter-spacing:.12em;color:${accentColor};margin-bottom:28px">先生からのメッセージ</div>
-          <div style="font-size:16px;line-height:2;color:#3d2b1f;text-align:center;word-break:break-all;white-space:pre-wrap">${esc(teacherMsg)}</div>
-        </div>`;
-      const msgImg = await captureHtml(msgHtml);
-      doc.addImage(msgImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
     }
 
     renderArea.innerHTML = '';
