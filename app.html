@@ -2628,7 +2628,7 @@ async function renderAccount() {
         <div class="plan-card" style="border-color:var(--duck)">
           <div class="plan-badge" style="background:var(--duck);color:#fff;border-color:var(--duck)">おすすめ</div>
           <div class="plan-name">スタンダードプラン</div>
-          <div class="plan-price">¥2,980 <span>/ 月（14日間無料）</span></div>
+          <div class="plan-price">¥2,980 <span>/ 月</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
             <div class="plan-feature">自動アルバム生成 無制限</div>
@@ -2636,7 +2636,7 @@ async function renderAccount() {
             <div class="plan-feature">PDF・画像エクスポート</div>
             <div class="plan-feature">優先サポート</div>
           </div>
-          <button class="btn btn-primary" style="width:100%" onclick="startCheckout('standard')">14日間無料で試す →</button>
+          <button class="btn btn-primary" style="width:100%" onclick="openPortal()">サブスクリプション管理からアップグレード →</button>
         </div>
         ` : `
         <div class="plan-card current">
