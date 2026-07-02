@@ -1189,7 +1189,7 @@ const APP_URL           = "https://app.gyomu-karugamo.com/app.html";
 // ============================================================
 const PLANS = {
   // maxAlbumsFinalized = アルバム確定（PDF/共有可能化）の月間上限
-  free:     { name: '無料プラン（お試し）', maxStudents: 5,        maxAlbumsFinalized: 0,        canShare: false, canPDF: false },
+  free:     { name: '無料プラン（お試し）', maxStudents: 2,        maxAlbumsFinalized: 0,        canShare: false, canPDF: false },
   light:    { name: 'ライトプラン',         maxStudents: 30,       maxAlbumsFinalized: 5,        canShare: true,  canPDF: true  },
   standard: { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsFinalized: Infinity, canShare: true,  canPDF: true  },
   premium:  { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsFinalized: Infinity, canShare: true,  canPDF: true  },
@@ -2644,7 +2644,7 @@ async function renderAccount() {
           <div class="plan-name">無料プラン（お試し）</div>
           <div class="plan-price">¥0 <span>/ 月</span></div>
           <div class="plan-features">
-            <div class="plan-feature">生徒登録 最大5名</div>
+            <div class="plan-feature">生徒登録 最大2名</div>
             <div class="plan-feature">レッスン記録（写真・メモ）</div>
             <div class="plan-feature">アルバムプレビュー</div>
             <div class="plan-feature" style="opacity:.45;text-decoration:line-through">共有リンク発行</div>
@@ -2761,6 +2761,13 @@ async function changePassword() {
 }
 
 async function deleteAccount() {
+  // 有料プランは先に解約が必要
+  const tier = currentProfile?.tier || 'free';
+  if (tier === 'light' || tier === 'standard' || tier === 'premium') {
+    alert('アカウントを削除する前に、サブスクリプションを解約してください。\n「サブスクリプション管理」からStripeポータルへアクセスして解約できます。');
+    return;
+  }
+
   const confirmed = prompt('アカウントを削除するには「削除する」と入力してください。');
   if (confirmed !== '削除する') { if (confirmed !== null) alert('キャンセルしました'); return; }
 
