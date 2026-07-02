@@ -16,7 +16,12 @@ const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
 );
 
-const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
+// APP_ENV=dev のときはテスト用 Webhook Secret、それ以外は本番用
+const APP_ENV = Deno.env.get("APP_ENV") ?? "prod";
+const IS_DEV  = APP_ENV === "dev";
+const WEBHOOK_SECRET = IS_DEV
+  ? (Deno.env.get("STRIPE_WEBHOOK_SECRET_TEST") ?? "")
+  : (Deno.env.get("STRIPE_WEBHOOK_SECRET_LIVE") ?? "");
 
 // Stripe Price ID → プラン名のマッピング（本番・テスト両対応）
 const PRICE_TO_PLAN: Record<string, string> = {
