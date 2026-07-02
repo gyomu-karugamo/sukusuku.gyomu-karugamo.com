@@ -1,15 +1,10 @@
 // Stripe Webhook Handler
 // イベント: checkout.session.completed, customer.subscription.updated, customer.subscription.deleted
 // profiles.tier を正しいプラン名（'light' | 'standard'）で更新する
+// 注意: Stripe SDK は使わず Web Crypto API で署名検証（Supabase Edge Runtime 互換）
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
-  apiVersion: "2024-06-20",
-  httpClient: Stripe.createFetchHttpClient(),
-});
 
 const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_URL") ?? "",
@@ -30,28 +25,56 @@ const PRICE_TO_PLAN: Record<string, string> = {
   "price_1To2oGFip1mPhO1UvhtEvSit": "standard",
 };
 
-async function getPlanFromSubscription(subscription: Stripe.Subscription): Promise<string> {
-  // 1. サブスクリプションメタデータから plan を読む（最も信頼性が高い）
-  if (subscription.metadata?.plan) {
-    return subscription.metadata.plan;
-  }
+// Web Crypto API による Stripe webhook 署名検証
+async function verifyStripeSignature(
+  body: string,
+  sigHeader: string,
+  secret: string,
+): Promise<boolean> {
+  // sig header: "t=timestamp,v1=sig1,v1=sig2,..."
+  const parts = sigHeader.split(",");
+  const tPart = parts.find((p) => p.startsWith("t="));
+  const v1Parts = parts.filter((p) => p.startsWith("v1="));
+  if (!tPart || v1Parts.length === 0) return false;
+
+  const timestamp = tPart.slice(2);
+  const payload = `${timestamp}.${body}`;
+
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
+  const sigHex = Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return v1Parts.some((p) => p.slice(3) === sigHex);
+}
+
+function getPlanFromSubscriptionData(sub: Record<string, unknown>): string {
+  // 1. サブスクリプションメタデータから plan を読む
+  const metadata = sub.metadata as Record<string, string> | undefined;
+  if (metadata?.plan) return metadata.plan;
 
   // 2. Price ID から plan を特定
-  const priceId = subscription.items.data[0]?.price?.id;
-  if (priceId && PRICE_TO_PLAN[priceId]) {
-    return PRICE_TO_PLAN[priceId];
-  }
+  const items = sub.items as { data: Array<{ price: { id: string } }> } | undefined;
+  const priceId = items?.data[0]?.price?.id;
+  if (priceId && PRICE_TO_PLAN[priceId]) return PRICE_TO_PLAN[priceId];
 
   // 3. 環境変数から Price ID を動的に読む
-  const lightPriceId  = Deno.env.get("LIGHT_PRICE_ID") ?? "";
-  const stdPriceId    = Deno.env.get("STANDARD_PRICE_ID") ?? "";
+  const lightPriceId = Deno.env.get("LIGHT_PRICE_ID") ?? "";
+  const stdPriceId   = Deno.env.get("STANDARD_PRICE_ID") ?? "";
   if (priceId) {
-    if (priceId === lightPriceId)  return "light";
-    if (priceId === stdPriceId)    return "standard";
+    if (priceId === lightPriceId) return "light";
+    if (priceId === stdPriceId)   return "standard";
   }
 
-  // 4. フォールバック（どうしても特定できない場合は standard にしない）
-  console.warn("Could not determine plan from subscription:", subscription.id, "price:", priceId);
+  console.warn("Could not determine plan from subscription:", sub.id, "price:", priceId);
   return "standard";
 }
 
@@ -59,38 +82,41 @@ serve(async (req) => {
   const sig = req.headers.get("stripe-signature");
   if (!sig) return new Response("Missing stripe-signature", { status: 400 });
 
-  let event: Stripe.Event;
+  const body = await req.text();
+
+  const valid = await verifyStripeSignature(body, sig, WEBHOOK_SECRET);
+  if (!valid) {
+    console.error("Webhook signature verification failed");
+    return new Response("Webhook Error: invalid signature", { status: 400 });
+  }
+
+  let event: { type: string; data: { object: Record<string, unknown> } };
   try {
-    const body = await req.text();
-    event = await stripe.webhooks.constructEventAsync(body, sig, WEBHOOK_SECRET);
+    event = JSON.parse(body);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
-    return new Response(`Webhook Error: ${err.message}`, { status: 400 });
+    console.error("JSON parse error:", err);
+    return new Response("Invalid JSON", { status: 400 });
   }
 
   try {
     switch (event.type) {
       case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
+        const session = event.data.object;
         if (session.mode !== "subscription") break;
 
-        const userId = session.metadata?.user_id || session.client_reference_id;
+        const metadata = session.metadata as Record<string, string> | undefined;
+        const userId = metadata?.user_id || (session.client_reference_id as string | undefined);
         if (!userId) { console.error("No user_id in session metadata"); break; }
 
-        // plan はセッションメタデータから取得
-        const plan = session.metadata?.plan || "standard";
+        const plan = metadata?.plan || "standard";
 
-        // サブスクリプション情報を取得
         const subscriptionId = typeof session.subscription === "string"
           ? session.subscription
-          : session.subscription?.id;
+          : (session.subscription as { id: string } | null)?.id;
 
-        const subscription = subscriptionId
-          ? await stripe.subscriptions.retrieve(subscriptionId)
-          : null;
         const stripeCustomerId = typeof session.customer === "string"
           ? session.customer
-          : session.customer?.id;
+          : (session.customer as { id: string } | null)?.id;
 
         const { error } = await supabaseAdmin.from("profiles").update({
           tier: plan,
@@ -105,13 +131,17 @@ serve(async (req) => {
       }
 
       case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
+        const sub = event.data.object;
+        const metadata = sub.metadata as Record<string, string> | undefined;
+        const userId = metadata?.user_id;
+        const status = sub.status as string;
+        const isActive = status === "active" || status === "trialing";
+        const plan = getPlanFromSubscriptionData(sub);
 
-        // user_id はサブスクリプションメタデータから
-        const userId = sub.metadata?.user_id;
         if (!userId) {
-          // customer_id 経由で検索
-          const custId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+          const custId = typeof sub.customer === "string"
+            ? sub.customer
+            : (sub.customer as { id: string } | null)?.id;
           const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("id")
@@ -119,8 +149,6 @@ serve(async (req) => {
             .maybeSingle();
           if (!profile) { console.error("No profile for customer:", custId); break; }
 
-          const plan = await getPlanFromSubscription(sub);
-          const isActive = sub.status === "active" || sub.status === "trialing";
           await supabaseAdmin.from("profiles").update({
             tier: isActive ? plan : "free",
             is_active: isActive,
@@ -128,22 +156,24 @@ serve(async (req) => {
           break;
         }
 
-        const plan = await getPlanFromSubscription(sub);
-        const isActive = sub.status === "active" || sub.status === "trialing";
         const { error } = await supabaseAdmin.from("profiles").update({
           tier: isActive ? plan : "free",
           is_active: isActive,
         }).eq("id", userId);
         if (error) console.error("profiles update error (subscription.updated):", error);
+        else console.log(`User ${userId} → tier=${isActive ? plan : "free"}, is_active=${isActive}`);
         break;
       }
 
       case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
-        const userId = sub.metadata?.user_id;
+        const sub = event.data.object;
+        const metadata = sub.metadata as Record<string, string> | undefined;
+        const userId = metadata?.user_id;
 
         if (!userId) {
-          const custId = typeof sub.customer === "string" ? sub.customer : sub.customer?.id;
+          const custId = typeof sub.customer === "string"
+            ? sub.customer
+            : (sub.customer as { id: string } | null)?.id;
           const { data: profile } = await supabaseAdmin
             .from("profiles")
             .select("id")
