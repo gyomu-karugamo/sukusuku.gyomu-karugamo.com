@@ -1188,10 +1188,10 @@ const APP_URL           = "https://app.gyomu-karugamo.com/app.html";
 // プラン設定
 // ============================================================
 const PLANS = {
-  free:     { name: 'ライトプラン（無料）', maxStudents: 15, maxAlbumsPerMonth: 10, canShare: false },
-  light:    { name: 'ライトプラン',         maxStudents: 15, maxAlbumsPerMonth: 10, canShare: false },
-  standard: { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true },
-  premium:  { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true },
+  free:     { name: '無料プラン（お試し）', maxStudents: 5,        maxAlbumsPerMonth: 2,        canShare: false, canPDF: false },
+  light:    { name: 'ライトプラン',         maxStudents: 30,       maxAlbumsPerMonth: Infinity, canShare: true,  canPDF: true  },
+  standard: { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true,  canPDF: true  },
+  premium:  { name: 'スタンダードプラン',   maxStudents: Infinity, maxAlbumsPerMonth: Infinity, canShare: true,  canPDF: true  },
 };
 
 // ============================================================
@@ -2039,6 +2039,11 @@ async function generatePDF(album, photos) {
 
   if (photos.length === 0) { alert('写真がありません'); return; }
 
+  if (!getLimits().canPDF) {
+    alert('PDFダウンロードはライトプラン以上でご利用いただけます。\nアカウントタブからプランをご確認ください。');
+    return;
+  }
+
   const btn = event?.target;
   if (btn) { btn.disabled = true; btn.textContent = '生成中...'; }
 
@@ -2125,8 +2130,8 @@ async function generatePDF(album, photos) {
           </div>
           <div style="height:${IMG_H}px;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:12px 24px">${imgTag}</div>
           <div style="height:${META_H}px;padding:0 24px;display:flex;flex-direction:column;justify-content:center;border-top:1px solid rgba(${pr},${pg},${pb},0.1)">
-            ${logoLine}
             ${p.memo ? `<span style="font-size:11px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
+            ${logoLine}
           </div>
         </div>`;
       const img = await captureHtml(pageHtml);
@@ -2514,8 +2519,12 @@ async function deleteRecord(recordId) {
 async function renderAccount() {
   await loadProfile();
   const main = document.getElementById('main');
-  const tier  = currentProfile?.tier || 'free';
-  const isStd = tier === 'standard' || tier === 'premium';
+  const tier    = currentProfile?.tier || 'free';
+  const isStd   = tier === 'standard' || tier === 'premium';
+  const isLight  = tier === 'light';
+  const isFree   = !isStd && !isLight;
+  const isGoogle = currentUser.app_metadata?.provider === 'google'
+    || (currentUser.identities || []).some(i => i.provider === 'google');
 
   main.innerHTML = `
     <div class="page fade-up">
@@ -2528,8 +2537,9 @@ async function renderAccount() {
           <div class="section-label" style="margin-bottom:10px">メールアドレス</div>
           <div id="email-display-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <div style="font-weight:600;color:var(--brown);flex:1;min-width:0;word-break:break-all">${esc(currentUser.email || '')}</div>
-            <button class="btn btn-secondary btn-sm" onclick="showEmailForm()">変更</button>
+            ${isGoogle ? '' : `<button class="btn btn-secondary btn-sm" onclick="showEmailForm()">変更</button>`}
           </div>
+          ${isGoogle ? '' : `
           <div id="email-form" style="display:none;margin-top:14px">
             <div class="form-group">
               <label class="form-label">新しいメールアドレス</label>
@@ -2540,10 +2550,11 @@ async function renderAccount() {
               <button class="btn btn-secondary btn-sm" onclick="hideEmailForm()">キャンセル</button>
             </div>
             <div id="email-msg" style="margin-top:8px;font-size:0.85rem"></div>
-          </div>
+          </div>`}
         </div>
 
-        <!-- ===== パスワード変更 ===== -->
+        <!-- ===== パスワード変更（Googleユーザーは非表示） ===== -->
+        ${isGoogle ? '' : `
         <div class="card">
           <div class="section-label" style="margin-bottom:10px">パスワード</div>
           <div id="pw-display-row">
@@ -2564,47 +2575,86 @@ async function renderAccount() {
             </div>
             <div id="pw-msg" style="margin-top:8px;font-size:0.85rem"></div>
           </div>
-        </div>
+        </div>`}
 
         <!-- ===== プラン ===== -->
         ${isStd ? `
         <div class="plan-card current">
           <div class="plan-badge">✓ ご利用中のプラン</div>
           <div class="plan-name">スタンダードプラン</div>
-          <div class="plan-price">¥980 <span>/ 月</span></div>
+          <div class="plan-price">¥2,980 <span>/ 月</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
-            <div class="plan-feature">アルバム生成 無制限</div>
-            <div class="plan-feature">保護者への共有リンク発行</div>
-            <div class="plan-feature">PDFダウンロード</div>
+            <div class="plan-feature">レッスン記録（写真・メモ）</div>
+            <div class="plan-feature">自動アルバム生成 無制限</div>
+            <div class="plan-feature">共有リンク発行</div>
+            <div class="plan-feature">PDF・画像エクスポート</div>
+            <div class="plan-feature">優先サポート</div>
           </div>
           <button class="btn btn-secondary" onclick="openPortal()">サブスクリプション管理</button>
+        </div>
+        ` : isLight ? `
+        <div class="plan-card current">
+          <div class="plan-badge">✓ ご利用中のプラン</div>
+          <div class="plan-name">ライトプラン</div>
+          <div class="plan-price">¥1,980 <span>/ 月</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">生徒登録 〜30名</div>
+            <div class="plan-feature">レッスン記録（写真・メモ）</div>
+            <div class="plan-feature">自動アルバム生成</div>
+            <div class="plan-feature">共有リンク発行</div>
+            <div class="plan-feature">PDF・画像エクスポート</div>
+          </div>
+          <button class="btn btn-secondary" onclick="openPortal()">サブスクリプション管理</button>
+        </div>
+        <div class="plan-card" style="border-color:var(--duck)">
+          <div class="plan-badge" style="background:var(--duck);color:#fff;border-color:var(--duck)">おすすめ</div>
+          <div class="plan-name">スタンダードプラン</div>
+          <div class="plan-price">¥2,980 <span>/ 月（14日間無料）</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">生徒登録 無制限</div>
+            <div class="plan-feature">自動アルバム生成 無制限</div>
+            <div class="plan-feature">共有リンク発行</div>
+            <div class="plan-feature">PDF・画像エクスポート</div>
+            <div class="plan-feature">優先サポート</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="startCheckout('standard')">14日間無料で試す →</button>
         </div>
         ` : `
         <div class="plan-card current">
           <div class="plan-badge">現在のプラン</div>
-          <div class="plan-name">ライトプラン（無料）</div>
+          <div class="plan-name">無料プラン（お試し）</div>
           <div class="plan-price">¥0 <span>/ 月</span></div>
           <div class="plan-features">
-            <div class="plan-feature">生徒登録 最大15名</div>
-            <div class="plan-feature">アルバム生成 月1回まで</div>
-            <div class="plan-feature">PDFダウンロード</div>
+            <div class="plan-feature">生徒登録 最大5名</div>
+            <div class="plan-feature">レッスン記録（写真・メモ）</div>
+            <div class="plan-feature" style="opacity:.45;text-decoration:line-through">共有リンク発行</div>
+            <div class="plan-feature" style="opacity:.45;text-decoration:line-through">PDF・画像エクスポート</div>
           </div>
         </div>
-
+        <div class="plan-card">
+          <div class="plan-name">ライトプラン</div>
+          <div class="plan-price">¥1,980 <span>/ 月（14日間無料）</span></div>
+          <div class="plan-features">
+            <div class="plan-feature">生徒登録 〜30名</div>
+            <div class="plan-feature">自動アルバム生成</div>
+            <div class="plan-feature">共有リンク発行</div>
+            <div class="plan-feature">PDF・画像エクスポート</div>
+          </div>
+          <button class="btn btn-secondary" style="width:100%" onclick="startCheckout('light')">14日間無料で試す →</button>
+        </div>
         <div class="plan-card" style="border-color:var(--duck)">
           <div class="plan-badge" style="background:var(--duck);color:#fff;border-color:var(--duck)">おすすめ</div>
           <div class="plan-name">スタンダードプラン</div>
-          <div class="plan-price">¥980 <span>/ 月（14日間無料）</span></div>
+          <div class="plan-price">¥2,980 <span>/ 月（14日間無料）</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
-            <div class="plan-feature">アルバム生成 無制限</div>
-            <div class="plan-feature">保護者への共有リンク発行</div>
-            <div class="plan-feature">PDFダウンロード</div>
+            <div class="plan-feature">自動アルバム生成 無制限</div>
+            <div class="plan-feature">共有リンク発行</div>
+            <div class="plan-feature">PDF・画像エクスポート</div>
+            <div class="plan-feature">優先サポート</div>
           </div>
-          <button class="btn btn-primary" style="width:100%" onclick="startCheckout('standard')">
-            14日間無料で試す →
-          </button>
+          <button class="btn btn-primary" style="width:100%" onclick="startCheckout('standard')">14日間無料で試す →</button>
         </div>
         `}
 
