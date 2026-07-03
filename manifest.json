@@ -1,7 +1,7 @@
 {
-  "name": "業務かるがも",
-  "short_name": "業務かるがも",
-  "description": "生活タスク管理アプリ",
+  "name": "すくすくかるがもアルバム",
+  "short_name": "すくすくかるがも",
+  "description": "習い事教室の成長記録アルバム",
   "start_url": "/app.html",
   "scope": "/",
   "display": "standalone",
