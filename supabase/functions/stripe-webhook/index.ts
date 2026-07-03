@@ -57,22 +57,22 @@ async function verifyStripeSignature(
 }
 
 function getPlanFromSubscriptionData(sub: Record<string, unknown>): string {
-  // 1. サブスクリプションメタデータから plan を読む
-  const metadata = sub.metadata as Record<string, string> | undefined;
-  if (metadata?.plan) return metadata.plan;
-
-  // 2. Price ID から plan を特定
+  // Price ID を最優先（ポータルからのアップグレード時はメタデータが古いままのため）
   const items = sub.items as { data: Array<{ price: { id: string } }> } | undefined;
   const priceId = items?.data[0]?.price?.id;
-  if (priceId && PRICE_TO_PLAN[priceId]) return PRICE_TO_PLAN[priceId];
 
-  // 3. 環境変数から Price ID を動的に読む
-  const lightPriceId = Deno.env.get("LIGHT_PRICE_ID") ?? "";
-  const stdPriceId   = Deno.env.get("STANDARD_PRICE_ID") ?? "";
   if (priceId) {
+    if (PRICE_TO_PLAN[priceId]) return PRICE_TO_PLAN[priceId];
+
+    const lightPriceId = Deno.env.get("LIGHT_PRICE_ID") ?? "";
+    const stdPriceId   = Deno.env.get("STANDARD_PRICE_ID") ?? "";
     if (priceId === lightPriceId) return "light";
     if (priceId === stdPriceId)   return "standard";
   }
+
+  // フォールバック: メタデータの plan
+  const metadata = sub.metadata as Record<string, string> | undefined;
+  if (metadata?.plan) return metadata.plan;
 
   console.warn("Could not determine plan from subscription:", sub.id, "price:", priceId);
   return "standard";
