@@ -1483,7 +1483,7 @@ async function renderAlbumEditor(studentId, albumId) {
 
   const [{ data: album, error: ae }, { data: student }, { data: photos, error: pe }] = await Promise.all([
     sb.from('albums').select('*').eq('id', albumId).single(),
-    sb.from('students').select('name').eq('id', studentId).single(),
+    sb.from('students').select('name, photo_path').eq('id', studentId).single(),
     sb.from('album_photos').select('*').eq('album_id', albumId).order('sort_order', { ascending: true }),
   ]);
 
@@ -1495,6 +1495,17 @@ async function renderAlbumEditor(studentId, albumId) {
   const accentColor = album.accent_color || '#4a7c6f';
   const textColor   = album.text_color   || '#3d2b1f';
   window._editorStudentName = student?.name || '';
+
+  // 表紙写真のデフォルト設定: 既存設定 → 生徒プロフィール画像 → 最初の写真
+  if (album.cover_photo_path) {
+    window._editorCoverSrc = album.cover_photo_path;
+  } else if (student?.photo_path) {
+    window._editorCoverSrc = getPublicUrl(student.photo_path);
+  } else if (photos && photos.length > 0) {
+    window._editorCoverSrc = getPublicUrl(photos[0].storage_path || '');
+  } else {
+    window._editorCoverSrc = null;
+  }
 
   main.innerHTML = `
     <div class="page fade-up">
@@ -1544,6 +1555,20 @@ async function renderAlbumEditor(studentId, albumId) {
         ${(photos || []).map(p => albumPhotoItemHtml(p)).join('')}
       </div>
     </div>`;
+
+  // 現在の表紙写真に対応する⭐ボタンをハイライト
+  if (window._editorCoverSrc) {
+    document.querySelectorAll('.album-photo-item').forEach(item => {
+      if (item.dataset.src === window._editorCoverSrc) {
+        const btn = item.querySelector('.btn[onclick^="setCoverPhoto"]');
+        if (btn) {
+          btn.textContent = '⭐ 表紙用';
+          btn.style.background = '#f5c542';
+          btn.style.color = '#333';
+        }
+      }
+    });
+  }
 
   // SortableJSを初期化
   if (photos.length > 0) {
