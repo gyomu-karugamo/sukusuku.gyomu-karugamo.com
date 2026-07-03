@@ -2334,6 +2334,18 @@ async function saveStudent() {
   const name = document.getElementById('student-name-input').value.trim();
   if (!name) { alert('お名前を入力してください'); return; }
 
+  // 新規追加時のみ上限チェック
+  if (!editingStudentId) {
+    const limits = getLimits();
+    if (isFinite(limits.maxStudents)) {
+      const { count } = await sb.from('students').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+      if ((count ?? 0) >= limits.maxStudents) {
+        alert(`${limits.name}の生徒登録上限（${limits.maxStudents}名）に達しています。\nプランのアップグレードはアカウントタブから行えます。`);
+        return;
+      }
+    }
+  }
+
   const joinedAt = document.getElementById('student-joined-input').value || null;
   const btn = document.querySelector('#modal-student .btn-primary');
   btn.disabled = true;
@@ -2701,7 +2713,8 @@ async function renderAccount() {
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
             <div class="plan-feature">レッスン記録（写真・メモ）</div>
-            <div class="plan-feature">自動アルバム生成 無制限</div>
+            <div class="plan-feature">アルバムプレビュー 無制限</div>
+            <div class="plan-feature">アルバム作成（PDF・共有） 無制限</div>
             <div class="plan-feature">共有リンク発行</div>
             <div class="plan-feature">PDF・画像エクスポート</div>
             <div class="plan-feature">優先サポート</div>
@@ -2729,7 +2742,8 @@ async function renderAccount() {
           <div class="plan-price">¥2,980 <span>/ 月</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
-            <div class="plan-feature">自動アルバム生成 無制限</div>
+            <div class="plan-feature">アルバムプレビュー 無制限</div>
+            <div class="plan-feature">アルバム作成（PDF・共有） 無制限</div>
             <div class="plan-feature">共有リンク発行</div>
             <div class="plan-feature">PDF・画像エクスポート</div>
             <div class="plan-feature">優先サポート</div>
@@ -2767,7 +2781,8 @@ async function renderAccount() {
           <div class="plan-price">¥2,980 <span>/ 月（14日間無料）</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
-            <div class="plan-feature">自動アルバム生成 無制限</div>
+            <div class="plan-feature">アルバムプレビュー 無制限</div>
+            <div class="plan-feature">アルバム作成（PDF・共有） 無制限</div>
             <div class="plan-feature">共有リンク発行</div>
             <div class="plan-feature">PDF・画像エクスポート</div>
             <div class="plan-feature">優先サポート</div>
