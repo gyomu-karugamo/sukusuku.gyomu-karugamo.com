@@ -1383,12 +1383,20 @@ async function renderStudentList() {
        </div>`
     : '';
 
+  const upgradeNotice = (currentProfile?.tier === 'free')
+    ? `<div class="notice notice-info" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span style="font-size:0.85rem">📢 <strong>ライトプラン</strong>にアップグレードすると、生徒15名・アルバム作成（PDF・共有）月5回が使えます。</span>
+        <a href="#/account" style="white-space:nowrap;font-size:0.82rem;font-weight:600;color:var(--duck-dark);text-decoration:underline">プランを見る →</a>
+       </div>`
+    : '';
+
   main.innerHTML = `
     <div class="page fade-up">
       <div class="page-header">
         <h1 class="page-title">生徒一覧</h1>
         ${addBtn}
       </div>
+      ${upgradeNotice}
       ${overLimitNotice}
       <div class="student-grid" id="student-grid">
         ${students.length === 0 ? emptyState('📋', 'まだ生徒が登録されていません<br>「生徒を追加」ボタンから始めましょう') : ''}
