@@ -249,6 +249,21 @@ html, body {
   transform: translateY(-2px);
   border-color: var(--duck-light);
 }
+.student-card.locked {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+  cursor: default;
+}
+.student-card.locked:hover {
+  box-shadow: var(--shadow-sm);
+  transform: none;
+  border-color: var(--line);
+}
+.student-lock-badge {
+  font-size: 0.72rem;
+  color: #888;
+  margin-top: 4px;
+}
 
 .student-avatar {
   width: 72px;
@@ -1316,7 +1331,9 @@ async function renderStudentList() {
   if (error) { main.innerHTML = errHtml(error.message); return; }
 
   const limits = getLimits();
+  const maxActive = isFinite(limits.maxStudents) ? limits.maxStudents : Infinity;
   const atLimit = students.length >= limits.maxStudents;
+  const overLimit = isFinite(maxActive) && students.length > maxActive;
 
   const addBtn = atLimit
     ? `<div class="notice notice-warn" style="margin:0;font-size:0.82rem">
@@ -1324,24 +1341,32 @@ async function renderStudentList() {
        </div>`
     : `<button class="btn btn-primary" onclick="openAddStudentModal()">＋ 生徒を追加</button>`;
 
+  const overLimitNotice = overLimit
+    ? `<div class="notice notice-warn" style="margin-bottom:12px;font-size:0.82rem">
+        ${limits.name}の上限（${maxActive}名）を超えた生徒はロックされています。<br>
+        ロック中の生徒のアルバム作成・記録追加はできません。削除すると上位の生徒がアンロックされます。
+       </div>`
+    : '';
+
   main.innerHTML = `
     <div class="page fade-up">
       <div class="page-header">
         <h1 class="page-title">生徒一覧</h1>
         ${addBtn}
       </div>
+      ${overLimitNotice}
       <div class="student-grid" id="student-grid">
         ${students.length === 0 ? emptyState('📋', 'まだ生徒が登録されていません<br>「生徒を追加」ボタンから始めましょう') : ''}
-        ${students.map(s => studentCardHtml(s)).join('')}
+        ${students.map((s, i) => studentCardHtml(s, isFinite(maxActive) && i >= maxActive)).join('')}
       </div>
     </div>`;
 }
 
-function studentCardHtml(s) {
+function studentCardHtml(s, locked = false) {
   const photoUrl = s.photo_path ? getPublicUrl(s.photo_path) : null;
   const initial = s.name ? s.name[0] : '?';
   return `
-    <div class="student-card" onclick="location.hash='#/students/${s.id}'">
+    <div class="student-card${locked ? ' locked' : ''}" onclick="location.hash='#/students/${s.id}'">
       <div class="student-avatar">
         ${photoUrl
           ? `<img src="${photoUrl}" alt="${esc(s.name)}" loading="lazy">`
@@ -1349,6 +1374,7 @@ function studentCardHtml(s) {
       </div>
       <div class="student-name">${esc(s.name)}</div>
       ${s.joined_at ? `<div class="student-since">入会 ${formatDate(s.joined_at)}</div>` : ''}
+      ${locked ? `<div class="student-lock-badge">🔒 プラン上限超過</div>` : ''}
     </div>`;
 }
 
@@ -1360,29 +1386,43 @@ async function renderStudentDetail(studentId) {
   const main = document.getElementById('main');
   main.innerHTML = '<div class="loading"></div>';
 
-  const [{ data: student, error: se }, { data: records, error: re }] = await Promise.all([
+  const [{ data: student, error: se }, { data: records, error: re }, { data: allStudents }] = await Promise.all([
     sb.from('students').select('*').eq('id', studentId).single(),
     sb.from('lesson_records')
       .select('*, record_photos(id, storage_path, sort_order)')
       .eq('student_id', studentId)
       .order('recorded_at', { ascending: false })
       .order('created_at', { ascending: false }),
+    sb.from('students').select('id').eq('user_id', currentUser.id).order('created_at', { ascending: true }),
   ]);
 
   if (se) { main.innerHTML = errHtml('生徒情報を取得できませんでした'); return; }
 
+  const limits = getLimits();
+  const maxActive = isFinite(limits.maxStudents) ? limits.maxStudents : Infinity;
+  const studentIndex = (allStudents || []).findIndex(s => s.id === studentId);
+  const isLocked = isFinite(maxActive) && studentIndex >= maxActive;
+
   const photoUrl = student.photo_path ? getPublicUrl(student.photo_path) : null;
   const initial  = student.name ? student.name[0] : '?';
+
+  const lockedNotice = isLocked ? `
+    <div class="notice notice-warn" style="margin-bottom:12px;font-size:0.82rem">
+      🔒 この生徒は${limits.name}の上限（${maxActive}名）を超えているためロックされています。<br>
+      他の生徒を削除するかプランをアップグレードすると操作できます。
+    </div>` : '';
 
   main.innerHTML = `
     <div class="page fade-up">
       <div class="page-header" style="flex-wrap:wrap;gap:8px">
         <a href="#/students" class="back-btn">← 一覧へ</a>
         <div style="display:flex;gap:8px;margin-left:auto">
-          <button class="btn btn-secondary btn-sm" onclick="openEditStudentModal('${studentId}')">編集</button>
+          ${!isLocked ? `<button class="btn btn-secondary btn-sm" onclick="openEditStudentModal('${studentId}')">編集</button>` : ''}
           <button class="btn btn-danger btn-sm" onclick="deleteStudent('${studentId}')">削除</button>
         </div>
       </div>
+
+      ${lockedNotice}
 
       <div class="student-detail-header">
         <div class="student-detail-avatar">
@@ -1396,8 +1436,8 @@ async function renderStudentDetail(studentId) {
           <div class="student-detail-meta" style="margin-top:4px">${records ? records.length : 0}件の記録</div>
         </div>
         <div class="student-detail-actions">
-          <button class="btn btn-primary btn-sm" onclick="openRecordModal()">＋ 記録を追加</button>
-          <button class="btn btn-secondary btn-sm" onclick="startAlbum('${studentId}')">📒 アルバムを作る</button>
+          ${!isLocked ? `<button class="btn btn-primary btn-sm" onclick="openRecordModal()">＋ 記録を追加</button>` : ''}
+          ${!isLocked ? `<button class="btn btn-secondary btn-sm" onclick="startAlbum('${studentId}')">📒 アルバムを作る</button>` : ''}
         </div>
       </div>
 
