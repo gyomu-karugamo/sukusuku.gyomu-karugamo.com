@@ -1383,12 +1383,20 @@ async function renderStudentList() {
        </div>`
     : '';
 
+  const upgradeNotice = (currentProfile?.tier === 'free')
+    ? `<div class="notice notice-info" style="margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <span style="font-size:0.85rem">📢 <strong>ライトプラン</strong>にアップグレードすると、生徒15名・アルバム作成（PDF・共有）月5回が使えます。</span>
+        <a href="#/account" style="white-space:nowrap;font-size:0.82rem;font-weight:600;color:var(--duck-dark);text-decoration:underline">プランを見る →</a>
+       </div>`
+    : '';
+
   main.innerHTML = `
     <div class="page fade-up">
       <div class="page-header">
         <h1 class="page-title">生徒一覧</h1>
         ${addBtn}
       </div>
+      ${upgradeNotice}
       ${overLimitNotice}
       <div class="student-grid" id="student-grid">
         ${students.length === 0 ? emptyState('📋', 'まだ生徒が登録されていません<br>「生徒を追加」ボタンから始めましょう') : ''}
@@ -2293,17 +2301,14 @@ async function generatePDF(album, photos) {
     doc.addImage(coverImg, 'JPEG', 0, 0, PAGE_MM, PAGE_MM);
 
     // ===== 写真ページ（1枚/ページ固定） =====
-    const DATE_H      = 54;   // 日付ヘッダー
-    const META_H_BASE = 48;   // メモ欄の基本高さ（1行）
-    const MEMO_LINE_H = 18;   // メモ追加行ごとの高さ
+    const DATE_H = 54;  // 日付ヘッダー
+    const META_H = 48;  // メモ行
+    const IMG_H  = PAGE_PX - DATE_H - META_H;
 
     for (let pi = 0; pi < photos.length; pi++) {
       const p      = photos[pi];
       const isLast = pi === photos.length - 1;
       doc.addPage([PAGE_MM, PAGE_MM]);
-      const memoLineCount = p.memo ? p.memo.split('\n').length : 0;
-      const META_H = memoLineCount > 1 ? META_H_BASE + (memoLineCount - 1) * MEMO_LINE_H : META_H_BASE;
-      const IMG_H  = PAGE_PX - DATE_H - META_H;
       const imgSrc = p.storage_path ? await fetchImageBase64(getPublicUrl(p.storage_path)) : null;
       const imgTag = imgSrc
         ? `<img src="${imgSrc}" style="max-width:100%;max-height:100%;object-fit:contain;display:block">`
@@ -2317,8 +2322,8 @@ async function generatePDF(album, photos) {
             <span style="font-size:13px;font-weight:600;color:${accentColor};letter-spacing:.04em">${formatDate(p.recorded_at)}</span>
           </div>
           <div style="height:${IMG_H}px;background:#fff;display:flex;align-items:center;justify-content:flex-start;overflow:hidden;padding:12px 24px">${imgTag}</div>
-          <div style="height:${META_H}px;padding:6px 24px;display:flex;flex-direction:column;justify-content:center;border-top:1px solid rgba(${pr},${pg},${pb},0.1)">
-            ${p.memo ? `<span style="font-size:11px;color:#5a3a2a;white-space:pre-wrap;line-height:1.6">${esc(p.memo)}</span>` : ''}
+          <div style="height:${META_H}px;padding:0 24px;display:flex;flex-direction:column;justify-content:center;border-top:1px solid rgba(${pr},${pg},${pb},0.1)">
+            ${p.memo ? `<span style="font-size:11px;color:#5a3a2a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.memo)}</span>` : ''}
             ${logoLine}
           </div>
         </div>`;
