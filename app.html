@@ -2135,7 +2135,10 @@ async function generatePDF(album, photos) {
 
   if (photos.length === 0) { alert('写真がありません'); return; }
 
-  if (!getLimits().canPDF) {
+  // 共有ページ（window._shareAlbum が存在する＝share_token経由）はプランチェックをスキップ
+  // 共有リンクはライトプラン以上でしか発行できないため、閲覧者のプランは問わない
+  const isSharePage = !!window._shareAlbum && album === window._shareAlbum;
+  if (!isSharePage && !getLimits().canPDF) {
     alert('PDFダウンロードはライトプラン以上でご利用いただけます。アカウントタブからプランをご確認ください。');
     return;
   }
@@ -2745,6 +2748,7 @@ async function renderAccount() {
           <div class="plan-price">¥2,980 <span>/ 月</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
+            <div class="plan-feature">レッスン記録（写真・メモ）</div>
             <div class="plan-feature">アルバムプレビュー 無制限</div>
             <div class="plan-feature">アルバム作成（PDF・共有） 無制限</div>
             <div class="plan-feature">共有リンク発行</div>
@@ -2784,6 +2788,7 @@ async function renderAccount() {
           <div class="plan-price">¥2,980 <span>/ 月（14日間無料）</span></div>
           <div class="plan-features">
             <div class="plan-feature">生徒登録 無制限</div>
+            <div class="plan-feature">レッスン記録（写真・メモ）</div>
             <div class="plan-feature">アルバムプレビュー 無制限</div>
             <div class="plan-feature">アルバム作成（PDF・共有） 無制限</div>
             <div class="plan-feature">共有リンク発行</div>
@@ -2960,16 +2965,18 @@ async function startCheckout(plan) {
 
 async function openPortal(subscriptionId = null) {
   const { data: { session } } = await sb.auth.getSession();
-  const body = { return_url: `${APP_URL}#/account` };
-  if (subscriptionId) body.subscription_id = subscriptionId;
   const res = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ return_url: `${APP_URL}#/account` }),
   });
   const data = await res.json();
-  if (data.url) window.location.href = data.url;
-  else alert('ポータルURLを取得できませんでした');
+  if (!data.url) { alert('ポータルURLを取得できませんでした'); return; }
+  // サブスクリプションIDが渡された場合はプラン変更画面へ直行
+  const dest = subscriptionId
+    ? `${data.url}/subscriptions/${subscriptionId}/update`
+    : data.url;
+  window.location.href = dest;
 }
 
 async function signOut() {
