@@ -1763,21 +1763,6 @@ async function finalizeAlbum(studentId) {
     alert('アルバムの完成はライトプラン以上でご利用いただけます。\nアカウントタブからプランをご確認ください。');
     return;
   }
-  if (limits.maxAlbumsFinalized < Infinity) {
-    const now = new Date();
-    const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-    const { count: finalizedCount } = await sb
-      .from('albums')
-      .select('*, students!inner(user_id)', { count: 'exact', head: true })
-      .eq('students.user_id', currentUser.id)
-      .eq('is_finalized', true)
-      .gte('finalized_at', monthStart);
-    if ((finalizedCount || 0) >= limits.maxAlbumsFinalized) {
-      alert(`${limits.name}のアルバム作成は月${limits.maxAlbumsFinalized}回までです。\nスタンダードプランにアップグレードすると無制限でご利用いただけます。`);
-      return;
-    }
-  }
-
   const titleInput = document.getElementById('album-title-input');
   let title = titleInput?.value.trim();
   // タイトル未入力時は placeholder の値をデフォルトとして使用
@@ -2037,7 +2022,32 @@ async function issueShareLink(albumId) {
   openModal('modal-share');
 }
 
+async function checkAndLogUsage(action, albumId) {
+  const limits = getLimits();
+  if (!isFinite(limits.maxAlbumsFinalized)) return true; // unlimited plan
+
+  const now = new Date();
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const { count } = await sb
+    .from('usage_logs')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id)
+    .gte('created_at', monthStart);
+
+  if ((count ?? 0) >= limits.maxAlbumsFinalized) {
+    alert(`${limits.name}のアルバム作成（PDF・共有）は月${limits.maxAlbumsFinalized}回までです。\nスタンダードプランにアップグレードすると無制限でご利用いただけます。`);
+    return false;
+  }
+
+  await sb.from('usage_logs').insert({ user_id: currentUser.id, action, album_id: albumId || null });
+  return true;
+}
+
 async function copyShareLink() {
+  if (currentUser) {
+    const ok = await checkAndLogUsage('share_copy', null);
+    if (!ok) return;
+  }
   try {
     await navigator.clipboard.writeText(currentShareLink);
     alert('リンクをコピーしました！');
@@ -2111,6 +2121,9 @@ async function renderSharePage(token) {
 // PDF生成（html2canvas経由）
 // ============================================================
 async function downloadAlbumPDF(albumId) {
+  const ok = await checkAndLogUsage('pdf_download', albumId);
+  if (!ok) return;
+
   const { data: album } = await sb.from('albums').select('*, students(name)').eq('id', albumId).single();
   const { data: photos } = await sb
     .from('album_photos').select('*')
