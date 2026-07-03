@@ -306,14 +306,21 @@ html, body {
 /* ===== 生徒詳細 ===== */
 .student-detail-header {
   display: flex;
-  align-items: center;
-  gap: 18px;
+  flex-direction: column;
+  gap: 14px;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 20px;
   box-shadow: var(--shadow-sm);
+}
+
+.student-detail-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
 }
 
 .student-detail-avatar {
@@ -333,6 +340,7 @@ html, body {
   font-weight: 700;
   color: var(--brown);
   margin-bottom: 4px;
+  word-break: break-word;
 }
 
 .student-detail-meta { font-size: 0.82rem; color: var(--mist); }
@@ -1047,7 +1055,9 @@ textarea.form-input {
   .modal { padding: 28px 28px 36px; }
   .student-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
   .album-photo-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-  .student-detail-header { padding: 24px; }
+  .student-detail-header { flex-direction: row; align-items: center; padding: 24px; }
+  .student-detail-top { flex: 1; min-width: 0; }
+  .student-detail-actions { flex-shrink: 0; }
 }
 </style>
 </head>
@@ -1468,15 +1478,17 @@ async function renderStudentDetail(studentId) {
       ${lockedNotice}
 
       <div class="student-detail-header">
-        <div class="student-detail-avatar">
-          ${photoUrl
-            ? `<img src="${photoUrl}" alt="${esc(student.name)}">`
-            : `<div class="avatar-initial">${esc(initial)}</div>`}
-        </div>
-        <div class="student-detail-info">
-          <div class="student-detail-name">${esc(student.name)}</div>
-          ${student.joined_at ? `<div class="student-detail-meta">入会日: ${formatDate(student.joined_at)}</div>` : ''}
-          <div class="student-detail-meta" style="margin-top:4px">${records ? records.length : 0}件の記録</div>
+        <div class="student-detail-top">
+          <div class="student-detail-avatar">
+            ${photoUrl
+              ? `<img src="${photoUrl}" alt="${esc(student.name)}">`
+              : `<div class="avatar-initial">${esc(initial)}</div>`}
+          </div>
+          <div class="student-detail-info">
+            <div class="student-detail-name">${esc(student.name)}</div>
+            ${student.joined_at ? `<div class="student-detail-meta">入会日: ${formatDate(student.joined_at)}</div>` : ''}
+            <div class="student-detail-meta" style="margin-top:4px">${records ? records.length : 0}件の記録</div>
+          </div>
         </div>
         <div class="student-detail-actions">
           ${!isLocked ? `<button class="btn btn-primary btn-sm" onclick="openRecordModal()">＋ 記録を追加</button>` : ''}
