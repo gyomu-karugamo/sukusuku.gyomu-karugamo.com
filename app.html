@@ -841,8 +841,8 @@ textarea.form-input {
 }
 
 .photo-memo-input {
-  font-size: 13px;
-  padding: 6px 8px;
+  font-size: 14px;
+  padding: 8px 10px;
   border: none;
   border-top: 1px solid var(--line);
   background: #fafaf8;
@@ -852,6 +852,9 @@ textarea.form-input {
   font-family: inherit;
   outline: none;
   border-radius: 0 0 8px 8px;
+  resize: none;
+  min-height: 60px;
+  line-height: 1.5;
 }
 .photo-memo-input:focus {
   background: #fff;
@@ -2474,7 +2477,7 @@ async function openEditRecordModal(recordId) {
           <img src="${url}" alt="">
           <button class="photo-preview-remove" onclick="markExistingPhotoRemoved('${p.id}','${p.storage_path}',this.closest('.photo-preview-item'))">✕</button>
         </div>
-        <input type="text" class="photo-memo-input" placeholder="メモ（任意）" value="${esc(p.memo || (record.memo || ''))}">`;
+        <textarea class="photo-memo-input" placeholder="メモ（任意）">${esc(p.memo || (record.memo || ''))}</textarea>`;
       existingList.appendChild(div);
     });
   } else {
@@ -2520,7 +2523,7 @@ function addPhotoPreviews(files, containerId) {
         <img src="${url}" alt="">
         <button class="photo-preview-remove" onclick="removePhotoPreview(${idx})">✕</button>
       </div>
-      <input type="text" class="photo-memo-input" placeholder="メモ（任意）">`;
+      <textarea class="photo-memo-input" placeholder="メモ（任意）"></textarea>`;
     container.appendChild(div);
   }
 }
