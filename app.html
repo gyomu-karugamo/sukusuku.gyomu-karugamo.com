@@ -1052,10 +1052,11 @@ textarea.form-input {
         <div class="avatar-upload-preview" id="student-avatar-preview" onclick="document.getElementById('student-avatar-file').click()">
           <span>📷</span>
         </div>
-        <div>
+        <div style="display:flex;flex-direction:column;gap:6px">
           <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('student-avatar-file').click()">写真を選択</button>
+          <button class="btn btn-danger btn-sm" type="button" id="student-avatar-delete-btn" style="display:none" onclick="clearStudentAvatar()">写真を削除</button>
           <input type="file" id="student-avatar-file" accept="image/*" style="display:none" onchange="previewStudentAvatar(this)">
-          <div class="text-sm text-mist mt-16" style="margin-top:6px">JPG・PNG・GIF</div>
+          <div class="text-sm text-mist" style="font-size:0.8rem;color:var(--mist)">JPG・PNG・GIF</div>
         </div>
       </div>
     </div>
@@ -1200,7 +1201,8 @@ const PLANS = {
 // ============================================================
 let sb, currentUser, currentProfile;
 let recordPhotoFiles = []; // 記録追加モーダルの一時写真リスト
-let studentAvatarFile = null; // 生徒追加モーダルの一時アバター
+let studentAvatarFile = null;   // 生徒追加モーダルの一時アバター
+let studentDeleteAvatar = false; // プロフィール画像削除フラグ
 let editingStudentId = null;  // 生徒編集時のID
 let editingRecordId  = null;  // 記録編集時のID（nullなら新規追加）
 let existingPhotosToRemove = []; // 記録編集時に削除する既存写真のID+path
@@ -1497,10 +1499,12 @@ async function renderAlbumEditor(studentId, albumId) {
   window._editorStudentName = student?.name || '';
 
   // 表紙写真のデフォルト設定: 既存設定 → 生徒プロフィール画像 → 最初の写真
+  const _profilePhotoUrl = student?.photo_path ? getPublicUrl(student.photo_path) : null;
+  window._editorProfilePhotoUrl = _profilePhotoUrl;
   if (album.cover_photo_path) {
     window._editorCoverSrc = album.cover_photo_path;
-  } else if (student?.photo_path) {
-    window._editorCoverSrc = getPublicUrl(student.photo_path);
+  } else if (_profilePhotoUrl) {
+    window._editorCoverSrc = _profilePhotoUrl;
   } else if (photos && photos.length > 0) {
     window._editorCoverSrc = getPublicUrl(photos[0].storage_path || '');
   } else {
@@ -1544,6 +1548,7 @@ async function renderAlbumEditor(studentId, albumId) {
         <div class="album-hint">
           写真をドラッグで並び替え、表示／非表示を切り替えられます（${photos.filter(p=>!p.is_excluded).length}枚表示中）<br>
           <span style="font-size:0.82rem;color:var(--mist)">⭐ アイコンで表紙用の写真を1枚選べます</span>
+          ${_profilePhotoUrl ? `<br><button class="btn btn-secondary btn-sm" style="margin-top:6px" onclick="resetCoverToProfile()">プロフィール画像を表紙に戻す</button>` : ''}
         </div>
       </div>
 
@@ -1675,6 +1680,19 @@ function previewNext() {
   window._previewIndex = Math.min(window._previewPages.length - 1, window._previewIndex + 1);
   document.getElementById('preview-page-container').innerHTML = window._previewPages[window._previewIndex];
   document.getElementById('preview-counter').textContent = `${window._previewIndex + 1} / ${window._previewPages.length}`;
+}
+
+function resetCoverToProfile() {
+  const profileUrl = window._editorProfilePhotoUrl;
+  if (!profileUrl) return;
+  // 全⭐ボタンをリセット（プロフィール画像はリストにないためハイライトなし）
+  document.querySelectorAll('.album-photo-item .btn[onclick^="setCoverPhoto"]').forEach(b => {
+    b.textContent = '⭐ 表紙';
+    b.style.background = '';
+    b.style.color = '';
+  });
+  window._editorCoverSrc = profileUrl;
+  alert('プロフィール画像を表紙写真に設定しました。');
 }
 
 function setCoverPhoto(btn, src) {
@@ -2231,10 +2249,12 @@ async function fetchImageBase64(url) {
 function openAddStudentModal() {
   editingStudentId = null;
   studentAvatarFile = null;
+  studentDeleteAvatar = false;
   document.getElementById('modal-student-title').textContent = '生徒を追加';
   document.getElementById('student-name-input').value = '';
   document.getElementById('student-joined-input').value = '';
   document.getElementById('student-avatar-preview').innerHTML = '<span>📷</span>';
+  document.getElementById('student-avatar-delete-btn').style.display = 'none';
   document.getElementById('student-save-label').textContent = '追加する';
   openModal('modal-student');
 }
@@ -2249,10 +2269,13 @@ async function openEditStudentModal(studentId) {
   document.getElementById('student-joined-input').value = s.joined_at || '';
   document.getElementById('student-save-label').textContent = '保存する';
   const preview = document.getElementById('student-avatar-preview');
+  const delBtn = document.getElementById('student-avatar-delete-btn');
   if (s.photo_path) {
     preview.innerHTML = `<img src="${getPublicUrl(s.photo_path)}" alt="">`;
+    delBtn.style.display = '';
   } else {
     preview.innerHTML = '<span>📷</span>';
+    delBtn.style.display = 'none';
   }
   openModal('modal-student');
 }
@@ -2261,8 +2284,18 @@ function previewStudentAvatar(input) {
   const file = input.files[0];
   if (!file) return;
   studentAvatarFile = file;
+  studentDeleteAvatar = false;
   const url = URL.createObjectURL(file);
   document.getElementById('student-avatar-preview').innerHTML = `<img src="${url}" alt="">`;
+  document.getElementById('student-avatar-delete-btn').style.display = '';
+}
+
+function clearStudentAvatar() {
+  if (!confirm('プロフィール画像を削除しますか？')) return;
+  studentAvatarFile = null;
+  studentDeleteAvatar = true;
+  document.getElementById('student-avatar-preview').innerHTML = '<span>📷</span>';
+  document.getElementById('student-avatar-delete-btn').style.display = 'none';
 }
 
 async function saveStudent() {
@@ -2283,6 +2316,13 @@ async function saveStudent() {
       const { error: upErr } = await sb.storage.from(STORAGE_BUCKET).upload(path, studentAvatarFile, { upsert: true });
       if (upErr) { alert('写真のアップロードに失敗しました: ' + upErr.message); return; }
       photoPath = path;
+    } else if (studentDeleteAvatar && editingStudentId) {
+      // 既存プロフィール画像をストレージから削除
+      const { data: cur } = await sb.from('students').select('photo_path').eq('id', editingStudentId).single();
+      if (cur?.photo_path) {
+        await sb.storage.from(STORAGE_BUCKET).remove([cur.photo_path]);
+      }
+      photoPath = null;
     }
 
     if (editingStudentId) {
@@ -2661,7 +2701,7 @@ async function renderAccount() {
             <div class="plan-feature">PDF・画像エクスポート</div>
             <div class="plan-feature">優先サポート</div>
           </div>
-          <button class="btn btn-primary" style="width:100%" onclick="openPortal()">サブスクリプション管理からアップグレード →</button>
+          <button class="btn btn-primary" style="width:100%" onclick="openPortal(currentProfile?.stripe_subscription_id)">スタンダードプランに変更する →</button>
         </div>
         ` : `
         <div class="plan-card current">
@@ -2866,12 +2906,14 @@ async function startCheckout(plan) {
   }
 }
 
-async function openPortal() {
+async function openPortal(subscriptionId = null) {
   const { data: { session } } = await sb.auth.getSession();
+  const body = { return_url: `${APP_URL}#/account` };
+  if (subscriptionId) body.subscription_id = subscriptionId;
   const res = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-    body: JSON.stringify({ return_url: `${APP_URL}#/account` }),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (data.url) window.location.href = data.url;
